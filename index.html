@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio Dashboard — Central Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Biblioteca Oficial Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg-base: #07090e;
@@ -213,21 +215,6 @@
       border-color: rgba(255, 255, 255, 0.15);
     }
 
-    .modal-header .btn-action,
-    .positions-table .btn-action {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #94a3b8;
-      padding: 6px 12px;
-      border-radius: 8px;
-    }
-    .modal-header .btn-action:hover,
-    .positions-table .btn-action:hover {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.35);
-      color: #f87171;
-    }
-
     .btn-util {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border-subtle);
@@ -282,7 +269,7 @@
       display: flex;
     }
 
-    /* KPI CARDS */
+    /* KPI GRID */
     .kpi-grid {
       display: grid;
       grid-template-columns: 1.4fr 1.3fr 1.1fr 1fr 0.8fr;
@@ -295,7 +282,7 @@
     .kpi-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
+      border-radius: 14px;
       padding: 18px 20px;
       box-shadow: var(--shadow-card);
       backdrop-filter: blur(14px);
@@ -341,7 +328,7 @@
     .tv-chart-box {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
+      border-radius: 14px;
       padding: 22px;
       margin-bottom: 24px;
       box-shadow: var(--shadow-card);
@@ -495,7 +482,7 @@
     .analysis-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
+      border-radius: 14px;
       padding: 22px 24px;
       box-shadow: var(--shadow-card);
       backdrop-filter: blur(14px);
@@ -603,11 +590,11 @@
       color: var(--accent);
     }
 
-    /* CARD DE COMPOSIÇÃO & CORREÇÃO DE ALINHAMENTO DAS SETAS */
+    /* CARD DE COMPOSIÇÃO */
     .card-panel {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
+      border-radius: 14px;
       padding: 24px;
       box-shadow: var(--shadow-card);
       backdrop-filter: blur(14px);
@@ -800,7 +787,7 @@
     .modal-box {
       background: #0f1523;
       border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
+      border-radius: 14px;
       padding: 26px;
       width: 100%;
       max-width: 980px;
@@ -915,10 +902,10 @@
         <div class="brand-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
         </div>
-        <div class="brand-title">Portfolios</div>
+        <div class="brand-title">Portfolios Cloud</div>
         <div class="status-badge" id="apiStatusBadge">
           <span class="status-dot"></span>
-          <span id="apiStatusText">Mercado em Direto</span>
+          <span id="apiStatusText">Supabase Conectado</span>
         </div>
       </div>
 
@@ -958,11 +945,6 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
           Exportar Backup
         </button>
-        <button class="btn-util" onclick="document.getElementById('importFile').click()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-          Importar Ficheiro
-        </button>
-        <input type="file" id="importFile" style="display:none" onchange="importData(event)" accept=".json">
       </div>
     </div>
 
@@ -1093,7 +1075,7 @@
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
           Portfolio Composition & Allocation
         </div>
-        <span style="font-size: 12px; color: var(--text-muted);">Ordenado por peso • Valores líquidos sincronizados</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Sincronização na Nuvem (Supabase) • Valores calibrados</span>
       </div>
 
       <div class="comp-table-header">
@@ -1212,12 +1194,12 @@
         </select>
         <input type="number" step="any" id="newLotShares" placeholder="Shares">
         <input type="number" step="any" id="newLotPrice" placeholder="Preço ($/€)">
-        <input type="number" step="any" id="newLotCostEUR" placeholder="Custo Total em € (Opcional)">
-        <button class="btn-primary" onclick="addNewLotToActiveTicker()">Adicionar</button>
+        <input type="number" step="any" id="newLotCostEUR" placeholder="Custo Total em €">
+        <button class="btn-primary" onclick="addNewLotToActiveTicker()">Gravar no Supabase</button>
       </div>
 
       <div style="margin-top: 22px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.06); display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:12px; color:var(--text-muted);">Eliminar este ativo remove todos os seus lotes da carteira.</span>
+        <span style="font-size:12px; color:var(--text-muted);">Eliminar este ativo remove todos os seus lotes da nuvem.</span>
         <button class="btn-action" style="color:var(--tv-red); border-color:var(--tv-red-border);" onclick="deleteActiveTickerEntirely()">Eliminar Ativo</button>
       </div>
 
@@ -1228,7 +1210,7 @@
   <div class="modal-overlay" id="newTickerModal" onclick="if(event.target===this) closeNewTickerModal()">
     <div class="modal-box" style="max-width: 440px;">
       <div class="modal-header">
-        <h3 style="font-size: 16px; font-weight: 700;">Adicionar Novo Ativo à Carteira</h3>
+        <h3 style="font-size: 16px; font-weight: 700;">Adicionar Novo Ativo à Nuvem</h3>
         <button class="btn-action" onclick="closeNewTickerModal()">✕</button>
       </div>
       <form id="newTickerForm">
@@ -1256,15 +1238,22 @@
           <input type="number" step="any" id="addPriceInput" placeholder="ex: 150.00" style="background:var(--bg-input); border:1px solid var(--border-subtle); color:#f1f5f9; padding:9px; border-radius:7px;" required>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:18px;">
-          <label style="font-size:11px; color:var(--text-muted); font-weight:600;">CUSTO DEBITADO EM EUROS PELA CORRETORA (OPCIONAL)</label>
+          <label style="font-size:11px; color:var(--text-muted); font-weight:600;">CUSTO DEBITADO EM EUROS PELA CORRETORA</label>
           <input type="number" step="any" id="addCostEURInput" placeholder="ex: 138.50" style="background:var(--bg-input); border:1px solid var(--border-subtle); color:#f1f5f9; padding:9px; border-radius:7px;">
         </div>
-        <button type="submit" class="btn-primary" style="width:100%; padding:11px; justify-content:center;">Registar Ativo</button>
+        <button type="submit" class="btn-primary" style="width:100%; padding:11px; justify-content:center;">Registar na Base de Dados</button>
       </form>
     </div>
   </div>
 
   <script>
+    // ==========================================
+    // CONFIGURAÇÃO SUPABASE CONECTADA
+    // ==========================================
+    const SUPABASE_URL = 'https://cnjvltqgkncqrjhwlztv.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Nrq6DwSYLtuJZyafK5bRNg_lATGdMMU';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const ASSET_LOGOS = {
       'META': `<svg viewBox="0 0 24 24" fill="#0081fb"><path d="M12 4.5C7.3 4.5 3.5 7.9 3.5 12c0 2.2 1.1 4.2 2.8 5.6.3.2.4.6.3.9l-.7 2.6c-.1.4.3.7.6.5l3-1.3c.3-.1.6-.1.9 0 1.2.5 2.4.7 3.6.7 4.7 0 8.5-3.4 8.5-7.5s-3.8-8.5-8.5-8.5zm4.8 10.3c-.3.4-.8.5-1.2.2l-2.4-1.8c-.3-.2-.7-.2-1 0l-2.7 1.8c-.5.3-1.1-.1-1-.7l1.1-4.2c.1-.4.5-.7.9-.7.3 0 .6.2.8.4l1.8 1.4c.3.2.7.2 1 0l2.3-1.5c.5-.3 1.1.1 1 .7l-.6 4.1z"/></svg>`,
       'MSFT': `<svg viewBox="0 0 24 24"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>`,
@@ -1321,28 +1310,25 @@
       ]
     };
 
-    let trades = JSON.parse(localStorage.getItem('gq_trades_sync')) || [
-      { id: '1', ticker: 'NOW', date: '2026-07-09', broker: 'XTB', currency: 'USD', shares: 1, price: 108.84, costEUR: 95.73 },
-      { id: '2', ticker: 'MSFT', date: '2026-06-01', broker: 'XTB', currency: 'USD', shares: 0.9634, price: 415.07, costEUR: 347.84 },
-      { id: '3', ticker: 'META', date: '2026-08-05', broker: 'XTB', currency: 'USD', shares: 1, price: 584.16, costEUR: 503.02 },
-      { id: '4', ticker: 'SXRV', date: '2025-08-01', broker: 'XTB', currency: 'EUR', shares: 0.6211, price: 1103.16, costEUR: 683.27 }
-    ];
+    // Array reativo que carrega do Supabase
+    let trades = [];
 
-    let livePrices = JSON.parse(localStorage.getItem('gq_prices_sync')) || {
+    // Preços calibrados com SXRV a 1436.07
+    let livePrices = {
       'NOW': 134.17,
       'MSFT': 493.19,
       'META': 616.77,
       'SXRV': 1436.07
     };
 
-    let prevClosePrices = JSON.parse(localStorage.getItem('gq_prev_closes_sync')) || {
+    let prevClosePrices = {
       'NOW': 138.50,
       'MSFT': 505.20,
       'META': 625.40,
       'SXRV': 1430.00
     };
 
-    let eurUsdRate = parseFloat(localStorage.getItem('gq_fx_sync')) || 1.1683;
+    let eurUsdRate = 1.1683;
     let finnhubKey = localStorage.getItem('gq_finnhub_key') || '';
     let showBenchmark = true;
     let activeModalTicker = null;
@@ -1359,10 +1345,45 @@
     document.getElementById('fxInput').value = eurUsdRate.toFixed(4);
     if (finnhubKey) document.getElementById('apiKeyInput').value = finnhubKey;
 
-    renderDashboard();
-    fetchLiveMarketData();
+    // 1. CARREGAR TRADES DO SUPABASE
+    async function loadTradesFromSupabase() {
+      const badge = document.getElementById('apiStatusBadge');
+      const txt = document.getElementById('apiStatusText');
+      if (badge) badge.classList.add('loading');
+      if (txt) txt.innerText = 'A ligar à Cloud...';
 
-    // Atualização automática em segundo plano a cada 3 minutos (180000 ms)
+      try {
+        const { data, error } = await supabase.from('trades').select('*').order('date', { ascending: true });
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          trades = data;
+        } else {
+          // Fallback de segurança se a tabela estiver limpa
+          trades = [
+            { id: '1', ticker: 'NOW', date: '2026-07-09', broker: 'XTB', currency: 'USD', shares: 1, price: 108.84, costEUR: 95.73 },
+            { id: '2', ticker: 'MSFT', date: '2026-06-01', broker: 'XTB', currency: 'USD', shares: 0.9634, price: 415.07, costEUR: 347.84 },
+            { id: '3', ticker: 'META', date: '2026-08-05', broker: 'XTB', currency: 'USD', shares: 1, price: 584.16, costEUR: 503.02 },
+            { id: '4', ticker: 'SXRV', date: '2025-08-01', broker: 'XTB', currency: 'EUR', shares: 0.6211, price: 1103.16, costEUR: 683.27 }
+          ];
+        }
+
+        renderDashboard();
+        if (badge) badge.classList.remove('loading');
+        if (txt) txt.innerText = 'Supabase Sincronizado';
+      } catch (err) {
+        console.error('Falha de conexão Supabase:', err);
+        if (badge) badge.classList.remove('loading');
+        if (txt) txt.innerText = 'Erro Supabase';
+      }
+    }
+
+    // Inicialização da página
+    loadTradesFromSupabase().then(() => {
+      fetchLiveMarketData();
+    });
+
+    // Polling contínuo de 3 em 3 minutos
     setInterval(() => {
       fetchLiveMarketData();
     }, 180000);
@@ -1404,7 +1425,6 @@
           const fxData = await fxRes.json();
           if (fxData && fxData.rates && fxData.rates.USD) {
             eurUsdRate = parseFloat(fxData.rates.USD.toFixed(4));
-            localStorage.setItem('gq_fx_sync', eurUsdRate);
             document.getElementById('fxInput').value = eurUsdRate.toFixed(4);
           }
         }
@@ -1451,16 +1471,13 @@
         }
       }
 
-      localStorage.setItem('gq_prices_sync', JSON.stringify(livePrices));
-      localStorage.setItem('gq_prev_closes_sync', JSON.stringify(prevClosePrices));
       renderDashboard();
 
       const timeNow = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
       if (badge) badge.classList.remove('loading');
       if (txt) {
         if (finnhubKey && updatedCount > 0) txt.innerText = `Direto às ${timeNow} (SXRV Proxy QQQ)`;
-        else if (!finnhubKey) txt.innerText = `Câmbio ${timeNow}`;
-        else txt.innerText = `Atualizado às ${timeNow}`;
+        else txt.innerText = `Cloud Sincronizada às ${timeNow}`;
       }
     }
 
@@ -1468,7 +1485,6 @@
       const parsed = parseFloat(val);
       if (parsed > 0) {
         eurUsdRate = parsed;
-        localStorage.setItem('gq_fx_sync', eurUsdRate);
         renderDashboard();
         if (activeModalTicker) openTickerModal(activeModalTicker);
       }
@@ -2336,35 +2352,43 @@
       }
     }
 
-    function updateLotField(lotId, field, value) {
-      const lot = trades.find(t => t.id === lotId);
-      if (!lot) return;
+    // 2. ATUALIZAR UM CAMPO DO LOTE NO SUPABASE
+    async function updateLotField(lotId, field, value) {
+      const parsedVal = (field === 'shares' || field === 'price' || field === 'costEUR') ? parseFloat(value) || 0 : value;
+      
+      const updatePayload = {};
+      updatePayload[field] = parsedVal;
 
-      if (field === 'shares' || field === 'price' || field === 'costEUR') {
-        lot[field] = parseFloat(value) || 0;
-      } else {
-        lot[field] = value;
-      }
-
-      localStorage.setItem('gq_trades_sync', JSON.stringify(trades));
-      renderDashboard();
-      if (activeModalTicker) openTickerModal(activeModalTicker);
-    }
-
-    function deleteSpecificLot(lotId) {
-      trades = trades.filter(t => t.id !== lotId);
-      localStorage.setItem('gq_trades_sync', JSON.stringify(trades));
-      renderDashboard();
-
-      const remainingLots = trades.filter(t => (t.ticker || '').trim().toUpperCase() === activeModalTicker);
-      if (remainingLots.length > 0) {
-        openTickerModal(activeModalTicker);
-      } else {
-        closeTickerModal();
+      try {
+        const { error } = await supabase.from('trades').update(updatePayload).eq('id', lotId);
+        if (error) throw error;
+        await loadTradesFromSupabase();
+        if (activeModalTicker) openTickerModal(activeModalTicker);
+      } catch (err) {
+        console.error('Erro ao atualizar lote no Supabase:', err);
       }
     }
 
-    function addNewLotToActiveTicker() {
+    // 3. APAGAR LOTE NO SUPABASE
+    async function deleteSpecificLot(lotId) {
+      try {
+        const { error } = await supabase.from('trades').delete().eq('id', lotId);
+        if (error) throw error;
+
+        await loadTradesFromSupabase();
+        const remainingLots = trades.filter(t => (t.ticker || '').trim().toUpperCase() === activeModalTicker);
+        if (remainingLots.length > 0) {
+          openTickerModal(activeModalTicker);
+        } else {
+          closeTickerModal();
+        }
+      } catch (err) {
+        console.error('Erro ao apagar lote:', err);
+      }
+    }
+
+    // 4. ADICIONAR NOVO LOTE NO SUPABASE
+    async function addNewLotToActiveTicker() {
       if (!activeModalTicker) return;
 
       const date = document.getElementById('newLotDate').value;
@@ -2378,7 +2402,7 @@
         return;
       }
 
-      trades.push({
+      const newLot = {
         id: Date.now().toString(),
         ticker: activeModalTicker,
         date: date,
@@ -2387,33 +2411,45 @@
         shares: shares,
         price: price,
         costEUR: costEUR
-      });
+      };
 
-      localStorage.setItem('gq_trades_sync', JSON.stringify(trades));
-      renderDashboard();
-      openTickerModal(activeModalTicker);
+      try {
+        const { error } = await supabase.from('trades').insert([newLot]);
+        if (error) throw error;
 
-      document.getElementById('newLotShares').value = '';
-      document.getElementById('newLotPrice').value = '';
-      document.getElementById('newLotCostEUR').value = '';
+        await loadTradesFromSupabase();
+        openTickerModal(activeModalTicker);
+
+        document.getElementById('newLotShares').value = '';
+        document.getElementById('newLotPrice').value = '';
+        document.getElementById('newLotCostEUR').value = '';
+      } catch (err) {
+        console.error('Erro ao adicionar lote:', err);
+      }
     }
 
-    function deleteActiveTickerEntirely() {
+    // 5. APAGAR ATIVO COMPLETO NO SUPABASE
+    async function deleteActiveTickerEntirely() {
       if (!activeModalTicker) return;
-      if (confirm(`Eliminar ${activeModalTicker} e todas as suas posições da carteira?`)) {
-        trades = trades.filter(t => (t.ticker || '').trim().toUpperCase() !== activeModalTicker);
-        delete livePrices[activeModalTicker];
-        localStorage.setItem('gq_trades_sync', JSON.stringify(trades));
-        localStorage.setItem('gq_prices_sync', JSON.stringify(livePrices));
-        renderDashboard();
-        closeTickerModal();
+      if (confirm(`Eliminar ${activeModalTicker} e todas as suas posições da base de dados?`)) {
+        try {
+          const { error } = await supabase.from('trades').delete().eq('ticker', activeModalTicker);
+          if (error) throw error;
+
+          delete livePrices[activeModalTicker];
+          await loadTradesFromSupabase();
+          closeTickerModal();
+        } catch (err) {
+          console.error('Erro ao eliminar ativo:', err);
+        }
       }
     }
 
     function openNewTickerModal() { document.getElementById('newTickerModal').style.display = 'flex'; }
     function closeNewTickerModal() { document.getElementById('newTickerModal').style.display = 'none'; }
 
-    document.getElementById('newTickerForm').addEventListener('submit', (e) => {
+    // 6. ADICIONAR NOVO TICKER NO SUPABASE
+    document.getElementById('newTickerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const ticker = document.getElementById('addTickerInput').value.trim().toUpperCase();
       const date = document.getElementById('addDateInput').value;
@@ -2422,7 +2458,7 @@
       const price = parseFloat(document.getElementById('addPriceInput').value);
       const costEUR = parseFloat(document.getElementById('addCostEURInput').value) || 0;
 
-      trades.push({
+      const newTrade = {
         id: Date.now().toString(),
         ticker: ticker,
         date: date,
@@ -2431,17 +2467,22 @@
         shares: shares,
         price: price,
         costEUR: costEUR
-      });
+      };
 
-      if (!livePrices[ticker]) livePrices[ticker] = price;
+      try {
+        const { error } = await supabase.from('trades').insert([newTrade]);
+        if (error) throw error;
 
-      localStorage.setItem('gq_trades_sync', JSON.stringify(trades));
-      localStorage.setItem('gq_prices_sync', JSON.stringify(livePrices));
-      renderDashboard();
-      closeNewTickerModal();
-      document.getElementById('newTickerForm').reset();
-      document.getElementById('addDateInput').valueAsDate = new Date();
-      fetchLiveMarketData();
+        if (!livePrices[ticker]) livePrices[ticker] = price;
+
+        closeNewTickerModal();
+        document.getElementById('newTickerForm').reset();
+        document.getElementById('addDateInput').valueAsDate = new Date();
+        await loadTradesFromSupabase();
+        fetchLiveMarketData();
+      } catch (err) {
+        console.error('Erro ao criar ativo no Supabase:', err);
+      }
     });
 
     function exportData() {
@@ -2449,31 +2490,8 @@
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `portfolio_xtb_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `portfolio_cloud_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
-    }
-
-    function importData(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const imp = JSON.parse(ev.target.result);
-          if (imp.trades) {
-            trades = imp.trades;
-            livePrices = imp.livePrices || {};
-            eurUsdRate = imp.eurUsdRate || 1.1683;
-            localStorage.setItem('gq_trades_sync', JSON.stringify(trades));
-            localStorage.setItem('gq_prices_sync', JSON.stringify(livePrices));
-            localStorage.setItem('gq_fx_sync', eurUsdRate);
-            document.getElementById('fxInput').value = eurUsdRate.toFixed(4);
-            renderDashboard();
-            alert('Portfólio importado com sucesso!');
-          }
-        } catch(err) { alert('Ficheiro inválido.'); }
-      };
-      reader.readAsText(file);
     }
   </script>
 </body>
