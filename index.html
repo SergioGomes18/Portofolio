@@ -1248,10 +1248,10 @@
 
   <script>
     // ==========================================
-    // CONFIGURAÇÃO SUPABASE CONECTADA
+    // CONFIGURAÇÃO SUPABASE CONECTADA (JWT ANON)
     // ==========================================
     const SUPABASE_URL = 'https://cnjvltqgkncqrjhwlztv.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_Nrq6DwSYLtuJZyafK5bRNg_lATGdMMU';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuanZsdHFna25jcXJqaHdsenR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNjU4NDcsImV4cCI6MjEwNDY0MTg0N30.Fy_8qiXwUlElmEAhCMDP6THACFr87UJvLvwZ2tTD8TY';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const ASSET_LOGOS = {
@@ -1310,10 +1310,8 @@
       ]
     };
 
-    // Array reativo que carrega do Supabase
     let trades = [];
 
-    // Preços calibrados com SXRV a 1436.07
     let livePrices = {
       'NOW': 134.17,
       'MSFT': 493.19,
@@ -1359,7 +1357,6 @@
         if (data && data.length > 0) {
           trades = data;
         } else {
-          // Fallback de segurança se a tabela estiver limpa
           trades = [
             { id: '1', ticker: 'NOW', date: '2026-07-09', broker: 'XTB', currency: 'USD', shares: 1, price: 108.84, costEUR: 95.73 },
             { id: '2', ticker: 'MSFT', date: '2026-06-01', broker: 'XTB', currency: 'USD', shares: 0.9634, price: 415.07, costEUR: 347.84 },
