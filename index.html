@@ -926,7 +926,7 @@
         </button>
 
         <button class="btn-util" onclick="toggleSettingsDrawer()" title="Definições e Backup">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Definições
         </button>
 
@@ -1248,11 +1248,11 @@
 
   <script>
     // ==========================================
-    // CONFIGURAÇÃO SUPABASE CONECTADA (JWT ANON)
+    // CONFIGURAÇÃO SUPABASE CONECTADA (CLIENTE 'sb')
     // ==========================================
     const SUPABASE_URL = 'https://cnjvltqgkncqrjhwlztv.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuanZsdHFna25jcXJqaHdsenR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNjU4NDcsImV4cCI6MjEwNDY0MTg0N30.Fy_8qiXwUlElmEAhCMDP6THACFr87UJvLvwZ2tTD8TY';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const ASSET_LOGOS = {
       'META': `<svg viewBox="0 0 24 24" fill="#0081fb"><path d="M12 4.5C7.3 4.5 3.5 7.9 3.5 12c0 2.2 1.1 4.2 2.8 5.6.3.2.4.6.3.9l-.7 2.6c-.1.4.3.7.6.5l3-1.3c.3-.1.6-.1.9 0 1.2.5 2.4.7 3.6.7 4.7 0 8.5-3.4 8.5-7.5s-3.8-8.5-8.5-8.5zm4.8 10.3c-.3.4-.8.5-1.2.2l-2.4-1.8c-.3-.2-.7-.2-1 0l-2.7 1.8c-.5.3-1.1-.1-1-.7l1.1-4.2c.1-.4.5-.7.9-.7.3 0 .6.2.8.4l1.8 1.4c.3.2.7.2 1 0l2.3-1.5c.5-.3 1.1.1 1 .7l-.6 4.1z"/></svg>`,
@@ -1351,7 +1351,7 @@
       if (txt) txt.innerText = 'A ligar à Cloud...';
 
       try {
-        const { data, error } = await supabase.from('trades').select('*').order('date', { ascending: true });
+        const { data, error } = await sb.from('trades').select('*').order('date', { ascending: true });
         if (error) throw error;
 
         if (data && data.length > 0) {
@@ -1375,12 +1375,10 @@
       }
     }
 
-    // Inicialização da página
     loadTradesFromSupabase().then(() => {
       fetchLiveMarketData();
     });
 
-    // Polling contínuo de 3 em 3 minutos
     setInterval(() => {
       fetchLiveMarketData();
     }, 180000);
@@ -2357,7 +2355,7 @@
       updatePayload[field] = parsedVal;
 
       try {
-        const { error } = await supabase.from('trades').update(updatePayload).eq('id', lotId);
+        const { error } = await sb.from('trades').update(updatePayload).eq('id', lotId);
         if (error) throw error;
         await loadTradesFromSupabase();
         if (activeModalTicker) openTickerModal(activeModalTicker);
@@ -2369,7 +2367,7 @@
     // 3. APAGAR LOTE NO SUPABASE
     async function deleteSpecificLot(lotId) {
       try {
-        const { error } = await supabase.from('trades').delete().eq('id', lotId);
+        const { error } = await sb.from('trades').delete().eq('id', lotId);
         if (error) throw error;
 
         await loadTradesFromSupabase();
@@ -2411,7 +2409,7 @@
       };
 
       try {
-        const { error } = await supabase.from('trades').insert([newLot]);
+        const { error } = await sb.from('trades').insert([newLot]);
         if (error) throw error;
 
         await loadTradesFromSupabase();
@@ -2430,7 +2428,7 @@
       if (!activeModalTicker) return;
       if (confirm(`Eliminar ${activeModalTicker} e todas as suas posições da base de dados?`)) {
         try {
-          const { error } = await supabase.from('trades').delete().eq('ticker', activeModalTicker);
+          const { error } = await sb.from('trades').delete().eq('ticker', activeModalTicker);
           if (error) throw error;
 
           delete livePrices[activeModalTicker];
@@ -2467,7 +2465,7 @@
       };
 
       try {
-        const { error } = await supabase.from('trades').insert([newTrade]);
+        const { error } = await sb.from('trades').insert([newTrade]);
         if (error) throw error;
 
         if (!livePrices[ticker]) livePrices[ticker] = price;
