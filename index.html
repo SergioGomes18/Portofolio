@@ -953,7 +953,7 @@
       </div>
     </div>
 
-    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) -->
+    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) COM ATH DETALHADO -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-header">
@@ -1266,10 +1266,10 @@
 
   <script>
     // ==========================================
-    // CONFIGURAÇÃO SUPABASE CONECTADA (O TEU PROJETO)
+    // CONFIGURAÇÃO SUPABASE CONECTADA (CLIENTE 'sb')
     // ==========================================
-    const SUPABASE_URL = 'https://egychgwfqqxejhktztpp.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVneWNoZ3dmcXF4ZWpoa3R6dHBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0Mjg4NzYsImV4cCI6MjEwNTAwNDg3Nn0.6YfXxT4LobZzt1OabMfJ4q0JuKVHKtgHVd6oio4VVxg';
+    const SUPABASE_URL = 'https://cnjvltqgkncqrjhwlztv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuanZsdHFna25jcXJqaHdsenR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNjU4NDcsImV4cCI6MjEwNDY0MTg0N30.Fy_8qiXwUlElmEAhCMDP6THACFr87UJvLvwZ2tTD8TY';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const ASSET_LOGOS = {
@@ -1303,7 +1303,7 @@
         { t: '09 Jul', p: 108.84 },
         { t: '15 Jul', p: 111.40 }, { t: '22 Jul', p: 114.80 }, { t: '29 Jul', p: 112.10 },
         { t: '05 Ago', p: 115.60 }, { t: '11 Ago', p: 127.40 }, { t: '18 Ago', p: 122.10 },
-        { t: '25 Ago', p: 132.80 }, { t: 'Hoje', p: 143.55 }
+        { t: '25 Ago', p: 132.80 }, { t: 'Hoje', p: 134.17 }
       ],
       'META': [
         { t: '08/04', p: 588.20 }, { t: '15/04', p: 593.40 },
@@ -1311,7 +1311,7 @@
         { t: '01/06', p: 609.65 }, { t: '15/06', p: 591.40 },
         { t: '01/07', p: 548.91 }, { t: '15/07', p: 558.70 },
         { t: '05/08', p: 584.16 }, { t: '18/08', p: 582.00 },
-        { t: '25/08', p: 598.50 }, { t: 'Hoje', p: 669.91 }
+        { t: '25/08', p: 598.50 }, { t: 'Hoje', p: 616.77 }
       ],
       'MSFT': [
         { t: '01/06', p: 415.07 }, { t: '15/06', p: 422.40 },
@@ -2140,29 +2140,25 @@
     // ============================================================
     // CÁLCULO E RASTREAMENTO DETALHADO DO ALL-TIME HIGH (VALORIZAÇÃO)
     // ============================================================
-    function trackAndRenderATH(currentROI, totalPLEUR, currentValEUR) {
+    function trackAndRenderATH(currentROI, totalPLEUR) {
       const STORAGE_KEY_ROI = 'portfolio_ath_peak_roi';
       const STORAGE_KEY_PROFIT = 'portfolio_ath_peak_profit';
-      const STORAGE_KEY_VAL = 'portfolio_ath_peak_val';
       const STORAGE_KEY_DATE = 'portfolio_ath_peak_date';
 
       let storedATHRoi = parseFloat(localStorage.getItem(STORAGE_KEY_ROI) || '0');
       let storedATHProfit = parseFloat(localStorage.getItem(STORAGE_KEY_PROFIT) || '0');
-      let storedATHVal = parseFloat(localStorage.getItem(STORAGE_KEY_VAL) || '0');
       let storedATHDate = localStorage.getItem(STORAGE_KEY_DATE) || '';
 
       const todayStr = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
-      // Atualiza se for novo recorde OU se o valor monetário ainda estava a zero
-      if (currentROI > storedATHRoi || (currentROI > 0 && storedATHProfit === 0)) {
+      // Se a valorização percentual atual ultrapassar o pico registado, guarda o novo recorde
+      if (currentROI > storedATHRoi || storedATHRoi === 0) {
         storedATHRoi = currentROI;
         storedATHProfit = totalPLEUR;
-        storedATHVal = currentValEUR;
         storedATHDate = todayStr;
 
         localStorage.setItem(STORAGE_KEY_ROI, storedATHRoi.toString());
         localStorage.setItem(STORAGE_KEY_PROFIT, storedATHProfit.toString());
-        localStorage.setItem(STORAGE_KEY_VAL, storedATHVal.toString());
         localStorage.setItem(STORAGE_KEY_DATE, storedATHDate);
       }
 
@@ -2174,7 +2170,7 @@
         athValEl.innerText = `+${storedATHRoi.toFixed(2)}%`;
       }
 
-      // Drawdown relativo face ao topo percentual
+      // Drawdown relativo em percentagem face ao pico
       const drawdown = currentROI - storedATHRoi;
 
       if (athDrawdownEl) {
@@ -2186,7 +2182,7 @@
       }
 
       if (athProfitEl) {
-        athProfitEl.innerText = `Lucro: +€${storedATHProfit.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • ${storedATHDate || todayStr}`;
+        athProfitEl.innerText = `Pico: +€${storedATHProfit.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • ${storedATHDate || todayStr}`;
       }
     }
 
@@ -2243,8 +2239,8 @@
 
       document.getElementById('kpiHoldingsCount').innerText = Object.keys(summary).length;
 
-      // Atualiza o monitor de ATH da carteira com o lucro e o valor atual
-      trackAndRenderATH(totalROI, totalPLEUR, totalValEUR);
+      // Executa o cálculo e exibição do ATH detalhado
+      trackAndRenderATH(totalROI, totalPLEUR);
 
       renderAggregatedTradingViewChart();
 
