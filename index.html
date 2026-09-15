@@ -269,15 +269,13 @@
       display: flex;
     }
 
-    /* KPI GRID */
+    /* KPI GRID COM O CARD ATH */
     .kpi-grid {
       display: grid;
-      grid-template-columns: 1.4fr 1.3fr 1.1fr 1fr 0.8fr;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 14px;
       margin-bottom: 24px;
     }
-    @media (max-width: 960px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 600px) { .kpi-grid { grid-template-columns: 1fr; } }
 
     .kpi-card {
       background: var(--bg-surface);
@@ -322,6 +320,13 @@
       letter-spacing: -0.4px;
       font-variant-numeric: tabular-nums;
       color: #f8fafc;
+    }
+    .kpi-sub {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
     }
 
     /* GRÁFICO AGREGADO TRADINGVIEW */
@@ -948,7 +953,7 @@
       </div>
     </div>
 
-    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) -->
+    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) COM ATH -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-header">
@@ -988,6 +993,18 @@
           </div>
         </div>
         <div class="kpi-val" id="kpiReturnPct">0.00%</div>
+      </div>
+
+      <!-- NOVO CARD: ALL-TIME HIGH (ATH) DA CARTEIRA -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">All-Time High (Peak)</span>
+          <div class="kpi-icon" style="color: #f59e0b;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1h10v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M6 9v3a6 6 0 0 0 12 0V9"/></svg>
+          </div>
+        </div>
+        <div class="kpi-val" id="kpiAthVal" style="color:#38bdf8;">+0.00%</div>
+        <div class="kpi-sub" id="kpiAthDist">Distância: 0.00% do topo</div>
       </div>
 
       <div class="kpi-card">
@@ -2119,6 +2136,38 @@
       document.getElementById('overlapAlert').innerText = `Top 2 Ativos = ${top2CombinedPct.toFixed(1)}% da Carteira`;
     }
 
+    // ============================================================
+    // CÁLCULO E RASTREAMENTO DO ALL-TIME HIGH (VALORIZAÇÃO PURA)
+    // ============================================================
+    function trackAndRenderATH(currentROI) {
+      const STORAGE_KEY = 'portfolio_ath_peak_roi';
+      let storedATH = parseFloat(localStorage.getItem(STORAGE_KEY) || '0');
+
+      // Se o retorno atual for superior ao recorde anterior, guarda o novo pico orgânico
+      if (currentROI > storedATH) {
+        storedATH = currentROI;
+        localStorage.setItem(STORAGE_KEY, storedATH.toString());
+      }
+
+      const athEl = document.getElementById('kpiAthVal');
+      const athDistEl = document.getElementById('kpiAthDist');
+
+      if (athEl) {
+        athEl.innerText = `+${storedATH.toFixed(2)}%`;
+      }
+
+      if (athDistEl) {
+        const diffToATH = currentROI - storedATH;
+        if (diffToATH >= -0.01) {
+          athDistEl.innerText = '🔥 Novo Pico Atingido!';
+          athDistEl.style.color = 'var(--tv-green)';
+        } else {
+          athDistEl.innerText = `Distância: ${diffToATH.toFixed(2)}% do topo`;
+          athDistEl.style.color = 'var(--tv-red)';
+        }
+      }
+    }
+
     function renderDashboard() {
       const fx = eurUsdRate;
       const summary = {};
@@ -2171,6 +2220,9 @@
       roiEl.style.color = totalPLEUR >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
 
       document.getElementById('kpiHoldingsCount').innerText = Object.keys(summary).length;
+
+      // Atualiza o monitor de ATH da carteira
+      trackAndRenderATH(totalROI);
 
       renderAggregatedTradingViewChart();
 
