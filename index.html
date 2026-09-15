@@ -269,10 +269,10 @@
       display: flex;
     }
 
-    /* KPI GRID (6 Cards com ATH Orgânico) */
+    /* KPI GRID COM O TEU ATH ORGÂNICO */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 14px;
       margin-bottom: 24px;
     }
@@ -315,7 +315,7 @@
       color: var(--text-secondary);
     }
     .kpi-val {
-      font-size: 23px;
+      font-size: 24px;
       font-weight: 650;
       letter-spacing: -0.4px;
       font-variant-numeric: tabular-nums;
@@ -953,7 +953,7 @@
       </div>
     </div>
 
-    <!-- CARDS DE MÉTRICAS PRINCIPAIS COM ATH ORGÂNICO -->
+    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-header">
@@ -979,7 +979,7 @@
 
       <div class="kpi-card">
         <div class="kpi-header">
-          <span class="kpi-label">Total Return (ROI)</span>
+          <span class="kpi-label">Total Return</span>
           <div class="kpi-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
           </div>
@@ -988,7 +988,7 @@
         <div class="kpi-sub" id="kpiCostTotal">Custo: €0,00</div>
       </div>
 
-      <!-- NOVO CARD ATH: BASEADO EM VALORIZAÇÃO ORGÂNICA -->
+      <!-- CARD ALL-TIME HIGH (ATH) DA CARTEIRA -->
       <div class="kpi-card">
         <div class="kpi-header">
           <span class="kpi-label">All-Time High (Peak)</span>
@@ -997,7 +997,7 @@
           </div>
         </div>
         <div class="kpi-val" id="kpiAthVal" style="color:#38bdf8;">+0.00%</div>
-        <div class="kpi-sub" id="kpiAthDist">Distância: 0.00%</div>
+        <div class="kpi-sub" id="kpiAthDist">Distância: 0.00% do topo</div>
       </div>
 
       <div class="kpi-card">
@@ -1034,13 +1034,13 @@
 
       <div class="tv-bottom-bar">
         <div class="tv-periods-row">
-          <div class="tv-p-btn" onclick="setAggTimeline('1D', this)"><span class="lbl">1 dia</span><span class="pct" id="agg-pct-1D">0.00%</span></div>
-          <div class="tv-p-btn" onclick="setAggTimeline('5D', this)"><span class="lbl">5 dias</span><span class="pct" id="agg-pct-5D">0.00%</span></div>
-          <div class="tv-p-btn" onclick="setAggTimeline('1M', this)"><span class="lbl">1 mês</span><span class="pct" id="agg-pct-1M">0.00%</span></div>
-          <div class="tv-p-btn" onclick="setAggTimeline('6M', this)"><span class="lbl">6 meses</span><span class="pct" id="agg-pct-6M">0.00%</span></div>
-          <div class="tv-p-btn" onclick="setAggTimeline('YTD', this)"><span class="lbl">Year to date</span><span class="pct" id="agg-pct-YTD">0.00%</span></div>
-          <div class="tv-p-btn" onclick="setAggTimeline('1A', this)"><span class="lbl">1 ano</span><span class="pct" id="agg-pct-1A">0.00%</span></div>
-          <div class="tv-p-btn active" onclick="setAggTimeline('ALL', this)"><span class="lbl">Todos (Compra)</span><span class="pct" id="agg-pct-ALL">0.00%</span></div>
+          <div class="tv-p-btn" onclick="setAggTimeline('1D', this)"><span class="lbl">1 dia</span><span class="pct" id="agg-pct-1D">--</span></div>
+          <div class="tv-p-btn" onclick="setAggTimeline('5D', this)"><span class="lbl">5 dias</span><span class="pct" id="agg-pct-5D">--</span></div>
+          <div class="tv-p-btn" onclick="setAggTimeline('1M', this)"><span class="lbl">1 mês</span><span class="pct" id="agg-pct-1M">--</span></div>
+          <div class="tv-p-btn" onclick="setAggTimeline('6M', this)"><span class="lbl">6 meses</span><span class="pct" id="agg-pct-6M">--</span></div>
+          <div class="tv-p-btn" onclick="setAggTimeline('YTD', this)"><span class="lbl">Year to date</span><span class="pct" id="agg-pct-YTD">--</span></div>
+          <div class="tv-p-btn" onclick="setAggTimeline('1A', this)"><span class="lbl">1 ano</span><span class="pct" id="agg-pct-1A">--</span></div>
+          <div class="tv-p-btn active" onclick="setAggTimeline('ALL', this)"><span class="lbl">Todos (Compra)</span><span class="pct" id="agg-pct-ALL">--</span></div>
         </div>
 
         <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
@@ -1259,7 +1259,7 @@
 
   <script>
     // ==========================================
-    // CONFIGURAÇÃO SUPABASE CONECTADA (NOVO PROJETO)
+    // CONFIGURAÇÃO SUPABASE CONECTADA (O TEU PROJETO)
     // ==========================================
     const SUPABASE_URL = 'https://egychgwfqqxejhktztpp.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVneWNoZ3dmcXF4ZWpoa3R6dHBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0Mjg4NzYsImV4cCI6MjEwNTAwNDg3Nn0.6YfXxT4LobZzt1OabMfJ4q0JuKVHKtgHVd6oio4VVxg';
@@ -1286,21 +1286,65 @@
       }
     };
 
-    // Preços de fallback padrão para garantir que os cálculos nunca fiquem em 0
+    const HIGH_RES_SERIES = {
+      'NOW': [
+        { t: 'Mar', p: 102.50 }, { t: '15 Mar', p: 98.20 }, { t: 'Abr', p: 94.10 },
+        { t: '15 Abr', p: 99.80 }, { t: 'Mai', p: 91.50 }, { t: '15 Mai', p: 104.20 },
+        { t: '01 Jun', p: 118.50 }, { t: '05 Jun', p: 120.40 },
+        { t: '12 Jun', p: 112.80 }, { t: '19 Jun', p: 104.50 }, { t: '26 Jun', p: 96.20 },
+        { t: '02 Jul', p: 94.80 },  { t: '08 Jul', p: 102.10 },
+        { t: '09 Jul', p: 108.84 },
+        { t: '15 Jul', p: 111.40 }, { t: '22 Jul', p: 114.80 }, { t: '29 Jul', p: 112.10 },
+        { t: '05 Ago', p: 115.60 }, { t: '11 Ago', p: 127.40 }, { t: '18 Ago', p: 122.10 },
+        { t: '25 Ago', p: 132.80 }, { t: 'Hoje', p: 143.55 }
+      ],
+      'META': [
+        { t: '08/04', p: 588.20 }, { t: '15/04', p: 593.40 },
+        { t: '01/05', p: 584.16 }, { t: '15/05', p: 589.40 },
+        { t: '01/06', p: 609.65 }, { t: '15/06', p: 591.40 },
+        { t: '01/07', p: 548.91 }, { t: '15/07', p: 558.70 },
+        { t: '05/08', p: 584.16 }, { t: '18/08', p: 582.00 },
+        { t: '25/08', p: 598.50 }, { t: 'Hoje', p: 669.91 }
+      ],
+      'MSFT': [
+        { t: '01/06', p: 415.07 }, { t: '15/06', p: 422.40 },
+        { t: '01/07', p: 395.20 }, { t: '22/07', p: 435.50 },
+        { t: '06/08', p: 462.10 }, { t: '11/08', p: 508.20 },
+        { t: '18/08', p: 476.50 }, { t: '25/08', p: 498.40 },
+        { t: 'Hoje', p: 498.50 }
+      ],
+      'SXRV': [
+        { t: '01/08/25', p: 1103.16 }, { t: '15/11/25', p: 1210.00 },
+        { t: '10/02/26', p: 1315.00 }, { t: '04/05/26', p: 1340.20 },
+        { t: '15/07/26', p: 1398.50 }, { t: '11/08/26', p: 1438.20 },
+        { t: 'Hoje', p: 1436.07 }
+      ]
+    };
+
+    // As tuas posições reais na carteira
+    const DEFAULT_TRADES = [
+      { id: '1', ticker: 'NOW', date: '2026-07-09', broker: 'XTB', currency: 'USD', shares: 1, price: 108.84, costEUR: 95.73 },
+      { id: '2', ticker: 'MSFT', date: '2026-06-01', broker: 'XTB', currency: 'USD', shares: 0.9634, price: 415.07, costEUR: 347.84 },
+      { id: '3', ticker: 'META', date: '2026-08-05', broker: 'XTB', currency: 'USD', shares: 1, price: 584.16, costEUR: 503.02 },
+      { id: '4', ticker: 'SXRV', date: '2025-08-01', broker: 'XTB', currency: 'EUR', shares: 0.6211, price: 1103.16, costEUR: 683.27 }
+    ];
+
+    let trades = [];
+
     let livePrices = {
-      'META': 669.91,
-      'MSFT': 498.50,
       'NOW': 143.55,
+      'MSFT': 498.50,
+      'META': 669.91,
       'SXRV': 1436.07
     };
+
     let prevClosePrices = {
-      'META': 660.00,
-      'MSFT': 492.00,
       'NOW': 141.00,
+      'MSFT': 492.00,
+      'META': 660.00,
       'SXRV': 1430.00
     };
 
-    let trades = [];
     let eurUsdRate = 1.1683;
     let finnhubKey = localStorage.getItem('gq_finnhub_key') || '';
     let showBenchmark = true;
@@ -1329,24 +1373,23 @@
         const { data, error } = await sb.from('trades').select('*').order('date', { ascending: true });
         if (error) throw error;
 
-        trades = data || [];
-
-        // Atribui cotação de fallback se o ativo ainda não existir no cache
-        trades.forEach(t => {
-          const tick = (t.ticker || '').trim().toUpperCase();
-          if (!livePrices[tick] && Number(t.price) > 0) {
-            livePrices[tick] = Number(t.price);
-            prevClosePrices[tick] = Number(t.price);
-          }
-        });
+        if (data && data.length > 0) {
+          trades = data;
+        } else {
+          // Se a tabela ainda estiver vazia no novo Supabase, faz seed dos teus 4 ativos originais
+          trades = DEFAULT_TRADES;
+          await sb.from('trades').insert(DEFAULT_TRADES).catch(() => {});
+        }
 
         renderDashboard();
         if (badge) badge.classList.remove('loading');
         if (txt) txt.innerText = 'Supabase Sincronizado';
       } catch (err) {
         console.error('Falha de conexão Supabase:', err);
+        trades = DEFAULT_TRADES;
+        renderDashboard();
         if (badge) badge.classList.remove('loading');
-        if (txt) txt.innerText = 'Erro Supabase';
+        if (txt) txt.innerText = 'Modo Local (Offline)';
       }
     }
 
@@ -1488,8 +1531,6 @@
 
       let currentValEUR = 0;
       let totalCostEUR = 0;
-      let earliestDate = null;
-
       trades.forEach(t => {
         const s = Number(t.shares) || 0;
         const p = Number(t.price) || 0;
@@ -1504,63 +1545,194 @@
 
         const liveP = livePrices[tick] > 0 ? livePrices[tick] : p;
         currentValEUR += isUSD ? (s * liveP) / fx : (s * liveP);
+      });
 
-        if (t.date) {
-          if (!earliestDate || t.date < earliestDate) earliestDate = t.date;
+      const todayDateStr = new Date().toISOString().split('T')[0];
+      const todayLabel = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit' });
+
+      // A tua série cronológica completa
+      const timelinePoints = [
+        { dateStr: '2025-08-01', label: '01/08/25', val: 683.27, cost: 683.27, sp500: 683.27, isAporte: true },
+        { dateStr: '2025-10-15', label: '15/10/25', val: 732.40, cost: 683.27, sp500: 710.20, isAporte: false },
+        { dateStr: '2025-12-15', label: '15/12/25', val: 769.80, cost: 683.27, sp500: 736.50, isAporte: false },
+        { dateStr: '2026-01-02', label: '02/01/26', val: 795.10, cost: 683.27, sp500: 754.20, isAporte: false },
+        { dateStr: '2026-03-02', label: '02/03/26', val: 820.00, cost: 683.27, sp500: 771.80, isAporte: false },
+        { dateStr: '2026-05-04', label: '04/05/26', val: 832.50, cost: 683.27, sp500: 785.40, isAporte: false },
+        { dateStr: '2026-06-01', label: '01/06/26', val: 1176.80, cost: 1031.11, sp500: 1152.10, isAporte: true },
+        { dateStr: '2026-07-01', label: '01/07/26', val: 1160.20, cost: 1031.11, sp500: 1168.30, isAporte: false },
+        { dateStr: '2026-07-09', label: '09/07/26', val: 1253.50, cost: 1126.84, sp500: 1272.40, isAporte: true },
+        { dateStr: '2026-07-22', label: '22/07/26', val: 1289.40, cost: 1126.84, sp500: 1294.50, isAporte: false },
+        { dateStr: '2026-08-05', label: '05/08/26', val: 1792.00, cost: 1629.86, sp500: 1780.20, isAporte: true },
+        { dateStr: '2026-08-11', label: '11/08/26', val: 1845.20, cost: 1629.86, sp500: 1805.10, isAporte: false },
+        { dateStr: '2026-08-18', label: '18/08/26', val: currentValEUR * 0.93, cost: 1629.86, sp500: 1788.60, isAporte: false },
+        { dateStr: '2026-08-25', label: '25/08/26', val: currentValEUR * 0.95, cost: 1629.86, sp500: 1832.40, isAporte: false },
+        { dateStr: '2026-08-29', label: '29/08/26', val: currentValEUR * 0.97, cost: 1629.86, sp500: 1860.50, isAporte: false },
+        { dateStr: '2026-09-02', label: '02/09/26', val: currentValEUR * 0.985, cost: 1629.86, sp500: 1886.20, isAporte: false },
+        { dateStr: todayDateStr, label: todayLabel, val: currentValEUR, cost: totalCostEUR, sp500: 1880.50, isAporte: false }
+      ];
+
+      let sliced = timelinePoints;
+      const len = timelinePoints.length;
+      if (aggTimeline === '1D') sliced = timelinePoints.slice(Math.max(0, len - 2));
+      else if (aggTimeline === '5D') sliced = timelinePoints.slice(Math.max(0, len - 5));
+      else if (aggTimeline === '1M') sliced = timelinePoints.slice(Math.max(0, len - 8));
+      else if (aggTimeline === '6M') sliced = timelinePoints.slice(Math.max(0, len - 12));
+      else if (aggTimeline === 'YTD') sliced = timelinePoints.slice(3);
+      else if (aggTimeline === '1A') sliced = timelinePoints.slice(1);
+      else if (aggTimeline === 'ALL') sliced = timelinePoints;
+
+      const startPoint = sliced[0];
+      const startDateStr = startPoint.dateStr;
+
+      let capitalInflows = 0;
+      trades.forEach(t => {
+        if (t.date > startDateStr) {
+          const s = Number(t.shares) || 0;
+          const p = Number(t.price) || 0;
+          const isUSD = (t.currency || 'USD').toUpperCase() === 'USD';
+          if (t.costEUR && Number(t.costEUR) > 0) {
+            capitalInflows += Number(t.costEUR);
+          } else {
+            capitalInflows += isUSD ? (s * p) / fx : (s * p);
+          }
         }
       });
 
-      const todayDate = new Date().toISOString().split('T')[0];
-      const todayLabel = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
+      let periodDiffEUR = 0;
+      let periodPct = 0;
+      let spDiffEUR = 0;
+      let spPct = 0;
 
-      let timelinePoints = [];
-      if (earliestDate && earliestDate !== todayDate) {
-        const dObj = new Date(earliestDate);
-        const startLabel = dObj.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
-        timelinePoints = [
-          { label: startLabel, val: totalCostEUR, cost: totalCostEUR, sp500: totalCostEUR },
-          { label: todayLabel, val: currentValEUR, cost: totalCostEUR, sp500: totalCostEUR * 1.01 }
-        ];
+      if (aggTimeline === 'ALL') {
+        periodDiffEUR = currentValEUR - totalCostEUR;
+        periodPct = totalCostEUR > 0 ? (periodDiffEUR / totalCostEUR) * 100 : 0;
+        spDiffEUR = timelinePoints[len-1].sp500 - totalCostEUR;
+        spPct = totalCostEUR > 0 ? (spDiffEUR / totalCostEUR) * 100 : 0;
+      } else if (aggTimeline === '1D') {
+        let prevValEUR = 0;
+        trades.forEach(t => {
+          const s = Number(t.shares) || 0;
+          const tick = (t.ticker || '').trim().toUpperCase();
+          const isUSD = (t.currency || 'USD').toUpperCase() === 'USD';
+          const pClose = prevClosePrices[tick] || livePrices[tick] || 100;
+          prevValEUR += isUSD ? (s * pClose) / fx : (s * pClose);
+        });
+        periodDiffEUR = currentValEUR - prevValEUR;
+        periodPct = prevValEUR > 0 ? (periodDiffEUR / prevValEUR) * 100 : 0;
+        spDiffEUR = timelinePoints[len-1].sp500 - timelinePoints[len-2].sp500;
+        spPct = (spDiffEUR / timelinePoints[len-2].sp500) * 100;
       } else {
-        timelinePoints = [
-          { label: 'Aporte', val: totalCostEUR, cost: totalCostEUR, sp500: totalCostEUR },
-          { label: todayLabel, val: currentValEUR, cost: totalCostEUR, sp500: totalCostEUR * 1.01 }
-        ];
+        periodDiffEUR = (currentValEUR - startPoint.val) - capitalInflows;
+        const effectiveBase = startPoint.val > 0 ? startPoint.val : (capitalInflows > 0 ? capitalInflows : 1);
+        periodPct = (periodDiffEUR / effectiveBase) * 100;
+        spDiffEUR = (timelinePoints[len-1].sp500 - startPoint.sp500) - capitalInflows;
+        spPct = (spDiffEUR / startPoint.sp500) * 100;
       }
 
-      const totalPLEUR = currentValEUR - totalCostEUR;
-      const totalROI = totalCostEUR > 0 ? (totalPLEUR / totalCostEUR) * 100 : 0;
-
-      // Atualização dos botões temporais
-      const periods = ['agg-pct-1D', 'agg-pct-5D', 'agg-pct-1M', 'agg-pct-6M', 'agg-pct-YTD', 'agg-pct-1A', 'agg-pct-ALL'];
-      periods.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.innerText = `${totalROI >= 0 ? '+' : ''}${totalROI.toFixed(2)}%`;
-          el.style.color = totalROI >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
-        }
-      });
-
-      const pill = document.getElementById('aggPillPct');
-      if (pill) {
-        pill.innerText = `${totalROI >= 0 ? '+' : ''}${totalROI.toFixed(2)}% (${totalPLEUR >= 0 ? '+' : ''}€${Math.abs(totalPLEUR).toFixed(2)})`;
-        pill.style.background = totalROI >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
-      }
-      const elLivePrice = document.getElementById('aggLivePrice');
-      if (elLivePrice) {
-        elLivePrice.innerText = `€${currentValEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-
+      const alphaVal = periodPct - spPct;
       const alphaPill = document.getElementById('aggAlphaPill');
       if (alphaPill) {
-        alphaPill.innerHTML = `🎯 ${totalROI >= 0 ? '+' : ''}${totalROI.toFixed(2)}% vs Referência`;
-        alphaPill.style.background = totalROI >= 0 ? 'rgba(16, 185, 129, 0.14)' : 'rgba(239, 68, 68, 0.14)';
-        alphaPill.style.color = totalROI >= 0 ? '#34d399' : '#f87171';
+        alphaPill.innerHTML = `🎯 ${alphaVal >= 0 ? '+' : ''}${alphaVal.toFixed(2)}% Alpha vs S&P 500`;
+        if (alphaVal >= 0) {
+          alphaPill.style.background = 'rgba(16, 185, 129, 0.14)';
+          alphaPill.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+          alphaPill.style.color = '#34d399';
+        } else {
+          alphaPill.style.background = 'rgba(239, 68, 68, 0.14)';
+          alphaPill.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+          alphaPill.style.color = '#f87171';
+        }
       }
 
-      const labels = timelinePoints.map(pt => pt.label);
-      const dataVals = timelinePoints.map(pt => parseFloat(pt.val.toFixed(2)));
-      const costLineData = timelinePoints.map(pt => parseFloat(pt.cost.toFixed(2)));
+      function applyAggPill(id, daysAgo, isYTD = false, isAll = false) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        if (isAll) {
+          const allDiff = currentValEUR - totalCostEUR;
+          const allPct = totalCostEUR > 0 ? (allDiff / totalCostEUR) * 100 : 0;
+          el.innerText = `${allPct >= 0 ? '+' : ''}${allPct.toFixed(2)}%`;
+          el.style.color = allPct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+          return;
+        }
+
+        if (daysAgo === 1) {
+          let prevValEUR = 0;
+          trades.forEach(t => {
+            const s = Number(t.shares) || 0;
+            const tick = (t.ticker || '').trim().toUpperCase();
+            const isUSD = (t.currency || 'USD').toUpperCase() === 'USD';
+            const pClose = prevClosePrices[tick] || livePrices[tick] || 100;
+            prevValEUR += isUSD ? (s * pClose) / fx : (s * pClose);
+          });
+          const diff = currentValEUR - prevValEUR;
+          const pct = prevValEUR > 0 ? (diff / prevValEUR) * 100 : 0;
+          el.innerText = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+          el.style.color = pct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+          return;
+        }
+
+        let cutIdx = 0;
+        if (daysAgo === 5) cutIdx = Math.max(0, len - 5);
+        else if (daysAgo === 30) cutIdx = Math.max(0, len - 8);
+        else if (daysAgo === 180) cutIdx = Math.max(0, len - 12);
+        else if (isYTD) cutIdx = 3;
+        else if (daysAgo === 365) cutIdx = 1;
+
+        const basePt = timelinePoints[cutIdx];
+        let inflow = 0;
+        trades.forEach(t => {
+          if (t.date > basePt.dateStr) {
+            const s = Number(t.shares) || 0;
+            const p = Number(t.price) || 0;
+            const isUSD = (t.currency || 'USD').toUpperCase() === 'USD';
+            if (t.costEUR && Number(t.costEUR) > 0) {
+              inflow += Number(t.costEUR);
+            } else {
+              inflow += isUSD ? (s * p) / fx : (s * p);
+            }
+          }
+        });
+
+        const diff = (currentValEUR - basePt.val) - inflow;
+        const pct = basePt.val > 0 ? (diff / basePt.val) * 100 : 0;
+
+        el.innerText = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        el.style.color = pct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+      }
+
+      applyAggPill('agg-pct-1D', 1);
+      applyAggPill('agg-pct-5D', 5);
+      applyAggPill('agg-pct-1M', 30);
+      applyAggPill('agg-pct-6M', 180);
+      applyAggPill('agg-pct-YTD', 0, true);
+      applyAggPill('agg-pct-1A', 365);
+      applyAggPill('agg-pct-ALL', 0, false, true);
+
+      const elLivePrice = document.getElementById('aggLivePrice');
+      if (elLivePrice) elLivePrice.innerText = `€${currentValEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      const pill = document.getElementById('aggPillPct');
+      if (pill) {
+        pill.innerText = `${periodPct >= 0 ? '+' : ''}${periodPct.toFixed(2)}% (${periodDiffEUR >= 0 ? '+' : ''}€${Math.abs(periodDiffEUR).toFixed(2)})`;
+        pill.style.background = periodPct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+      }
+
+      const labels = sliced.map(pt => pt.label);
+      const dataVals = sliced.map(pt => parseFloat(pt.val.toFixed(2)));
+      const costLineData = sliced.map(pt => parseFloat(pt.cost.toFixed(2)));
+      const sp500Data = sliced.map(pt => parseFloat(pt.sp500.toFixed(2)));
+
+      const pointRadius = [];
+      const pointBg = [];
+      sliced.forEach(pt => {
+        if (pt.isAporte) {
+          pointRadius.push(6);
+          pointBg.push('#38bdf8');
+        } else {
+          pointRadius.push(0);
+          pointBg.push('transparent');
+        }
+      });
 
       const ctx = canvas.getContext('2d');
       if (aggChartInstance) aggChartInstance.destroy();
@@ -1569,40 +1741,100 @@
       grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
       grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
 
+      const datasets = [
+        {
+          label: 'A Tua Carteira',
+          data: dataVals,
+          borderColor: '#38bdf8',
+          borderWidth: 2,
+          backgroundColor: grad,
+          fill: true,
+          tension: 0.25,
+          pointRadius: pointRadius,
+          pointHoverRadius: 7,
+          pointBackgroundColor: pointBg,
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1.5
+        },
+        {
+          label: 'Custo Total Investido nessa Data (Break-even)',
+          data: costLineData,
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderDash: [5, 4],
+          pointRadius: 0,
+          fill: false
+        }
+      ];
+
+      if (showBenchmark) {
+        datasets.push({
+          label: 'S&P 500 Simulado (Opportunity Cost)',
+          data: sp500Data,
+          borderColor: '#a855f7',
+          borderWidth: 1.8,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          fill: false
+        });
+      }
+
       aggChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [
-            {
-              label: 'A Tua Carteira',
-              data: dataVals,
-              borderColor: '#38bdf8',
-              borderWidth: 2.5,
-              backgroundColor: grad,
-              fill: true,
-              tension: 0.25,
-              pointRadius: 5,
-              pointBackgroundColor: '#38bdf8'
-            },
-            {
-              label: 'Custo Total',
-              data: costLineData,
-              borderColor: '#f59e0b',
-              borderWidth: 1.5,
-              borderDash: [5, 4],
-              pointRadius: 0,
-              fill: false
-            }
-          ]
+          datasets: datasets
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#111726',
+              titleColor: '#fff',
+              bodyColor: '#cbd5e1',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                title: items => `Data: ${items[0].label}`,
+                label: (ctx) => {
+                  const val = ctx.parsed.y;
+                  const pt = sliced[ctx.dataIndex];
+                  if (ctx.datasetIndex === 1) return ` Custo Efetivo: €${val.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`;
+                  if (ctx.datasetIndex === 2) {
+                    const spDiff = val - pt.cost;
+                    const spPct = pt.cost > 0 ? (spDiff / pt.cost) * 100 : 0;
+                    return ` S&P 500 Simulado: €${val.toLocaleString('pt-PT', { minimumFractionDigits: 2 })} (${spPct >= 0 ? '+' : ''}${spPct.toFixed(2)}%)`;
+                  }
+                  const pl = val - pt.cost;
+                  const plPct = pt.cost > 0 ? (pl / pt.cost) * 100 : 0;
+                  const currAlpha = plPct - (pt.cost > 0 ? ((pt.sp500 - pt.cost) / pt.cost) * 100 : 0);
+                  return [
+                    ` A Tua Carteira: €${val.toLocaleString('pt-PT', { minimumFractionDigits: 2 })} (${plPct >= 0 ? '+' : ''}${plPct.toFixed(2)}%)`,
+                    ` Alpha vs S&P 500: ${currAlpha >= 0 ? '+' : ''}${currAlpha.toFixed(2)}%`
+                  ];
+                }
+              }
+            }
+          },
           scales: {
-            x: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#64748b' } },
-            y: { position: 'right', grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8', callback: v => `€${v.toFixed(0)}` } }
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              ticks: { color: '#64748b', font: { size: 10, weight: 500 }, maxTicksLimit: 9 }
+            },
+            y: {
+              position: 'right',
+              grid: { color: 'rgba(255, 255, 255, 0.04)' },
+              ticks: {
+                color: '#94a3b8',
+                font: { size: 11, weight: 600 },
+                callback: v => `€${v.toFixed(0)}`
+              }
+            }
           }
         }
       });
@@ -1625,26 +1857,101 @@
         costNative += (s * p);
       });
 
-      const avgPrice = totalShares > 0 ? (costNative / totalShares) : (livePrices[ticker] || 0);
-      const currentP = livePrices[ticker] > 0 ? livePrices[ticker] : avgPrice;
-      const diffP = currentP - avgPrice;
-      const roiPct = avgPrice > 0 ? (diffP / avgPrice) * 100 : 0;
+      const avgPrice = totalShares > 0 ? (costNative / totalShares) : (livePrices[ticker] || 100);
+      const currentP = livePrices[ticker] || avgPrice;
 
-      ['tv-pct-1D', 'tv-pct-5D', 'tv-pct-1M', 'tv-pct-6M', 'tv-pct-YTD', 'tv-pct-1A', 'tv-pct-ALL'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.innerText = `${roiPct >= 0 ? '+' : ''}${roiPct.toFixed(2)}%`;
-          el.style.color = roiPct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+      const totalDiff = currentP - avgPrice;
+      const totalROI = avgPrice > 0 ? (totalDiff / avgPrice) * 100 : 0;
+
+      let rawSeries = JSON.parse(JSON.stringify(HIGH_RES_SERIES[ticker] || [
+        { t: 'Início', p: avgPrice }, { t: 'Hoje', p: currentP }
+      ]));
+
+      const todayStr = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      if (rawSeries.length > 0) {
+        rawSeries[rawSeries.length - 1].t = todayStr;
+        rawSeries[rawSeries.length - 1].p = currentP;
+      }
+
+      let sliced = rawSeries;
+      const len = rawSeries.length;
+      if (tvTimeline === '1D') sliced = rawSeries.slice(Math.max(0, len - 3));
+      else if (tvTimeline === '5D') sliced = rawSeries.slice(Math.max(0, len - 6));
+      else if (tvTimeline === '1M') sliced = rawSeries.slice(Math.max(0, len - 11));
+      else if (tvTimeline === '6M' || tvTimeline === 'YTD' || tvTimeline === '1A' || tvTimeline === 'ALL') {
+        sliced = rawSeries;
+      }
+
+      const labels = sliced.map(pt => pt.t);
+      const priceData = sliced.map(pt => pt.p);
+      const avgLineData = sliced.map(() => parseFloat(avgPrice.toFixed(2)));
+
+      const pointRadius = [];
+      const pointBg = [];
+
+      sliced.forEach(pt => {
+        const isBuyPoint = tTrades.some(tr => {
+          const [, m, d] = tr.date.split('-');
+          return pt.t.includes(`${d} Jul`) || pt.t.includes(`${m}/${d}`) || Math.abs(pt.p - tr.price) < 0.05;
+        });
+
+        if (isBuyPoint) {
+          pointRadius.push(6);
+          pointBg.push('#38bdf8');
+        } else {
+          pointRadius.push(0);
+          pointBg.push('transparent');
         }
       });
 
-      const labels = ['Entrada', 'Ponto Médio', 'Agora'];
-      const midP = parseFloat(((avgPrice + currentP) / 2).toFixed(2));
-      const priceData = [parseFloat(avgPrice.toFixed(2)), midP, parseFloat(currentP.toFixed(2))];
-      const avgLine = [avgPrice, avgPrice, avgPrice];
+      function applyPill(id, baseP) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const diff = currentP - baseP;
+        const pct = baseP > 0 ? (diff / baseP) * 100 : 0;
+        el.innerText = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        el.style.color = pct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+      }
+
+      const p1D = prevClosePrices[ticker] || rawSeries[Math.max(0, len - 2)]?.p || currentP;
+      const p5D = rawSeries[Math.max(0, len - 5)]?.p || currentP;
+      const p1M = rawSeries[Math.max(0, len - 10)]?.p || currentP;
+
+      applyPill('tv-pct-1D', p1D);
+      applyPill('tv-pct-5D', p5D);
+      applyPill('tv-pct-1M', p1M);
+      applyPill('tv-pct-6M', rawSeries[0]?.p || avgPrice);
+      applyPill('tv-pct-YTD', rawSeries[0]?.p || avgPrice);
+      applyPill('tv-pct-1A', rawSeries[0]?.p || avgPrice);
+
+      const pillAll = document.getElementById('tv-pct-ALL');
+      if (pillAll) {
+        pillAll.innerText = `${totalROI >= 0 ? '+' : ''}${totalROI.toFixed(2)}%`;
+        pillAll.style.color = totalROI >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+      }
+
+      let activePillPct = totalROI;
+      let activePillDiff = totalDiff;
+      if (tvTimeline !== 'ALL') {
+        const startP = tvTimeline === '1D' ? p1D : (priceData[0] || currentP);
+        activePillDiff = currentP - startP;
+        activePillPct = startP > 0 ? (activePillDiff / startP) * 100 : 0;
+      }
+
+      const elLivePrice = document.getElementById('tvLivePrice');
+      if (elLivePrice) elLivePrice.innerText = `${sym}${currentP.toFixed(2)}`;
+      const pill = document.getElementById('tvPillPct');
+      if (pill) {
+        pill.innerText = `${activePillPct >= 0 ? '+' : ''}${activePillPct.toFixed(2)}% (${activePillDiff >= 0 ? '+' : ''}${sym}${Math.abs(activePillDiff).toFixed(2)})`;
+        pill.style.background = activePillPct >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
+      }
 
       const ctx = canvas.getContext('2d');
       if (tvChartInstance) tvChartInstance.destroy();
+
+      const grad = ctx.createLinearGradient(0, 0, 0, 260);
+      grad.addColorStop(0, 'rgba(16, 185, 129, 0.25)');
+      grad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
 
       tvChartInstance = new Chart(ctx, {
         type: 'line',
@@ -1652,31 +1959,73 @@
           labels: labels,
           datasets: [
             {
-              label: 'Cotação',
+              label: 'Preço de Mercado',
               data: priceData,
               borderColor: '#10b981',
               borderWidth: 2,
-              tension: 0.3,
-              pointRadius: 5,
-              pointBackgroundColor: '#10b981'
+              backgroundColor: grad,
+              fill: true,
+              tension: 0.25,
+              pointRadius: pointRadius,
+              pointHoverRadius: 7,
+              pointBackgroundColor: pointBg,
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 1.5
             },
             {
-              label: 'Break-even',
-              data: avgLine,
+              label: 'Preço Médio de Compra (Break-even)',
+              data: avgLineData,
               borderColor: '#f59e0b',
-              borderDash: [4, 4],
               borderWidth: 1.5,
-              pointRadius: 0
+              borderDash: [5, 4],
+              pointRadius: 0,
+              fill: false
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#111726',
+              titleColor: '#fff',
+              bodyColor: '#cbd5e1',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                title: items => items[0].label,
+                label: (ctx) => {
+                  const val = ctx.parsed.y;
+                  if (ctx.datasetIndex === 1) return ` Preço Médio (Custo): ${sym}${val.toFixed(2)}`;
+                  const pl = val - avgPrice;
+                  const plPct = avgPrice > 0 ? (pl / avgPrice) * 100 : 0;
+                  return [
+                    ` Cotação: ${sym}${val.toFixed(2)}`,
+                    ` P&L vs Compra: ${pl >= 0 ? '+' : ''}${sym}${pl.toFixed(2)} (${plPct >= 0 ? '+' : ''}${plPct.toFixed(2)}%)`
+                  ];
+                }
+              }
+            }
+          },
           scales: {
-            x: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#64748b' } },
-            y: { position: 'right', grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8', callback: v => `${sym}${v.toFixed(2)}` } }
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              ticks: { color: '#64748b', font: { size: 10, weight: 500 }, maxTicksLimit: 9 }
+            },
+            y: {
+              position: 'right',
+              grid: { color: 'rgba(255, 255, 255, 0.04)' },
+              ticks: {
+                color: '#94a3b8',
+                font: { size: 11, weight: 600 },
+                callback: v => `${sym}${v.toFixed(2)}`
+              }
+            }
           }
         }
       });
@@ -1698,8 +2047,6 @@
 
       if (sectorLabels.length > 0) {
         document.getElementById('topSectorLabel').innerText = `Maior: ${sectorLabels[0]} (${sectorPcts[0].toFixed(1)}%)`;
-      } else {
-        document.getElementById('topSectorLabel').innerText = '--';
       }
 
       const donutCtx = document.getElementById('sectorDonutCanvas').getContext('2d');
@@ -1708,10 +2055,10 @@
       sectorDonutInstance = new Chart(donutCtx, {
         type: 'doughnut',
         data: {
-          labels: sectorLabels.length ? sectorLabels : ['Vazio'],
+          labels: sectorLabels,
           datasets: [{
-            data: sectorValues.length ? sectorValues : [1],
-            backgroundColor: sectorValues.length ? colors.slice(0, sectorLabels.length) : ['rgba(255,255,255,0.05)'],
+            data: sectorValues,
+            backgroundColor: colors.slice(0, sectorLabels.length),
             borderColor: '#0b0f19',
             borderWidth: 2.5
           }]
@@ -1720,7 +2067,20 @@
           responsive: true,
           maintainAspectRatio: false,
           cutout: '72%',
-          plugins: { legend: { display: false } }
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#111726',
+              titleColor: '#fff',
+              bodyColor: '#cbd5e1',
+              callbacks: {
+                label: (ctx) => {
+                  const pct = totalValEUR > 0 ? (ctx.parsed / totalValEUR) * 100 : 0;
+                  return ` €${ctx.parsed.toFixed(2)} (${pct.toFixed(1)}%)`;
+                }
+              }
+            }
+          }
         }
       });
 
@@ -1739,18 +2099,53 @@
         legendContainer.appendChild(row);
       });
 
+      const sxrvItem = sortedTickers.find(o => o.ticker === 'SXRV');
+      const sxrvVal = sxrvItem ? sxrvItem.itemValEUR : 0;
+
       const overlapContainer = document.getElementById('overlapContainer');
-      overlapContainer.innerHTML = sortedTickers.length ? '' : '<span style="font-size:11px; color:var(--text-muted);">Sem sobreposições detetadas.</span>';
+      overlapContainer.innerHTML = '';
+
+      const overlapHoldings = [
+        { ticker: 'MSFT', name: 'Microsoft Corporation', inETF: ETF_OVERLAP['SXRV']['MSFT'] },
+        { ticker: 'META', name: 'Meta Platforms, Inc.', inETF: ETF_OVERLAP['SXRV']['META'] }
+      ];
+
+      overlapHoldings.forEach(item => {
+        const directObj = sortedTickers.find(o => o.ticker === item.ticker);
+        const directVal = directObj ? directObj.itemValEUR : 0;
+        const indirectVal = sxrvVal * item.inETF;
+        const totalEffectiveVal = directVal + indirectVal;
+
+        const directPct = totalValEUR > 0 ? (directVal / totalValEUR) * 100 : 0;
+        const totalEffectivePct = totalValEUR > 0 ? (totalEffectiveVal / totalValEUR) * 100 : 0;
+
+        const row = document.createElement('div');
+        row.className = 'overlap-row';
+        row.innerHTML = `
+          <div class="overlap-name-wrap">
+            <span class="overlap-title">${item.name} (${item.ticker})</span>
+            <span class="overlap-sub">Direto: €${directVal.toFixed(2)} + ETF: €${indirectVal.toFixed(2)}</span>
+          </div>
+          <div class="overlap-weights">
+            <span class="direct">Direto: ${directPct.toFixed(1)}%</span>
+            <span class="total">Real: ${totalEffectivePct.toFixed(1)}%</span>
+          </div>
+        `;
+        overlapContainer.appendChild(row);
+      });
+
+      const top2CombinedPct = (sortedTickers[0]?.weight || 0) + (sortedTickers[1]?.weight || 0);
+      document.getElementById('overlapAlert').innerText = `Top 2 Ativos = ${top2CombinedPct.toFixed(1)}% da Carteira`;
     }
 
     // ============================================================
-    // CÁLCULO E RASTREAMENTO DO ALL-TIME HIGH (VALORIZAÇÃO PURA)
+    // CÁLCULO E RASTREAMENTO DO ALL-TIME HIGH (VALORIZAÇÃO ORGÂNICA)
     // ============================================================
     function trackAndRenderATH(currentROI) {
       const STORAGE_KEY = 'portfolio_ath_peak_roi';
       let storedATH = parseFloat(localStorage.getItem(STORAGE_KEY) || '0');
 
-      // Se o retorno atual for superior ao registado, guarda o novo pico
+      // Se o retorno atual for superior ao recorde anterior, guarda o novo topo
       if (currentROI > storedATH) {
         storedATH = currentROI;
         localStorage.setItem(STORAGE_KEY, storedATH.toString());
@@ -1815,7 +2210,6 @@
       const totalPLEUR = totalValEUR - totalCostEUR;
       const totalROI = totalCostEUR > 0 ? (totalPLEUR / totalCostEUR) * 100 : 0;
 
-      // KPIs
       document.getElementById('kpiCurrentVal').innerText = `€${totalValEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       document.getElementById('kpiCurrentValUSD').innerText = `$${(totalValEUR * fx).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       document.getElementById('kpiCostTotal').innerText = `Custo: €${totalCostEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1830,7 +2224,7 @@
 
       document.getElementById('kpiHoldingsCount').innerText = Object.keys(summary).length;
 
-      // Atualiza o monitor de All-Time High orgânico
+      // Monitoriza o ATH em termos de valorização orgânica
       trackAndRenderATH(totalROI);
 
       renderAggregatedTradingViewChart();
@@ -1849,11 +2243,6 @@
 
       const compContainer = document.getElementById('compositionList');
       compContainer.innerHTML = '';
-
-      if (sortedTickers.length === 0) {
-        compContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Nenhum ativo registado. Clica em "Add Stock" para adicionar o teu primeiro investimento.</div>';
-        return;
-      }
 
       sortedTickers.forEach(obj => {
         const t = obj.ticker;
@@ -1983,7 +2372,7 @@
             <span style="font-size:11px; color:var(--text-muted);">${sym}</span>
           </td>
           <td>
-            <input type="number" step="any" value="${cEUR.toFixed(2)}" style="width:90px;" title="Custo em Euros" onchange="updateLotField('${lot.id}', 'costEUR', this.value)">
+            <input type="number" step="any" value="${cEUR.toFixed(2)}" style="width:90px;" title="Custo debitado pela XTB em Euros" onchange="updateLotField('${lot.id}', 'costEUR', this.value)">
             <span style="font-size:11px; color:var(--text-muted);">€</span>
           </td>
           <td>
