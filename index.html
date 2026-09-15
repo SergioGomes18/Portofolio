@@ -269,7 +269,7 @@
       display: flex;
     }
 
-    /* KPI GRID COM O CARD ATH */
+    /* KPI GRID COM O CARD ATH DETALHADO */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -953,7 +953,7 @@
       </div>
     </div>
 
-    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) COM ATH -->
+    <!-- CARDS DE MÉTRICAS PRINCIPAIS (KPI GRID) COM ATH DETALHADO -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-header">
@@ -995,16 +995,17 @@
         <div class="kpi-val" id="kpiReturnPct">0.00%</div>
       </div>
 
-      <!-- NOVO CARD: ALL-TIME HIGH (ATH) DA CARTEIRA -->
-      <div class="kpi-card">
+      <!-- CARD ALL-TIME HIGH (ATH) DETALHADO -->
+      <div class="kpi-card" id="athCardContainer">
         <div class="kpi-header">
-          <span class="kpi-label">All-Time High (Peak)</span>
+          <span class="kpi-label">Portfolio ATH</span>
           <div class="kpi-icon" style="color: #f59e0b;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1h10v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M6 9v3a6 6 0 0 0 12 0V9"/></svg>
           </div>
         </div>
         <div class="kpi-val" id="kpiAthVal" style="color:#38bdf8;">+0.00%</div>
-        <div class="kpi-sub" id="kpiAthDist">Distância: 0.00% do topo</div>
+        <div class="kpi-sub" id="kpiAthDrawdown" style="font-weight: 600;">Drawdown: 0.00%</div>
+        <div class="kpi-sub" id="kpiAthProfit" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Pico: €0,00 • --/--/--</div>
       </div>
 
       <div class="kpi-card">
@@ -2137,34 +2138,51 @@
     }
 
     // ============================================================
-    // CÁLCULO E RASTREAMENTO DO ALL-TIME HIGH (VALORIZAÇÃO PURA)
+    // CÁLCULO E RASTREAMENTO DETALHADO DO ALL-TIME HIGH (VALORIZAÇÃO)
     // ============================================================
-    function trackAndRenderATH(currentROI) {
-      const STORAGE_KEY = 'portfolio_ath_peak_roi';
-      let storedATH = parseFloat(localStorage.getItem(STORAGE_KEY) || '0');
+    function trackAndRenderATH(currentROI, totalPLEUR) {
+      const STORAGE_KEY_ROI = 'portfolio_ath_peak_roi';
+      const STORAGE_KEY_PROFIT = 'portfolio_ath_peak_profit';
+      const STORAGE_KEY_DATE = 'portfolio_ath_peak_date';
 
-      // Se o retorno atual for superior ao recorde anterior, guarda o novo pico orgânico
-      if (currentROI > storedATH) {
-        storedATH = currentROI;
-        localStorage.setItem(STORAGE_KEY, storedATH.toString());
+      let storedATHRoi = parseFloat(localStorage.getItem(STORAGE_KEY_ROI) || '0');
+      let storedATHProfit = parseFloat(localStorage.getItem(STORAGE_KEY_PROFIT) || '0');
+      let storedATHDate = localStorage.getItem(STORAGE_KEY_DATE) || '';
+
+      const todayStr = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit' });
+
+      // Se a valorização percentual atual ultrapassar o pico registado, guarda o novo recorde
+      if (currentROI > storedATHRoi || storedATHRoi === 0) {
+        storedATHRoi = currentROI;
+        storedATHProfit = totalPLEUR;
+        storedATHDate = todayStr;
+
+        localStorage.setItem(STORAGE_KEY_ROI, storedATHRoi.toString());
+        localStorage.setItem(STORAGE_KEY_PROFIT, storedATHProfit.toString());
+        localStorage.setItem(STORAGE_KEY_DATE, storedATHDate);
       }
 
-      const athEl = document.getElementById('kpiAthVal');
-      const athDistEl = document.getElementById('kpiAthDist');
+      const athValEl = document.getElementById('kpiAthVal');
+      const athDrawdownEl = document.getElementById('kpiAthDrawdown');
+      const athProfitEl = document.getElementById('kpiAthProfit');
 
-      if (athEl) {
-        athEl.innerText = `+${storedATH.toFixed(2)}%`;
+      if (athValEl) {
+        athValEl.innerText = `+${storedATHRoi.toFixed(2)}%`;
       }
 
-      if (athDistEl) {
-        const diffToATH = currentROI - storedATH;
-        if (diffToATH >= -0.01) {
-          athDistEl.innerText = '🔥 Novo Pico Atingido!';
-          athDistEl.style.color = 'var(--tv-green)';
+      // Drawdown relativo em percentagem face ao pico
+      const drawdown = currentROI - storedATHRoi;
+
+      if (athDrawdownEl) {
+        if (drawdown >= -0.05) {
+          athDrawdownEl.innerHTML = `<span style="color: var(--tv-green);">🔥 No Pico Histórico</span>`;
         } else {
-          athDistEl.innerText = `Distância: ${diffToATH.toFixed(2)}% do topo`;
-          athDistEl.style.color = 'var(--tv-red)';
+          athDrawdownEl.innerHTML = `<span style="color: var(--tv-red);">Drawdown: ${drawdown.toFixed(2)}%</span>`;
         }
+      }
+
+      if (athProfitEl) {
+        athProfitEl.innerText = `Pico: +€${storedATHProfit.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • ${storedATHDate || todayStr}`;
       }
     }
 
@@ -2221,8 +2239,8 @@
 
       document.getElementById('kpiHoldingsCount').innerText = Object.keys(summary).length;
 
-      // Atualiza o monitor de ATH da carteira
-      trackAndRenderATH(totalROI);
+      // Executa o cálculo e exibição do ATH detalhado
+      trackAndRenderATH(totalROI, totalPLEUR);
 
       renderAggregatedTradingViewChart();
 
