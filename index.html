@@ -269,13 +269,15 @@
       display: flex;
     }
 
-    /* KPI GRID COM O TEU ATH ORGÂNICO */
+    /* KPI GRID */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: 1.4fr 1.3fr 1.1fr 1fr 0.8fr;
       gap: 14px;
       margin-bottom: 24px;
     }
+    @media (max-width: 960px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .kpi-grid { grid-template-columns: 1fr; } }
 
     .kpi-card {
       background: var(--bg-surface);
@@ -320,13 +322,6 @@
       letter-spacing: -0.4px;
       font-variant-numeric: tabular-nums;
       color: #f8fafc;
-    }
-    .kpi-sub {
-      font-size: 11px;
-      margin-top: 4px;
-      color: var(--text-muted);
-      font-weight: 500;
-      font-variant-numeric: tabular-nums;
     }
 
     /* GRÁFICO AGREGADO TRADINGVIEW */
@@ -963,7 +958,6 @@
           </div>
         </div>
         <div class="kpi-val" id="kpiCurrentVal">€0,00</div>
-        <div class="kpi-sub" id="kpiCurrentValUSD">$0.00</div>
       </div>
 
       <div class="kpi-card">
@@ -974,7 +968,16 @@
           </div>
         </div>
         <div class="kpi-val" id="kpiGainLoss">€0,00</div>
-        <div class="kpi-sub">Lucro Não-Realizado</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Total Cost Basis</span>
+          <div class="kpi-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          </div>
+        </div>
+        <div class="kpi-val" id="kpiCostTotal">€0,00</div>
       </div>
 
       <div class="kpi-card">
@@ -985,19 +988,6 @@
           </div>
         </div>
         <div class="kpi-val" id="kpiReturnPct">0.00%</div>
-        <div class="kpi-sub" id="kpiCostTotal">Custo: €0,00</div>
-      </div>
-
-      <!-- CARD ALL-TIME HIGH (ATH) DA CARTEIRA -->
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span class="kpi-label">All-Time High (Peak)</span>
-          <div class="kpi-icon" style="color: #f59e0b;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1h10v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M6 9v3a6 6 0 0 0 12 0V9"/></svg>
-          </div>
-        </div>
-        <div class="kpi-val" id="kpiAthVal" style="color:#38bdf8;">+0.00%</div>
-        <div class="kpi-sub" id="kpiAthDist">Distância: 0.00% do topo</div>
       </div>
 
       <div class="kpi-card">
@@ -1008,7 +998,6 @@
           </div>
         </div>
         <div class="kpi-val" id="kpiHoldingsCount">0</div>
-        <div class="kpi-sub">Ativos Registados</div>
       </div>
     </div>
 
@@ -1259,10 +1248,10 @@
 
   <script>
     // ==========================================
-    // CONFIGURAÇÃO SUPABASE CONECTADA (O TEU PROJETO)
+    // CONFIGURAÇÃO SUPABASE CONECTADA (CLIENTE 'sb')
     // ==========================================
-    const SUPABASE_URL = 'https://egychgwfqqxejhktztpp.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVneWNoZ3dmcXF4ZWpoa3R6dHBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0Mjg4NzYsImV4cCI6MjEwNTAwNDg3Nn0.6YfXxT4LobZzt1OabMfJ4q0JuKVHKtgHVd6oio4VVxg';
+    const SUPABASE_URL = 'https://cnjvltqgkncqrjhwlztv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuanZsdHFna25jcXJqaHdsenR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNjU4NDcsImV4cCI6MjEwNDY0MTg0N30.Fy_8qiXwUlElmEAhCMDP6THACFr87UJvLvwZ2tTD8TY';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const ASSET_LOGOS = {
@@ -1296,7 +1285,7 @@
         { t: '09 Jul', p: 108.84 },
         { t: '15 Jul', p: 111.40 }, { t: '22 Jul', p: 114.80 }, { t: '29 Jul', p: 112.10 },
         { t: '05 Ago', p: 115.60 }, { t: '11 Ago', p: 127.40 }, { t: '18 Ago', p: 122.10 },
-        { t: '25 Ago', p: 132.80 }, { t: 'Hoje', p: 143.55 }
+        { t: '25 Ago', p: 132.80 }, { t: 'Hoje', p: 134.17 }
       ],
       'META': [
         { t: '08/04', p: 588.20 }, { t: '15/04', p: 593.40 },
@@ -1304,14 +1293,14 @@
         { t: '01/06', p: 609.65 }, { t: '15/06', p: 591.40 },
         { t: '01/07', p: 548.91 }, { t: '15/07', p: 558.70 },
         { t: '05/08', p: 584.16 }, { t: '18/08', p: 582.00 },
-        { t: '25/08', p: 598.50 }, { t: 'Hoje', p: 669.91 }
+        { t: '25/08', p: 598.50 }, { t: 'Hoje', p: 616.77 }
       ],
       'MSFT': [
         { t: '01/06', p: 415.07 }, { t: '15/06', p: 422.40 },
         { t: '01/07', p: 395.20 }, { t: '22/07', p: 435.50 },
         { t: '06/08', p: 462.10 }, { t: '11/08', p: 508.20 },
         { t: '18/08', p: 476.50 }, { t: '25/08', p: 498.40 },
-        { t: 'Hoje', p: 498.50 }
+        { t: 'Hoje', p: 493.19 }
       ],
       'SXRV': [
         { t: '01/08/25', p: 1103.16 }, { t: '15/11/25', p: 1210.00 },
@@ -1321,27 +1310,19 @@
       ]
     };
 
-    // As tuas posições reais na carteira
-    const DEFAULT_TRADES = [
-      { id: '1', ticker: 'NOW', date: '2026-07-09', broker: 'XTB', currency: 'USD', shares: 1, price: 108.84, costEUR: 95.73 },
-      { id: '2', ticker: 'MSFT', date: '2026-06-01', broker: 'XTB', currency: 'USD', shares: 0.9634, price: 415.07, costEUR: 347.84 },
-      { id: '3', ticker: 'META', date: '2026-08-05', broker: 'XTB', currency: 'USD', shares: 1, price: 584.16, costEUR: 503.02 },
-      { id: '4', ticker: 'SXRV', date: '2025-08-01', broker: 'XTB', currency: 'EUR', shares: 0.6211, price: 1103.16, costEUR: 683.27 }
-    ];
-
     let trades = [];
 
     let livePrices = {
-      'NOW': 143.55,
-      'MSFT': 498.50,
-      'META': 669.91,
+      'NOW': 134.17,
+      'MSFT': 493.19,
+      'META': 616.77,
       'SXRV': 1436.07
     };
 
     let prevClosePrices = {
-      'NOW': 141.00,
-      'MSFT': 492.00,
-      'META': 660.00,
+      'NOW': 138.50,
+      'MSFT': 505.20,
+      'META': 625.40,
       'SXRV': 1430.00
     };
 
@@ -1376,9 +1357,12 @@
         if (data && data.length > 0) {
           trades = data;
         } else {
-          // Se a tabela ainda estiver vazia no novo Supabase, faz seed dos teus 4 ativos originais
-          trades = DEFAULT_TRADES;
-          await sb.from('trades').insert(DEFAULT_TRADES).catch(() => {});
+          trades = [
+            { id: '1', ticker: 'NOW', date: '2026-07-09', broker: 'XTB', currency: 'USD', shares: 1, price: 108.84, costEUR: 95.73 },
+            { id: '2', ticker: 'MSFT', date: '2026-06-01', broker: 'XTB', currency: 'USD', shares: 0.9634, price: 415.07, costEUR: 347.84 },
+            { id: '3', ticker: 'META', date: '2026-08-05', broker: 'XTB', currency: 'USD', shares: 1, price: 584.16, costEUR: 503.02 },
+            { id: '4', ticker: 'SXRV', date: '2025-08-01', broker: 'XTB', currency: 'EUR', shares: 0.6211, price: 1103.16, costEUR: 683.27 }
+          ];
         }
 
         renderDashboard();
@@ -1386,10 +1370,8 @@
         if (txt) txt.innerText = 'Supabase Sincronizado';
       } catch (err) {
         console.error('Falha de conexão Supabase:', err);
-        trades = DEFAULT_TRADES;
-        renderDashboard();
         if (badge) badge.classList.remove('loading');
-        if (txt) txt.innerText = 'Modo Local (Offline)';
+        if (txt) txt.innerText = 'Erro Supabase';
       }
     }
 
@@ -1430,7 +1412,7 @@
       const badge = document.getElementById('apiStatusBadge');
       const txt = document.getElementById('apiStatusText');
       if (badge) badge.classList.add('loading');
-      if (txt) txt.innerText = 'A atualizar cotações...';
+      if (txt) txt.innerText = 'A atualizar...';
 
       try {
         const fxRes = await fetch('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD');
@@ -1449,7 +1431,7 @@
       let qqqPctChange = 0;
       let qqqPrevClose = 0;
 
-      if (finnhubKey && trades.length > 0) {
+      if (finnhubKey) {
         const uniqueTickers = [...new Set(trades.map(t => (t.ticker || '').trim().toUpperCase()))];
         
         if (uniqueTickers.includes('SXRV') && !uniqueTickers.includes('QQQ')) {
@@ -1489,7 +1471,7 @@
       const timeNow = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
       if (badge) badge.classList.remove('loading');
       if (txt) {
-        if (finnhubKey && updatedCount > 0) txt.innerText = `Direto às ${timeNow}`;
+        if (finnhubKey && updatedCount > 0) txt.innerText = `Direto às ${timeNow} (SXRV Proxy QQQ)`;
         else txt.innerText = `Cloud Sincronizada às ${timeNow}`;
       }
     }
@@ -1550,7 +1532,6 @@
       const todayDateStr = new Date().toISOString().split('T')[0];
       const todayLabel = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
-      // A tua série cronológica completa
       const timelinePoints = [
         { dateStr: '2025-08-01', label: '01/08/25', val: 683.27, cost: 683.27, sp500: 683.27, isAporte: true },
         { dateStr: '2025-10-15', label: '15/10/25', val: 732.40, cost: 683.27, sp500: 710.20, isAporte: false },
@@ -2138,38 +2119,6 @@
       document.getElementById('overlapAlert').innerText = `Top 2 Ativos = ${top2CombinedPct.toFixed(1)}% da Carteira`;
     }
 
-    // ============================================================
-    // CÁLCULO E RASTREAMENTO DO ALL-TIME HIGH (VALORIZAÇÃO ORGÂNICA)
-    // ============================================================
-    function trackAndRenderATH(currentROI) {
-      const STORAGE_KEY = 'portfolio_ath_peak_roi';
-      let storedATH = parseFloat(localStorage.getItem(STORAGE_KEY) || '0');
-
-      // Se o retorno atual for superior ao recorde anterior, guarda o novo topo
-      if (currentROI > storedATH) {
-        storedATH = currentROI;
-        localStorage.setItem(STORAGE_KEY, storedATH.toString());
-      }
-
-      const athEl = document.getElementById('kpiAthVal');
-      const athDistEl = document.getElementById('kpiAthDist');
-
-      if (athEl) {
-        athEl.innerText = `+${storedATH.toFixed(2)}%`;
-      }
-
-      if (athDistEl) {
-        const diffToATH = currentROI - storedATH;
-        if (diffToATH >= -0.01) {
-          athDistEl.innerText = '🔥 Novo Pico Atingido!';
-          athDistEl.style.color = 'var(--tv-green)';
-        } else {
-          athDistEl.innerText = `Distância: ${diffToATH.toFixed(2)}% do topo`;
-          athDistEl.style.color = 'var(--tv-red)';
-        }
-      }
-    }
-
     function renderDashboard() {
       const fx = eurUsdRate;
       const summary = {};
@@ -2211,8 +2160,7 @@
       const totalROI = totalCostEUR > 0 ? (totalPLEUR / totalCostEUR) * 100 : 0;
 
       document.getElementById('kpiCurrentVal').innerText = `€${totalValEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      document.getElementById('kpiCurrentValUSD').innerText = `$${(totalValEUR * fx).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      document.getElementById('kpiCostTotal').innerText = `Custo: €${totalCostEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('kpiCostTotal').innerText = `€${totalCostEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       
       const plEl = document.getElementById('kpiGainLoss');
       plEl.innerText = `${totalPLEUR >= 0 ? '+' : ''}€${totalPLEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -2223,9 +2171,6 @@
       roiEl.style.color = totalPLEUR >= 0 ? 'var(--tv-green)' : 'var(--tv-red)';
 
       document.getElementById('kpiHoldingsCount').innerText = Object.keys(summary).length;
-
-      // Monitoriza o ATH em termos de valorização orgânica
-      trackAndRenderATH(totalROI);
 
       renderAggregatedTradingViewChart();
 
@@ -2302,6 +2247,13 @@
 
       const tTrades = trades.filter(t => (t.ticker || '').trim().toUpperCase() === ticker);
       if (!tTrades.length) return;
+
+      const modalBox = document.querySelector('.modal-box');
+      if (modalBox) {
+        modalBox.querySelectorAll('.tv-p-btn').forEach(b => b.classList.remove('active'));
+        const defaultAll = modalBox.querySelector('.tv-p-btn:last-child');
+        if (defaultAll) defaultAll.classList.add('active');
+      }
 
       const meta = ASSET_META[ticker] || { name: ticker, color: '#3b82f6' };
       const currency = (tTrades[0].currency || 'USD').trim().toUpperCase();
@@ -2398,6 +2350,7 @@
     // 2. ATUALIZAR UM CAMPO DO LOTE NO SUPABASE
     async function updateLotField(lotId, field, value) {
       const parsedVal = (field === 'shares' || field === 'price' || field === 'costEUR') ? parseFloat(value) || 0 : value;
+      
       const updatePayload = {};
       updatePayload[field] = parsedVal;
 
