@@ -1,1140 +1,1237 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio Performance - getquin Engine</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg-main: #0a0f1d;
-      --bg-card: #12192c;
-      --bg-input: #0a0f1d;
-      --border: #1e293b;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --green: #10b981;
-      --green-bg: rgba(16, 185, 129, 0.12);
-      --red: #ef4444;
-      --red-bg: rgba(239, 68, 68, 0.12);
-      --breakeven: #f59e0b;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-    }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-main); color: var(--text); padding: 24px; margin: 0; }
-    .container { max-width: 1250px; margin: auto; }
-    
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-badge { background: #1e3a8a; color: #60a5fa; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    h1 { margin: 0; font-size: 22px; font-weight: 700; }
-    .backup-controls { display: flex; gap: 8px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carteira</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --bg:#07090e; --surface:rgba(18,24,38,.72); --inner:rgba(10,14,23,.6); --input:#0b0f19;
+    --line:rgba(255,255,255,.07); --accent:#38bdf8; --violet:#a855f7;
+    --up:#10b981; --up-bg:rgba(16,185,129,.12); --up-br:rgba(16,185,129,.28);
+    --down:#ef4444; --down-bg:rgba(239,68,68,.12); --down-br:rgba(239,68,68,.28);
+    --warn:#f59e0b;
+    --t1:#f1f5f9; --t2:#94a3b8; --t3:#64748b;
+    --font:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --shadow:0 12px 32px -4px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--t1);padding:24px 18px 60px;min-height:100vh;
+    background-image:radial-gradient(at 0% 0%,rgba(56,189,248,.07) 0,transparent 50%),radial-gradient(at 100% 0%,rgba(37,99,235,.05) 0,transparent 50%);
+    background-attachment:fixed;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1280px;margin:0 auto}
+  .hidden{display:none !important}
+  button{font-family:inherit}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .num{font-variant-numeric:tabular-nums}
 
-    .status-bar { background: var(--bg-card); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
-    .api-inputs { display: flex; gap: 8px; flex: 1; max-width: 500px; }
-    .api-inputs input { flex: 1; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 13px; }
-    .tag-fx { font-size: 12px; color: #38bdf8; }
+  /* topo */
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+    background:rgba(18,24,38,.6);border:1px solid var(--line);border-radius:14px;padding:10px 16px;margin-bottom:20px;backdrop-filter:blur(14px)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#38bdf8,#2563eb);display:flex;align-items:center;justify-content:center;color:#fff}
+  .brand-name{font-size:18px;font-weight:700;letter-spacing:-.3px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--line);color:var(--t2);background:rgba(255,255,255,.03)}
+  .pill.ok{color:var(--up);background:var(--up-bg);border-color:var(--up-br)}
+  .pill.warn{color:var(--warn);background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28)}
+  .pill.bad{color:var(--down);background:var(--down-bg);border-color:var(--down-br)}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .btn{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--t2);padding:7px 12px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s,color .15s,border-color .15s}
+  .btn:hover{background:rgba(255,255,255,.08);color:#f8fafc;border-color:rgba(255,255,255,.15)}
+  .btn.primary{background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;border:none}
+  .btn.danger{color:var(--down);border-color:var(--down-br)}
+  .drawer{display:none;width:100%;margin-top:10px;padding-top:12px;border-top:1px solid var(--line);gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .drawer.open{display:flex}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:11px;color:var(--t3);font-weight:600}
+  input,select{background:var(--input);border:1px solid var(--line);color:var(--t1);padding:8px 10px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:inherit}
 
-    .dashboard-grid { display: grid; grid-template-columns: 2.5fr 1fr; gap: 20px; margin-bottom: 24px; }
-    @media (max-width: 960px) { .dashboard-grid { grid-template-columns: 1fr; } }
-    
-    .chart-card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-    .chart-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    
-    .view-toggles { display: flex; gap: 6px; background: var(--bg-input); padding: 3px; border-radius: 6px; border: 1px solid var(--border); }
-    .toggle-btn { background: transparent; color: var(--text-muted); border: none; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 4px; cursor: pointer; }
-    .toggle-btn.active { background: var(--accent); color: #fff; }
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:20px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+  .kpi .k-label{font-size:11.5px;color:var(--t3);font-weight:600;margin-bottom:6px}
+  .kpi .k-val{font-size:23px;font-weight:650;letter-spacing:-.4px}
+  .kpi .k-sub{font-size:11.5px;color:var(--t3);margin-top:4px;font-weight:500}
 
-    .period-toggles { display: flex; gap: 6px; background: var(--bg-input); padding: 4px; border-radius: 8px; border: 1px solid var(--border); }
-    .period-chip { background: transparent; color: var(--text-muted); border: 1px solid transparent; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; min-width: 44px; transition: all 0.2s; }
-    .period-chip .p-name { font-size: 11px; font-weight: 700; }
-    .period-chip .p-pct { font-size: 10px; font-weight: 600; margin-top: 1px; }
-    .period-chip:hover { background: #1e293b; color: #fff; }
-    .period-chip.active { background: #1e293b; border-color: var(--accent); color: #fff; box-shadow: 0 0 0 1px var(--accent); }
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);backdrop-filter:blur(14px);margin-bottom:20px}
+  .card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .card-title{font-size:15.5px;font-weight:700;letter-spacing:-.2px}
+  .card-note{font-size:11.5px;color:var(--t3)}
 
-    .chart-container-box { flex: 1; min-height: 350px; position: relative; }
+  /* tabela de posições */
+  .table-scroll{overflow-x:auto}
+  table.holdings{width:100%;border-collapse:collapse;font-size:13px;min-width:940px}
+  table.holdings th{font-size:11px;color:var(--t3);font-weight:600;text-align:right;padding:0 10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.holdings th:first-child{text-align:left}
+  table.holdings td{padding:12px 10px;text-align:right;border-bottom:1px solid rgba(255,255,255,.04);font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.holdings td:first-child{text-align:left}
+  table.holdings tbody tr{cursor:pointer}
+  table.holdings tbody tr:hover{background:rgba(56,189,248,.06)}
+  table.holdings tfoot td{padding:12px 10px;text-align:right;font-weight:700;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+  table.holdings tfoot td:first-child{text-align:left}
+  .asset{display:flex;align-items:center;gap:11px}
+  .asset .mark{width:34px;height:34px;border-radius:9px;background:#111726;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--t2);flex-shrink:0;overflow:hidden}
+  .asset .mark svg{width:20px;height:20px}
+  .asset .a-name{font-size:13.5px;font-weight:650}
+  .asset .a-sub{font-size:11.5px;color:var(--t3);margin-top:2px}
+  .sub{display:block;font-size:11px;color:var(--t3);margin-top:3px;font-weight:500}
+  .tag{font-size:12px;font-weight:650;padding:3px 8px;border-radius:5px}
+  .tag.up{background:var(--up-bg);border:1px solid var(--up-br);color:var(--up)}
+  .tag.down{background:var(--down-bg);border:1px solid var(--down-br);color:var(--down)}
+  .up{color:var(--up)} .down{color:var(--down)} .muted{color:var(--t3)}
+  .stale{font-size:10px;color:var(--warn);font-weight:600}
+  .bar{width:90px;height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin:5px 0 0 auto;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(135deg,#38bdf8,#2563eb)}
 
-    .side-card { display: flex; flex-direction: column; gap: 14px; }
-    .hero-stat { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-    .hero-stat span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-    .hero-stat h2 { margin: 6px 0 10px; font-size: 32px; font-weight: 700; }
-    
-    .metric-badge-box { background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
-    .metric-badge-box .title { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; font-weight: 600; }
-    .metric-badge-box .val { font-size: 15px; font-weight: 700; }
+  /* gráfico */
+  .chart-box{height:290px;position:relative}
+  .periods{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)}
+  .p-btn{background:rgba(255,255,255,.02);border:1px solid transparent;padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:72px}
+  .p-btn .l{font-size:11px;color:var(--t3);font-weight:600}
+  .p-btn .v{font-size:11.5px;font-weight:650;margin-top:2px;font-variant-numeric:tabular-nums}
+  .p-btn:hover{background:rgba(255,255,255,.05)}
+  .p-btn.active{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.3)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--t3);font-weight:600}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .swatch{width:14px;height:2px;border-radius:1px}
+  .empty{display:flex;align-items:center;justify-content:center;height:100%;text-align:center;color:var(--t3);font-size:13px;line-height:1.6;padding:0 20px}
 
-    .period-highlight-box { border-radius: 8px; padding: 10px 12px; border: 1px solid transparent; }
-    .period-highlight-box.green { background: var(--green-bg); border-color: rgba(16, 185, 129, 0.3); }
-    .period-highlight-box.red { background: var(--red-bg); border-color: rgba(239, 68, 68, 0.3); }
-    .period-highlight-box .p-title { font-size: 11px; font-weight: 600; color: #cbd5e1; }
-    .period-highlight-box .p-big { font-size: 16px; font-weight: 800; margin-top: 2px; }
+  .two-col{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
+  @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+  .donut-row{display:flex;align-items:center;gap:20px}
+  .donut{width:150px;height:150px;flex-shrink:0;position:relative}
+  .legend-list{display:flex;flex-direction:column;gap:7px;flex:1;font-size:12.5px}
+  .legend-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 6px;border-radius:6px;background:rgba(255,255,255,.02)}
+  .legend-item .n{display:flex;align-items:center;gap:8px;color:var(--t2)}
+  .legend-item .d{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .overlap-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;background:var(--inner);border:1px solid rgba(255,255,255,.04);border-radius:9px;margin-bottom:9px}
 
-    .allocation-box { background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); flex: 1; display: flex; flex-direction: column; }
-    .allocation-box h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
-    .donut-container { flex: 1; min-height: 170px; position: relative; }
+  /* modal */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(5,7,12,.88);backdrop-filter:blur(8px);z-index:100;align-items:center;justify-content:center;padding:18px}
+  .overlay.open{display:flex}
+  .modal{background:#0f1523;border:1px solid var(--line);border-radius:14px;padding:24px;width:100%;max-width:920px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.7)}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:12px;background:var(--inner);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:20px}
+  .stats div span{display:block;font-size:10.5px;color:var(--t3);font-weight:600;margin-bottom:4px}
+  .stats div strong{font-size:15px;font-weight:650;font-variant-numeric:tabular-nums}
+  table.lots{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:18px}
+  table.lots th{font-size:10.5px;color:var(--t3);font-weight:600;text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.lots td{padding:8px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-variant-numeric:tabular-nums}
+  table.lots input,table.lots select{padding:5px 7px;font-size:12px}
+  .lot-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px;align-items:end;background:var(--inner);border:1px dashed rgba(255,255,255,.1);border-radius:10px;padding:14px}
+  .section-label{font-size:12px;font-weight:650;color:var(--t2);margin-bottom:10px}
+  .hint{font-size:11.5px;color:var(--t3);line-height:1.6}
 
-    .btn-sync { background: var(--green); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; font-size: 14px; }
-    .btn-sync:hover { filter: brightness(1.1); }
-    .status-msg { font-size: 12px; color: #38bdf8; text-align: center; min-height: 16px; margin-top: -6px; }
-
-    form { display: grid; grid-template-columns: 1.2fr 130px 110px 100px 1fr 1fr 110px; gap: 10px; margin-bottom: 24px; background: var(--bg-card); padding: 16px; border-radius: 10px; border: 1px solid var(--border); }
-    @media (max-width: 900px) { form { grid-template-columns: 1fr 1fr; } }
-    input, select { background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 9px 12px; border-radius: 6px; font-size: 14px; }
-    button.btn-primary { background: var(--accent); color: #fff; border: none; padding: 9px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    button.btn-primary:hover { background: var(--accent-hover); }
-
-    table { width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 10px; overflow: hidden; margin-bottom: 30px; border: 1px solid var(--border); }
-    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: #0c1324; color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; }
-    .profit { color: var(--green); font-weight: 700; }
-    .loss { color: var(--red); font-weight: 700; }
-    .btn-action { background: #1e293b; color: #cbd5e1; border: 1px solid var(--border); padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
-    .btn-chart { background: #1e3a8a; color: #93c5fd; border: 1px solid #3b82f6; padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; font-weight: 600; }
-    .btn-chart:hover { background: #2563eb; color: #fff; }
-    .btn-del { background: var(--red); color: #fff; border: none; padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; }
-
-    /* Modal Individual */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); z-index: 100; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 950px; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
-    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-    .modal-title-wrap { display: flex; align-items: center; gap: 12px; }
-    .modal-close { background: #1e293b; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
-    .modal-close:hover { color: #fff; background: #334155; }
-    .asset-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 20px; }
-    .stat-card { background: var(--bg-input); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
-    .stat-card span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
-    .stat-card strong { font-size: 15px; }
-
-    .drawer { display: none; background: var(--bg-card); border: 1px solid var(--accent); border-radius: 8px; padding: 16px; margin-bottom: 24px; }
-  </style>
+  /* login */
+  .gate{max-width:420px;margin:12vh auto 0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:var(--shadow)}
+  .gate h1{font-size:20px;font-weight:700;margin-bottom:8px;letter-spacing:-.3px}
+  .gate p{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:20px}
+  .gate .field{margin-bottom:14px}
+  .gate .btn{width:100%;justify-content:center;padding:11px}
+  .msg{font-size:12.5px;margin-top:14px;line-height:1.5}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
 </head>
 <body>
-  <div class="container">
-    
-    <div class="top-bar">
-      <div class="brand">
-        <h1>Portfolio Performance</h1>
-        <span class="brand-badge">getquin Engine</span>
+
+<!-- ECRÃ DE ENTRADA -->
+<div id="gate" class="gate hidden">
+  <h1>A tua carteira</h1>
+  <p>Escreve o teu email. Recebes um link que te dá entrada — sem palavra-passe. Os dados ficam ligados à tua conta e mais ninguém lhes chega.</p>
+  <div class="field">
+    <label for="gateEmail">Email</label>
+    <input type="email" id="gateEmail" placeholder="tu@exemplo.pt" autocomplete="email">
+  </div>
+  <button class="btn primary" id="gateBtn">Enviar link de entrada</button>
+  <div class="msg muted" id="gateMsg"></div>
+</div>
+
+<!-- APP -->
+<div class="wrap hidden" id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
       </div>
-      <div class="backup-controls">
-        <button class="btn-action" onclick="exportData()">💾 Backup JSON</button>
-        <button class="btn-action" onclick="document.getElementById('importFile').click()">📂 Importar</button>
-        <input type="file" id="importFile" style="display:none" onchange="importData(event)" accept=".json">
-      </div>
+      <div class="brand-name">A tua carteira</div>
+      <span class="pill" id="statusPill"><span class="dot"></span><span id="statusText">A carregar</span></span>
+    </div>
+    <div class="controls">
+      <span class="pill" id="fxPill">EUR/USD —</span>
+      <button class="btn" id="btnRefresh">Atualizar cotações</button>
+      <button class="btn" id="btnSettings">Definições</button>
+      <button class="btn primary" id="btnAdd">Registar compra</button>
     </div>
 
-    <div class="status-bar">
-      <div class="api-inputs">
-        <input type="text" id="apiKey" placeholder="Finnhub Key (para cotações em direto)">
-        <button class="btn-primary" onclick="saveApiKey()">Guardar</button>
+    <div class="drawer" id="drawer">
+      <div class="field">
+        <label for="inpKey">Chave Finnhub (fica só neste dispositivo)</label>
+        <input type="password" id="inpKey" placeholder="chave de cotações" style="width:200px">
       </div>
-      <div class="tag-fx" id="fxRateDisplay">EUR/USD: 1.0800</div>
+      <div class="field">
+        <label for="inpSymbols">Símbolos alternativos para cotação (ticker=símbolo, um por linha)</label>
+        <input type="text" id="inpSymbols" placeholder="SXRV=CNDX.L" style="width:230px">
+      </div>
+      <button class="btn" id="btnSaveSettings">Guardar definições</button>
+      <button class="btn" id="btnExport">Descarregar cópia dos dados</button>
+      <button class="btn" id="btnSignOut">Sair da conta</button>
+      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador. Usa uma chave só de leitura de cotações.</div>
     </div>
+  </div>
 
-    <!-- Dashboard Principal -->
-    <div class="dashboard-grid">
-      <div class="chart-card">
-        <div class="chart-top">
-          <div class="view-toggles">
-            <button class="toggle-btn active" onclick="setChartMode('VALUE', this)">Monetário (€)</button>
-            <button class="toggle-btn" onclick="setChartMode('PERCENT', this)">Performance (%)</button>
-          </div>
+  <div class="kpis">
+    <div class="kpi"><div class="k-label">Valor atual</div><div class="k-val num" id="kValue">€0,00</div><div class="k-sub" id="kValueSub">—</div></div>
+    <div class="kpi"><div class="k-label">Investido por liquidar</div><div class="k-val num" id="kCost">€0,00</div><div class="k-sub" id="kCostSub">—</div></div>
+    <div class="kpi"><div class="k-label">Ganho por realizar</div><div class="k-val num" id="kUnreal">€0,00</div><div class="k-sub" id="kUnrealSub">—</div></div>
+    <div class="kpi"><div class="k-label">Resultado total</div><div class="k-val num" id="kTotal">€0,00</div><div class="k-sub" id="kTotalSub">inclui vendas e dividendos</div></div>
+    <div class="kpi"><div class="k-label">Rendimento da carteira</div><div class="k-val num" id="kTwr">—</div><div class="k-sub" id="kTwrSub">sem efeito dos reforços</div></div>
+    <div class="kpi"><div class="k-label">Distância do máximo</div><div class="k-val num" id="kDd">—</div><div class="k-sub" id="kDdSub">—</div></div>
+  </div>
 
-          <div class="period-toggles">
-            <div class="period-chip" onclick="setPeriod('1D', this)"><span class="p-name">1D</span><span class="p-pct" id="chip-1D">--</span></div>
-            <div class="period-chip" onclick="setPeriod('1S', this)"><span class="p-name">1S</span><span class="p-pct" id="chip-1S">--</span></div>
-            <div class="period-chip" onclick="setPeriod('1M', this)"><span class="p-name">1M</span><span class="p-pct" id="chip-1M">--</span></div>
-            <div class="period-chip" onclick="setPeriod('1A', this)"><span class="p-name">1A</span><span class="p-pct" id="chip-1A">--</span></div>
-            <div class="period-chip" onclick="setPeriod('YTD', this)"><span class="p-name">YTD</span><span class="p-pct" id="chip-YTD">--</span></div>
-            <div class="period-chip active" onclick="setPeriod('ALL', this)"><span class="p-name">MAX</span><span class="p-pct" id="chip-ALL">--</span></div>
-          </div>
-        </div>
-
-        <div class="chart-container-box">
-          <canvas id="mainChart"></canvas>
-        </div>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Posições</div>
+        <div class="card-note" id="holdingsNote">—</div>
       </div>
-
-      <div class="side-card">
-        <div class="hero-stat">
-          <span>Património Total</span>
-          <h2 id="totalVal">€0,00</h2>
-          
-          <div class="metric-badge-box">
-            <div class="title">P&L TOTAL (DESDE O INÍCIO)</div>
-            <div id="totalPLDisplay" class="val">€0,00 (0,00%)</div>
-          </div>
-
-          <div id="periodHighlightBox" class="period-highlight-box green">
-            <div class="p-title" id="periodTitleLabel">VARIAÇÃO NO PERÍODO (MAX)</div>
-            <div class="p-big" id="periodValueLabel">+€0,00 (+0,00%)</div>
-          </div>
-        </div>
-
-        <button class="btn-sync" id="syncBtn" onclick="syncPortfolio()">⚡ Sincronizar Cotações</button>
-        <div id="statusMsg" class="status-msg"></div>
-
-        <div class="allocation-box">
-          <h4>Alocação de Ativos</h4>
-          <div class="donut-container">
-            <canvas id="donutChart"></canvas>
-          </div>
-        </div>
-      </div>
+      <div class="card-note">Clica numa linha para ver e corrigir os lotes</div>
     </div>
-
-    <!-- Formulário -->
-    <form id="tradeForm">
-      <input type="text" id="ticker" placeholder="Ticker (ex: SXRV, MSFT)" oninput="handleTickerInput(this.value)" required>
-      <input type="date" id="tradeDate" required>
-      <select id="broker">
-        <option value="XTB">XTB</option>
-        <option value="IBKR">Interactive Brokers</option>
-        <option value="Revolut">Revolut</option>
-        <option value="Outro">Outro</option>
-      </select>
-      <select id="currency">
-        <option value="EUR">EUR (€)</option>
-        <option value="USD">USD ($)</option>
-      </select>
-      <input type="number" step="any" id="shares" placeholder="Qtd. Ações" required>
-      <input type="number" step="any" id="price" placeholder="Preço de Compra" required>
-      <button type="submit" class="btn-primary">Registar</button>
-    </form>
-
-    <div id="historyDrawer" class="drawer">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h3 style="margin:0;" id="drawerTitle">Transações</h3>
-        <button class="btn-action" onclick="closeDrawer()">Fechar</button>
-      </div>
-      <table>
+    <div class="table-scroll">
+      <table class="holdings">
         <thead>
-          <tr><th>Data</th><th>Corretora</th><th>Moeda</th><th>Qtd.</th><th>Preço</th><th>Total (€)</th><th>Ação</th></tr>
+          <tr>
+            <th>Ativo</th>
+            <th>Ações</th>
+            <th>Preço médio</th>
+            <th>Cotação</th>
+            <th>Hoje</th>
+            <th>Valor</th>
+            <th>Peso</th>
+            <th>Ganho</th>
+            <th>Contributo</th>
+          </tr>
         </thead>
-        <tbody id="drawerBody"></tbody>
+        <tbody id="holdingsBody"></tbody>
+        <tfoot id="holdingsFoot"></tfoot>
       </table>
     </div>
+  </div>
 
-    <!-- Tabela Principal -->
-    <table>
-      <thead>
-        <tr>
-          <th>Ativo</th>
-          <th>Corretora</th>
-          <th>Qtd. Total</th>
-          <th>Preço Médio</th>
-          <th>Preço Atual</th>
-          <th>Total (€)</th>
-          <th>P&L (€ / %)</th>
-          <th>Peso</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="portfolioBody"></tbody>
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Evolução</div>
+        <div class="card-note" id="chartNote">—</div>
+      </div>
+      <div class="legend">
+        <span><i class="swatch" style="background:#38bdf8"></i> Valor da carteira</span>
+        <span><i class="swatch" style="background:#f59e0b"></i> Dinheiro investido</span>
+        <span><i class="swatch" style="background:#a855f7"></i> O mesmo dinheiro no S&amp;P 500</span>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="equityCanvas"></canvas><div class="empty hidden" id="chartEmpty"></div></div>
+    <div class="periods" id="periods"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Onde está o dinheiro</div>
+        <div class="card-note" id="sectorNote">—</div>
+      </div>
+      <div class="donut-row">
+        <div class="donut"><canvas id="sectorCanvas"></canvas></div>
+        <div class="legend-list" id="sectorLegend"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Exposição repetida</div>
+        <div class="card-note" id="overlapNote">—</div>
+      </div>
+      <div id="overlapList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ATIVO -->
+<div class="overlay" id="assetModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="mName" style="font-size:19px;font-weight:700;letter-spacing:-.3px">—</h2>
+        <div class="card-note" id="mSub" style="margin-top:4px">—</div>
+      </div>
+      <button class="btn" id="mClose">Fechar</button>
+    </div>
+
+    <div class="stats">
+      <div><span>Ações</span><strong id="mShares">—</strong></div>
+      <div><span>Preço médio pago</span><strong id="mAvg">—</strong></div>
+      <div><span>Cotação</span><strong id="mPrice">—</strong></div>
+      <div><span>Valor</span><strong id="mValue">—</strong></div>
+      <div><span>Ganho por realizar</span><strong id="mPL">—</strong></div>
+      <div><span>Já realizado</span><strong id="mRealized">—</strong></div>
+      <div><span>Dividendos recebidos</span><strong id="mDiv">—</strong></div>
+    </div>
+
+    <div class="section-label">Movimentos</div>
+    <table class="lots">
+      <thead><tr><th>Data</th><th>Tipo</th><th>Corretora</th><th>Ações</th><th>Preço</th><th>Valor em euros</th><th>Comissão €</th><th></th></tr></thead>
+      <tbody id="mLots"></tbody>
     </table>
 
-  </div>
+    <div class="section-label">Registar movimento neste ativo</div>
+    <div class="lot-form">
+      <div class="field"><label>Data</label><input type="date" id="lotDate"></div>
+      <div class="field"><label>Tipo</label><select id="lotKind"><option value="BUY">Compra</option><option value="SELL">Venda</option></select></div>
+      <div class="field"><label>Corretora</label><input type="text" id="lotBroker" value="XTB"></div>
+      <div class="field"><label>Ações</label><input type="number" step="any" id="lotShares"></div>
+      <div class="field"><label>Preço</label><input type="number" step="any" id="lotPrice"></div>
+      <div class="field"><label>Valor em euros</label><input type="number" step="any" id="lotCost" placeholder="o que saiu da conta"></div>
+      <div class="field"><label>Comissão €</label><input type="number" step="any" id="lotFees" value="0"></div>
+      <button class="btn primary" id="lotSave">Guardar</button>
+    </div>
+    <div class="hint" style="margin-top:8px">O valor em euros é o que a corretora debitou. Preenche-o sempre: é o que torna o custo exato, porque usa o câmbio real da operação e não uma estimativa.</div>
 
-  <!-- Modal com Gráfico Individual e Break-Even -->
-  <div id="assetModal" class="modal-overlay" onclick="if(event.target===this) closeAssetModal()">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title-wrap">
-          <h2 style="margin:0; font-size:24px;" id="modalAssetTicker">--</h2>
-          <span class="brand-badge" id="modalAssetBroker">--</span>
-          <span class="brand-badge" id="modalAssetCurrencyBadge" style="background:#065f46; color:#6ee7b7;">--</span>
-        </div>
-        <button class="modal-close" onclick="closeAssetModal()">✕ Fechar</button>
-      </div>
+    <div class="section-label" style="margin-top:22px">Registar dividendo</div>
+    <div class="lot-form">
+      <div class="field"><label>Data</label><input type="date" id="divDate"></div>
+      <div class="field"><label>Valor líquido €</label><input type="number" step="any" id="divAmount" placeholder="depois de impostos"></div>
+      <button class="btn primary" id="divSave">Guardar</button>
+    </div>
+    <div id="divList" class="hint" style="margin-top:10px"></div>
 
-      <div class="asset-stats-grid">
-        <div class="stat-card"><span>Preço Médio (Break-Even)</span><strong id="mAvgPrice" style="color:var(--breakeven);">--</strong></div>
-        <div class="stat-card"><span>Cotação Atual</span><strong id="mCurPrice">--</strong></div>
-        <div class="stat-card"><span>Margem de Segurança</span><strong id="mSafetyBuffer">--</strong></div>
-        <div class="stat-card"><span>Total Investido</span><strong id="mCost">--</strong></div>
-        <div class="stat-card"><span>Valor Atual</span><strong id="mVal">--</strong></div>
-        <div class="stat-card"><span>P&L Total</span><strong id="mPL">--</strong></div>
-      </div>
-
-      <div class="chart-card" style="margin-bottom: 20px;">
-        <div class="chart-top">
-          <span style="font-size:14px; font-weight:700; color:#94a3b8;" id="assetChartTitle">EVOLUÇÃO DA POSIÇÃO COM BREAK-EVEN</span>
-          <div class="period-toggles">
-            <div class="period-chip" onclick="setAssetPeriod('1D', this)"><span class="p-name">1D</span></div>
-            <div class="period-chip" onclick="setAssetPeriod('1S', this)"><span class="p-name">1S</span></div>
-            <div class="period-chip" onclick="setAssetPeriod('1M', this)"><span class="p-name">1M</span></div>
-            <div class="period-chip" onclick="setAssetPeriod('1A', this)"><span class="p-name">1A</span></div>
-            <div class="period-chip" onclick="setAssetPeriod('YTD', this)"><span class="p-name">YTD</span></div>
-            <div class="period-chip active" onclick="setAssetPeriod('ALL', this)"><span class="p-name">MAX</span></div>
-          </div>
-        </div>
-        <div style="height: 320px; position: relative; width: 100%;">
-          <canvas id="assetChart"></canvas>
-        </div>
-      </div>
-
-      <h4 style="margin:0 0 10px; text-transform:uppercase; font-size:12px; color:var(--text-muted);">Compras Realizadas</h4>
-      <table>
-        <thead>
-          <tr><th>Data</th><th>Corretora</th><th>Moeda</th><th>Quantidade</th><th>Preço Unitário</th><th>Total Nativo</th><th>Ação</th></tr>
-        </thead>
-        <tbody id="modalTradesBody"></tbody>
-      </table>
+    <div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="hint">Apagar o ativo remove todos os movimentos e dividendos dele.</span>
+      <button class="btn danger" id="mDelete">Apagar ativo</button>
     </div>
   </div>
+</div>
 
-  <script>
-    let trades = JSON.parse(localStorage.getItem('gq_trades')) || [];
-    let livePrices = JSON.parse(localStorage.getItem('gq_prices')) || {};
-    let fullTimeline = JSON.parse(localStorage.getItem('gq_timeline')) || null;
-    let eurUsdRate = parseFloat(localStorage.getItem('gq_fx')) || 1.08;
-    
-    let chartMode = 'VALUE';
-    let currentPeriod = 'ALL';
-    let mainChart = null;
-    let donutChart = null;
+<!-- MODAL NOVA COMPRA -->
+<div class="overlay" id="newModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <h2 style="font-size:17px;font-weight:700">Registar compra</h2>
+      <button class="btn" id="nClose">Fechar</button>
+    </div>
+    <div class="field" style="margin-bottom:12px"><label>Ticker</label><input type="text" id="nTicker" placeholder="AAPL"></div>
+    <div class="field" style="margin-bottom:12px"><label>Símbolo para cotação (se for diferente)</label><input type="text" id="nQuote" placeholder="deixa vazio para usar o ticker"></div>
+    <div class="field" style="margin-bottom:12px"><label>Moeda da cotação</label><select id="nCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></div>
+    <div class="field" style="margin-bottom:12px"><label>Data</label><input type="date" id="nDate"></div>
+    <div class="field" style="margin-bottom:12px"><label>Corretora</label><input type="text" id="nBroker" value="XTB"></div>
+    <div class="field" style="margin-bottom:12px"><label>Ações</label><input type="number" step="any" id="nShares"></div>
+    <div class="field" style="margin-bottom:12px"><label>Preço por ação</label><input type="number" step="any" id="nPrice"></div>
+    <div class="field" style="margin-bottom:12px"><label>Valor debitado em euros</label><input type="number" step="any" id="nCost"></div>
+    <div class="field" style="margin-bottom:18px"><label>Comissão €</label><input type="number" step="any" id="nFees" value="0"></div>
+    <button class="btn primary" id="nSave" style="width:100%;justify-content:center;padding:11px">Guardar compra</button>
+    <div class="msg muted" id="nMsg"></div>
+  </div>
+</div>
 
-    let activeModalTicker = null;
-    let assetChartInstance = null;
-    let assetCurrentPeriod = 'ALL';
-    let assetTimeline = null;
-    let assetCurrencySymbol = '€';
+<script>
+/* =======================================================================
+   LIGAÇÃO
+   ======================================================================= */
+const SUPABASE_URL = 'https://cnjvltqgkncqrjhwlztv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuanZsdHFna25jcXJqaHdsenR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwNjU4NDcsImV4cCI6MjEwNDY0MTg0N30.Fy_8qiXwUlElmEAhCMDP6THACFr87UJvLvwZ2tTD8TY';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const savedFinnhub = localStorage.getItem('finnhub_key') || '';
-    if (savedFinnhub) document.getElementById('apiKey').value = savedFinnhub;
-    document.getElementById('tradeDate').valueAsDate = new Date();
+const BENCHMARK_SYMBOL = 'SPY';          // proxy do S&P 500, cotado em USD
+const BENCHMARK_CURRENCY = 'USD';
 
-    function handleTickerInput(val) {
-      const clean = (val || '').trim().toUpperCase();
-      const europeanList = ['SXRV', 'SXR8', 'VWCE', 'QDVE', 'EUNL', 'IS3N', 'VUAA'];
-      const currencySelect = document.getElementById('currency');
-      if (europeanList.includes(clean) || clean.endsWith('.DE')) {
-        currencySelect.value = 'EUR';
-      } else if (clean.length >= 2 && !clean.includes('.')) {
-        currencySelect.value = 'USD';
+/* Composição de ETFs para a exposição repetida.
+   Números manuais — atualiza-os e muda a data quando o fizeres. */
+const ETF_HOLDINGS = {
+  SXRV: { asOf: '2026-06-30', source: 'iShares Nasdaq 100 UCITS', weights: { MSFT: 0.082, META: 0.038, NVDA: 0.089, AAPL: 0.078 } }
+};
+
+const ASSET_META = {
+  META:{name:'Meta Platforms',sector:'Publicidade e redes sociais'},
+  MSFT:{name:'Microsoft',sector:'Software e nuvem'},
+  NOW:{name:'ServiceNow',sector:'Software e nuvem'},
+  SXRV:{name:'iShares Nasdaq 100',sector:'Índice de tecnologia'}
+};
+
+/* =======================================================================
+   ESTADO
+   ======================================================================= */
+let session = null;
+let trades = [];        // movimentos (compras e vendas)
+let dividends = [];
+let snapshots = [];     // histórico diário gravado pela app
+let quotes = {};        // ticker -> {price, prevClose, currency, asOf, live}
+let fx = { EURUSD: null, asOf: null, prev: null };
+let fxHistory = {};     // 'YYYY-MM-DD' -> EURUSD
+let benchmark = { price: null, prevClose: null };
+let portfolio = null;
+let period = 'ALL';
+let equityChart = null, sectorChart = null;
+let activeTicker = null;
+
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let settings = LS.get('carteira_settings', { finnhubKey:'', symbolMap:'' });
+fxHistory = LS.get('carteira_fx_history', {});
+
+/* =======================================================================
+   AUXILIARES
+   ======================================================================= */
+const $ = id => document.getElementById(id);
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+function eur(v, showSign){
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  const s = Math.abs(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const sign = v < 0 ? '−' : (showSign ? '+' : '');
+  return `${sign}€${s}`;
+}
+function money(v, currency){
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  const symbols = { USD:'$', EUR:'€', GBP:'£' };
+  const sym = symbols[currency] || (currency + ' ');
+  const s = Math.abs(v).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return `${v < 0 ? '−' : ''}${sym}${s}`;
+}
+function pct(v, showSign = true){
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  const sign = v < 0 ? '−' : (showSign ? '+' : '');
+  return `${sign}${Math.abs(v).toFixed(2)}%`;
+}
+function cls(v){ return v === null || !isFinite(v) ? 'muted' : (v >= 0 ? 'up' : 'down'); }
+function shares(v){
+  if (!isFinite(v)) return '—';
+  return v.toLocaleString('pt-PT',{minimumFractionDigits:0,maximumFractionDigits:6});
+}
+function dateLabel(iso){
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+}
+function status(text, kind){
+  $('statusText').textContent = text;
+  $('statusPill').className = 'pill ' + (kind || '');
+}
+function symbolFor(ticker){
+  const map = {};
+  (settings.symbolMap || '').split(/[\n,]/).forEach(line => {
+    const [k,v] = line.split('=').map(s => (s||'').trim().toUpperCase());
+    if (k && v) map[k] = v;
+  });
+  return map[ticker] || ticker;
+}
+
+/* Câmbio EUR->moeda numa data. Devolve null se não souber — nunca inventa. */
+async function fxOn(dateISO, currency){
+  if (currency === 'EUR') return 1;
+  const key = `${dateISO}:${currency}`;
+  if (fxHistory[key]) return fxHistory[key];
+  try{
+    const r = await fetch(`https://api.frankfurter.dev/v1/${dateISO}?base=EUR&symbols=${currency}`);
+    if (!r.ok) return null;
+    const j = await r.json();
+    const rate = j && j.rates && j.rates[currency];
+    if (!rate) return null;
+    fxHistory[key] = rate;
+    LS.set('carteira_fx_history', fxHistory);
+    return rate;
+  }catch(e){ return null; }
+}
+
+/* =======================================================================
+   DADOS
+   ======================================================================= */
+async function loadAll(){
+  const [t, d, s] = await Promise.all([
+    sb.from('trades').select('*').order('trade_date',{ascending:true}),
+    sb.from('dividends').select('*').order('pay_date',{ascending:true}),
+    sb.from('snapshots').select('*').order('snap_date',{ascending:true}).limit(1200)
+  ]);
+  if (t.error) throw t.error;
+  trades = t.data || [];
+  dividends = d.error ? [] : (d.data || []);
+  snapshots = s.error ? [] : (s.data || []);
+}
+
+async function refreshFx(){
+  try{
+    const r = await fetch('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD');
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j && j.rates && j.rates.USD){
+      fx.EURUSD = j.rates.USD;
+      fx.asOf = j.date;
+      fxHistory[`${j.date}:USD`] = j.rates.USD;
+      LS.set('carteira_fx_history', fxHistory);
+      $('fxPill').textContent = `EUR/USD ${fx.EURUSD.toFixed(4)} · BCE ${dateLabel(j.date)}`;
+    }
+  }catch(e){ /* mantém o último conhecido */ }
+  const last = [...snapshots].reverse().find(s => s.snap_date < todayISO() && s.fx_eur_usd);
+  fx.prev = last ? Number(last.fx_eur_usd) : fx.EURUSD;
+}
+
+async function refreshQuotes(){
+  status('A atualizar cotações', 'warn');
+  await refreshFx();
+
+  const tickers = [...new Set(trades.map(t => t.ticker))];
+  const key = (settings.finnhubKey || '').trim();
+
+  if (!key){
+    tickers.forEach(tk => { if (!quotes[tk]) quotes[tk] = null; });
+    render();
+    status('Sem chave de cotações — abre Definições', 'warn');
+    return;
+  }
+
+  let ok = 0, failed = [];
+  for (const tk of tickers){
+    const sym = symbolFor(tk);
+    try{
+      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${key}`);
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      if (j && Number(j.c) > 0){
+        const tradeCur = (trades.find(t => t.ticker === tk) || {}).currency || 'USD';
+        quotes[tk] = { price:Number(j.c), prevClose:Number(j.pc) > 0 ? Number(j.pc) : null, currency:tradeCur, asOf:new Date(), live:true, symbol:sym };
+        ok++;
+      } else { failed.push(tk); quotes[tk] = quotes[tk] || null; }
+    }catch(e){ failed.push(tk); quotes[tk] = quotes[tk] || null; }
+  }
+
+  try{
+    const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${BENCHMARK_SYMBOL}&token=${key}`);
+    if (r.ok){
+      const j = await r.json();
+      if (j && Number(j.c) > 0) benchmark = { price:Number(j.c), prevClose:Number(j.pc) || null };
+    }
+  }catch(e){}
+
+  render();
+
+  const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  if (failed.length === 0) status(`Cotações de ${hora}`, 'ok');
+  else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}`, 'warn');
+  else status('Nenhuma cotação obtida', 'bad');
+
+  if (ok > 0) await saveSnapshot();
+}
+
+/* =======================================================================
+   CÁLCULO
+   ======================================================================= */
+
+/* Custo em euros de um movimento.
+   1) valor debitado, se existir — é o número exato
+   2) senão, câmbio do próprio dia da operação
+   3) senão, null (marcado como estimado no ecrã) */
+async function costInEUR(t){
+  const explicit = Number(t.cost_eur);
+  if (isFinite(explicit) && explicit > 0) return { value: explicit, exact: true };
+  const gross = Number(t.shares) * Number(t.price);
+  if (t.currency === 'EUR') return { value: gross, exact: true };
+  const rate = await fxOn(t.trade_date, t.currency);
+  if (rate) return { value: gross / rate, exact: false };
+  if (fx.EURUSD && t.currency === 'USD') return { value: gross / fx.EURUSD, exact: false };
+  return { value: null, exact: false };
+}
+
+async function computePortfolio(){
+  const byTicker = {};
+  const sorted = [...trades].sort((a,b) => (a.trade_date > b.trade_date ? 1 : -1));
+
+  for (const t of sorted){
+    const tk = t.ticker;
+    if (!byTicker[tk]) byTicker[tk] = {
+      ticker: tk, currency: t.currency || 'USD', quoteSymbol: t.quote_symbol || null,
+      shares: 0, costEUR: 0, costNative: 0, realizedEUR: 0, fees: 0, estimated: false, lots: []
+    };
+    const h = byTicker[tk];
+    h.lots.push(t);
+
+    const s = Number(t.shares) || 0;
+    const p = Number(t.price) || 0;
+    const fees = Number(t.fees_eur) || 0;
+    h.fees += fees;
+
+    if ((t.kind || 'BUY') === 'SELL'){
+      if (h.shares <= 0) continue;
+      const part = Math.min(1, s / h.shares);
+      const costOut = h.costEUR * part;
+      const c = await costInEUR(t);
+      const proceeds = c.value === null ? null : c.value;
+      if (!c.exact) h.estimated = true;
+      if (proceeds !== null) h.realizedEUR += proceeds - costOut - fees;
+      h.costEUR -= costOut;
+      h.costNative -= h.costNative * part;
+      h.shares -= s;
+      if (h.shares < 1e-9) { h.shares = 0; h.costEUR = 0; h.costNative = 0; }
+    } else {
+      const c = await costInEUR(t);
+      if (c.value === null) { h.estimated = true; continue; }
+      if (!c.exact) h.estimated = true;
+      h.costEUR += c.value + fees;
+      h.costNative += s * p;
+      h.shares += s;
+    }
+  }
+
+  const divByTicker = {};
+  dividends.forEach(d => { divByTicker[d.ticker] = (divByTicker[d.ticker] || 0) + (Number(d.amount_eur) || 0); });
+
+  let totalValue = 0, totalCost = 0, totalRealized = 0, totalDiv = 0, prevValue = 0, anyPrev = false;
+  const holdings = [];
+
+  for (const tk of Object.keys(byTicker)){
+    const h = byTicker[tk];
+    h.dividendsEUR = divByTicker[tk] || 0;
+    totalRealized += h.realizedEUR;
+    totalDiv += h.dividendsEUR;
+    if (h.shares <= 0) { h.closed = true; holdings.push(h); continue; }
+
+    const q = quotes[tk];
+    const rate = h.currency === 'EUR' ? 1 : fx.EURUSD;
+    h.price = q ? q.price : null;
+    h.priceStale = !q;
+    h.avgNative = h.costNative / h.shares;
+    h.avgEUR = h.costEUR / h.shares;
+
+    if (h.price !== null && rate){
+      h.valueEUR = (h.shares * h.price) / rate;
+      h.plEUR = h.valueEUR - h.costEUR;
+      h.plPct = h.costEUR > 0 ? (h.plEUR / h.costEUR) * 100 : null;
+      totalValue += h.valueEUR;
+
+      const prevRate = h.currency === 'EUR' ? 1 : (fx.prev || rate);
+      if (q.prevClose){
+        const prevEUR = (h.shares * q.prevClose) / prevRate;
+        h.dayEUR = h.valueEUR - prevEUR;
+        h.dayPct = prevEUR > 0 ? (h.dayEUR / prevEUR) * 100 : null;
+        prevValue += prevEUR; anyPrev = true;
+      } else { h.dayEUR = null; h.dayPct = null; prevValue += h.valueEUR; }
+    } else {
+      h.valueEUR = null; h.plEUR = null; h.plPct = null; h.dayEUR = null; h.dayPct = null;
+    }
+    totalCost += h.costEUR;
+    holdings.push(h);
+  }
+
+  holdings.forEach(h => {
+    h.weight = (!h.closed && h.valueEUR && totalValue > 0) ? (h.valueEUR / totalValue) * 100 : null;
+    h.contribution = (h.plEUR !== null && totalCost > 0) ? (h.plEUR / totalCost) * 100 : null;
+  });
+  holdings.sort((a,b) => (b.valueEUR || -1) - (a.valueEUR || -1));
+
+  const unrealized = totalValue - totalCost;
+  const missing = holdings.some(h => !h.closed && h.priceStale);
+
+  return {
+    holdings, totalValue, totalCost, unrealized,
+    unrealizedPct: totalCost > 0 ? (unrealized / totalCost) * 100 : null,
+    realized: totalRealized, dividends: totalDiv,
+    totalResult: unrealized + totalRealized + totalDiv,
+    dayEUR: anyPrev ? totalValue - prevValue : null,
+    dayPct: anyPrev && prevValue > 0 ? ((totalValue - prevValue) / prevValue) * 100 : null,
+    incomplete: missing,
+    estimated: holdings.some(h => h.estimated)
+  };
+}
+
+/* Fluxos de dinheiro por data: entradas positivas, vendas negativas */
+function flowsByDate(){
+  const map = {};
+  trades.forEach(t => {
+    const gross = Number(t.shares) * Number(t.price);
+    let v = Number(t.cost_eur);
+    if (!isFinite(v) || v <= 0){
+      const rate = t.currency === 'EUR' ? 1 : (fxHistory[`${t.trade_date}:${t.currency}`] || fx.EURUSD);
+      v = rate ? gross / rate : 0;
+    }
+    const fees = Number(t.fees_eur) || 0;
+    const signed = (t.kind || 'BUY') === 'SELL' ? -(v - fees) : (v + fees);
+    map[t.trade_date] = (map[t.trade_date] || 0) + signed;
+  });
+  return map;
+}
+
+/* Série a partir dos snapshots: índice de rendimento sem efeito dos reforços,
+   e a simulação do mesmo dinheiro aplicado no S&P 500. */
+function buildSeries(){
+  if (snapshots.length < 2) return null;
+  const flows = flowsByDate();
+  const out = [];
+  let index = 100, peak = 100, units = null;
+
+  snapshots.forEach((s, i) => {
+    const v = Number(s.value_eur);
+    const bench = s.benchmark_price && s.fx_eur_usd
+      ? Number(s.benchmark_price) / (BENCHMARK_CURRENCY === 'EUR' ? 1 : Number(s.fx_eur_usd))
+      : null;
+
+    if (i > 0){
+      const prev = snapshots[i-1];
+      const prevV = Number(prev.value_eur);
+      let f = 0;
+      Object.keys(flows).forEach(d => { if (d > prev.snap_date && d <= s.snap_date) f += flows[d]; });
+      if (prevV > 0){
+        const r = (v - f - prevV) / prevV;
+        if (isFinite(r) && r > -1) index *= (1 + r);
       }
+      if (bench && units !== null && f !== 0) units += f / bench;
+    } else if (bench){
+      units = v / bench;
     }
-
-    initCharts();
-    renderSummary();
-    if (trades.length > 0) {
-      buildPortfolioTimeline();
-    }
-
-    function saveApiKey() {
-      localStorage.setItem('finnhub_key', document.getElementById('apiKey').value.trim());
-      alert('Chave guardada com sucesso.');
-      syncPortfolio();
-    }
-
-    function initCharts() {
-      const ctx1 = document.getElementById('mainChart').getContext('2d');
-      mainChart = new Chart(ctx1, {
-        type: 'line',
-        data: { labels: [], datasets: [] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          scales: {
-            x: { grid: { color: '#12192c' }, ticks: { color: '#94a3b8', maxTicksLimit: 8 } },
-            y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
-          },
-          plugins: {
-            legend: { labels: { color: '#f8fafc', boxWidth: 12 } },
-            tooltip: {
-              callbacks: {
-                label: ctx => {
-                  const val = ctx.parsed.y;
-                  return chartMode === 'VALUE' 
-                    ? `${ctx.dataset.label}: €${val.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
-                    : `${ctx.dataset.label}: ${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
-                }
-              }
-            }
-          }
-        }
-      });
-
-      const ctx2 = document.getElementById('donutChart').getContext('2d');
-      donutChart = new Chart(ctx2, {
-        type: 'doughnut',
-        data: { labels: [], datasets: [{ data: [], backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'] }] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '70%',
-          plugins: { legend: { display: false } }
-        }
-      });
-    }
-
-    function setChartMode(mode, el) {
-      chartMode = mode;
-      document.querySelectorAll('.view-toggles .toggle-btn').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      updateCharts();
-    }
-
-    function setPeriod(period, el) {
-      currentPeriod = period;
-      document.querySelectorAll('.period-toggles .period-chip').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      updateCharts();
-    }
-
-    function calculateAllTimelinePercentages() {
-      if (!fullTimeline || !fullTimeline.dates || !fullTimeline.dates.length) return;
-      const periods = ['1D', '1S', '1M', '1A', 'YTD', 'ALL'];
-      
-      periods.forEach(p => {
-        const stats = getPeriodStats(p);
-        const el = document.getElementById(`chip-${p}`);
-        if (el) {
-          el.innerText = `${stats.pct >= 0 ? '+' : ''}${stats.pct.toFixed(1)}%`;
-          el.style.color = stats.pct >= 0 ? 'var(--green)' : 'var(--red)';
-        }
-      });
-    }
-
-    function getGlobalPortfolioTotals() {
-      let totalCost = 0;
-      let totalMarket = 0;
-      const fx = eurUsdRate || 1.08;
-
-      const summary = {};
-      trades.forEach(t => {
-        const tick = (t.ticker || '').trim().toUpperCase();
-        if (!summary[tick]) {
-          summary[tick] = { shares: 0, costEUR: 0, currency: (t.currency || 'EUR').trim().toUpperCase() };
-        }
-        const s = Number(t.shares) || 0;
-        const p = Number(t.price) || 0;
-        summary[tick].shares += s;
-        const cEUR = (summary[tick].currency === 'USD') ? (s * p) / fx : (s * p);
-        summary[tick].costEUR += cEUR;
-      });
-
-      Object.keys(summary).forEach(t => {
-        const item = summary[t];
-        const rawP = (livePrices[t] !== undefined && livePrices[t] > 0) ? Number(livePrices[t]) : (item.costEUR / (item.shares || 1));
-        const pEUR = (item.currency === 'USD') ? rawP / fx : rawP;
-        totalMarket += item.shares * pEUR;
-        totalCost += item.costEUR;
-      });
-
-      const totalPL = totalMarket - totalCost;
-      const totalROI = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
-      return { totalMarket, totalCost, totalPL, totalROI };
-    }
-
-    function getPeriodStats(period) {
-      if (period === 'ALL') {
-        const g = getGlobalPortfolioTotals();
-        return { diffVal: g.totalPL, pct: g.totalROI, startIndex: 0 };
-      }
-
-      if (!fullTimeline || !fullTimeline.dates || !fullTimeline.dates.length) {
-        return { diffVal: 0, pct: 0, startIndex: 0 };
-      }
-
-      const { dates, market, cost } = fullTimeline;
-      const totalLen = dates.length;
-      let startIndex = 0;
-      const lastDate = new Date(dates[totalLen - 1]);
-      let cutoff = new Date(lastDate);
-
-      if (period === '1D') startIndex = Math.max(0, totalLen - 2);
-      else if (period === '1S') cutoff.setDate(cutoff.getDate() - 7);
-      else if (period === '1M') cutoff.setMonth(cutoff.getMonth() - 1);
-      else if (period === '1A') cutoff.setFullYear(cutoff.getFullYear() - 1);
-      else if (period === 'YTD') cutoff = new Date(lastDate.getFullYear(), 0, 1);
-      else cutoff = null;
-
-      if (cutoff && period !== '1D') {
-        const cutStr = cutoff.toISOString().split('T')[0];
-        startIndex = dates.findIndex(d => d >= cutStr);
-        if (startIndex === -1) startIndex = 0;
-      }
-
-      const pMarket = market.slice(startIndex);
-      const pCost = cost.slice(startIndex);
-
-      const startM = pMarket[0] || 0;
-      const endM = pMarket[pMarket.length - 1] || 0;
-      const startC = pCost[0] || 0;
-      const endC = pCost[pCost.length - 1] || 0;
-
-      const diffVal = (endM - startM) - (endC - startC);
-      const effectiveBase = startM > 0 ? startM : (startC > 0 ? startC : 1);
-      const pct = (diffVal / effectiveBase) * 100;
-
-      return { diffVal, pct, startIndex };
-    }
-
-    function updateCharts() {
-      if (!fullTimeline || !fullTimeline.dates || !fullTimeline.dates.length) return;
-
-      const { dates, market, cost, twr } = fullTimeline;
-      const stats = getPeriodStats(currentPeriod);
-      const startIndex = stats.startIndex;
-
-      const pDates = dates.slice(startIndex);
-      const pMarket = market.slice(startIndex);
-      const pCost = cost.slice(startIndex);
-      const pTwr = twr.slice(startIndex);
-
-      const box = document.getElementById('periodHighlightBox');
-      const titleEl = document.getElementById('periodTitleLabel');
-      const valEl = document.getElementById('periodValueLabel');
-
-      const isPositive = stats.diffVal >= 0;
-      box.className = `period-highlight-box ${isPositive ? 'green' : 'red'}`;
-      titleEl.innerText = `VARIAÇÃO NO PERÍODO (${currentPeriod === 'ALL' ? 'MAX' : currentPeriod})`;
-      valEl.innerText = `${isPositive ? '▲ +' : '▼ '}€${Math.abs(stats.diffVal).toFixed(2)} (${isPositive ? '+' : ''}${stats.pct.toFixed(2)}%)`;
-      valEl.style.color = isPositive ? 'var(--green)' : 'var(--red)';
-
-      if (chartMode === 'VALUE') {
-        mainChart.options.scales.y.ticks.callback = v => '€' + v.toLocaleString('pt-PT');
-        mainChart.data = {
-          labels: pDates,
-          datasets: [
-            {
-              label: 'Valor de Carteira (€)',
-              data: pMarket,
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.08)',
-              borderWidth: 2,
-              fill: true,
-              tension: 0.1,
-              pointRadius: currentPeriod === '1D' ? 4 : 0
-            },
-            {
-              label: 'Capital Investido (€)',
-              data: pCost,
-              borderColor: '#64748b',
-              borderDash: [4, 4],
-              borderWidth: 1.5,
-              fill: false,
-              pointRadius: 0
-            }
-          ]
-        };
-      } else {
-        const baseTwr = pTwr[0] || 0;
-        const normalizedPct = pTwr.map(v => parseFloat((v - baseTwr).toFixed(2)));
-
-        mainChart.options.scales.y.ticks.callback = v => `${v >= 0 ? '+' : ''}${v}%`;
-        mainChart.data = {
-          labels: pDates,
-          datasets: [
-            {
-              label: 'Performance TWR (%)',
-              data: normalizedPct,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.08)',
-              borderWidth: 2,
-              fill: true,
-              tension: 0.1,
-              pointRadius: currentPeriod === '1D' ? 4 : 0
-            }
-          ]
-        };
-      }
-      mainChart.update();
-    }
-
-    // Constrói a linha temporal diária real contínua (com pelo menos 30 dias para haver gráfico legível)
-    function buildPortfolioTimeline() {
-      if (!trades.length) return;
-
-      const sortedTrades = [...trades].sort((a,b) => new Date(a.date) - new Date(b.date));
-      let firstDate = new Date(sortedTrades[0].date);
-      const now = new Date();
-
-      // Garante que o gráfico tem pelo menos 30 dias de horizonte temporal
-      const diffDays = Math.ceil((now - firstDate) / (1000 * 60 * 60 * 24));
-      if (diffDays < 30) {
-        firstDate = new Date(now);
-        firstDate.setDate(now.getDate() - 30);
-      }
-
-      const cur = new Date(firstDate);
-      const days = [];
-      while (cur <= now) {
-        days.push(cur.toISOString().split('T')[0]);
-        cur.setDate(cur.getDate() + 1);
-      }
-
-      const fx = eurUsdRate || 1.08;
-      const dates = [];
-      const market = [];
-      const cost = [];
-      const twr = [];
-
-      let runningTwrMultiplier = 1.0;
-      let prevDayMarketVal = 0;
-
-      for (let i = 0; i < days.length; i++) {
-        const d = days[i];
-        const activeTrades = trades.filter(t => t.date <= d);
-
-        let dayCostEUR = 0;
-        let dayMarketEUR = 0;
-        let cashFlowToday = 0;
-
-        if (activeTrades.length > 0) {
-          activeTrades.forEach(t => {
-            const tick = (t.ticker || '').trim().toUpperCase();
-            const s = Number(t.shares) || 0;
-            const p = Number(t.price) || 0;
-            const isUSD = (t.currency || '').trim().toUpperCase() === 'USD';
-            const costItem = isUSD ? (s * p) / fx : (s * p);
-            dayCostEUR += costItem;
-
-            const liveP = (livePrices[tick] !== undefined && livePrices[tick] > 0) ? Number(livePrices[tick]) : p;
-            const livePriceEUR = isUSD ? liveP / fx : liveP;
-            dayMarketEUR += s * livePriceEUR;
-
-            if (t.date === d) {
-              cashFlowToday += costItem;
-            }
-          });
-        }
-
-        if (prevDayMarketVal > 0) {
-          const dayReturn = (dayMarketEUR - cashFlowToday) / prevDayMarketVal;
-          if (dayReturn > 0) runningTwrMultiplier *= dayReturn;
-        }
-        if (dayMarketEUR > 0) {
-          prevDayMarketVal = dayMarketEUR;
-        }
-
-        dates.push(d);
-        cost.push(parseFloat(dayCostEUR.toFixed(2)));
-        market.push(parseFloat(dayMarketEUR.toFixed(2)));
-        twr.push(parseFloat(((runningTwrMultiplier - 1.0) * 100).toFixed(2)));
-      }
-
-      fullTimeline = { dates, market, cost, twr };
-      localStorage.setItem('gq_timeline', JSON.stringify(fullTimeline));
-      calculateAllTimelinePercentages();
-      updateCharts();
-    }
-
-    async function fetchLivePriceSmart(rawTicker, finnhubKey) {
-      let ticker = (rawTicker || '').trim().toUpperCase();
-      const europeanMap = { 'SXRV': 'SXRV.DE', 'SXR8': 'SXR8.DE', 'VWCE': 'VWCE.DE', 'QDVE': 'QDVE.DE', 'EUNL': 'EUNL.DE' };
-      const resolvedTicker = europeanMap[ticker] || ticker;
-
-      if (finnhubKey && !resolvedTicker.endsWith('.DE')) {
-        try {
-          const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${resolvedTicker}&token=${finnhubKey}`);
-          if (res.ok) {
-            const d = await res.json();
-            if (d.c > 0) return d.c;
-          }
-        } catch(e) {}
-      }
-
-      try {
-        const stooqSym = resolvedTicker.includes('.') ? resolvedTicker : `${resolvedTicker}.US`;
-        const stooqUrl = `https://stooq.com/q/l/?s=${stooqSym}&f=sd2t2ohlcv&h&e=csv`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(stooqUrl)}`;
-        const res = await fetch(proxyUrl);
-        if (res.ok) {
-          const text = await res.text();
-          const lines = text.trim().split('\n');
-          if (lines.length >= 2) {
-            const cols = lines[1].split(',');
-            const closePrice = parseFloat(cols[6]);
-            if (closePrice > 0) return closePrice;
-          }
-        }
-      } catch(e) {}
-
-      return null;
-    }
-
-    async function syncPortfolio() {
-      if (!trades.length) return;
-
-      const status = document.getElementById('statusMsg');
-      const btn = document.getElementById('syncBtn');
-      btn.disabled = true;
-
-      try {
-        try {
-          const fxRes = await fetch('https://open.er-api.com/v6/latest/EUR');
-          const fxData = await fxRes.json();
-          if (fxData && fxData.rates && fxData.rates.USD) {
-            eurUsdRate = fxData.rates.USD;
-            localStorage.setItem('gq_fx', eurUsdRate);
-            document.getElementById('fxRateDisplay').innerText = `EUR/USD: ${eurUsdRate.toFixed(4)}`;
-          }
-        } catch(e) {}
-
-        const finnhubKey = localStorage.getItem('finnhub_key');
-        const tickers = [...new Set(trades.map(t => (t.ticker || '').trim().toUpperCase()))];
-
-        for (let t of tickers) {
-          status.innerText = `Cotação de ${t}...`;
-          const price = await fetchLivePriceSmart(t, finnhubKey);
-          if (price) livePrices[t] = price;
-        }
-        localStorage.setItem('gq_prices', JSON.stringify(livePrices));
-        renderSummary();
-
-        buildPortfolioTimeline();
-
-        if (activeModalTicker) openAssetModal(activeModalTicker);
-        status.innerText = 'Cotações sincronizadas!';
-      } catch(err) {
-        console.error(err);
-        buildPortfolioTimeline();
-      } finally {
-        btn.disabled = false;
-        setTimeout(() => status.innerText = '', 3500);
-      }
-    }
-
-    function renderSummary() {
-      const body = document.getElementById('portfolioBody');
-      body.innerHTML = '';
-      const fx = eurUsdRate || 1.08;
-
-      const summary = {};
-      trades.forEach(t => {
-        const tick = (t.ticker || '').trim().toUpperCase();
-        if (!summary[tick]) {
-          summary[tick] = {
-            shares: 0,
-            costEUR: 0,
-            broker: t.broker || 'XTB',
-            currency: (t.currency || 'EUR').trim().toUpperCase(),
-            costNative: 0
-          };
-        }
-        const s = Number(t.shares) || 0;
-        const p = Number(t.price) || 0;
-        summary[tick].shares += s;
-        summary[tick].costNative += (s * p);
-        const cEUR = (summary[tick].currency === 'USD') ? (s * p) / fx : (s * p);
-        summary[tick].costEUR += cEUR;
-      });
-
-      let totalValEUR = 0;
-      let totalCostEUR = 0;
-
-      Object.keys(summary).forEach(t => {
-        const item = summary[t];
-        const rawP = (livePrices[t] !== undefined && livePrices[t] > 0) ? Number(livePrices[t]) : (item.costNative / (item.shares || 1));
-        const pEUR = (item.currency === 'USD') ? rawP / fx : rawP;
-        totalValEUR += item.shares * pEUR;
-        totalCostEUR += item.costEUR;
-      });
-
-      const totalPLEUR = totalValEUR - totalCostEUR;
-      const totalROI = totalCostEUR > 0 ? (totalPLEUR / totalCostEUR) * 100 : 0;
-
-      document.getElementById('totalVal').innerText = `€${totalValEUR.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`;
-      
-      const plEl = document.getElementById('totalPLDisplay');
-      plEl.innerText = `${totalPLEUR >= 0 ? '+' : ''}€${totalPLEUR.toFixed(2)} (${totalROI >= 0 ? '+' : ''}${totalROI.toFixed(2)}%)`;
-      plEl.style.color = totalPLEUR >= 0 ? 'var(--green)' : 'var(--red)';
-
-      const donutLabels = [];
-      const donutData = [];
-
-      Object.keys(summary).forEach(t => {
-        const item = summary[t];
-        const sym = item.currency === 'USD' ? '$' : '€';
-        const avgNative = item.costNative / (item.shares || 1);
-        const liveNative = (livePrices[t] !== undefined && livePrices[t] > 0) ? Number(livePrices[t]) : avgNative;
-        
-        const pEUR = (item.currency === 'USD') ? liveNative / fx : liveNative;
-        const itemTotalEUR = item.shares * pEUR;
-        const plEUR = itemTotalEUR - item.costEUR;
-        const roi = item.costEUR > 0 ? (plEUR / item.costEUR) * 100 : 0;
-        const weight = totalValEUR > 0 ? (itemTotalEUR / totalValEUR) * 100 : 0;
-
-        donutLabels.push(t);
-        donutData.push(parseFloat(itemTotalEUR.toFixed(2)));
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><strong>${t}</strong></td>
-          <td><span class="brand-badge">${item.broker}</span></td>
-          <td>${item.shares.toFixed(4).replace(/\.?0+$/, '')}</td>
-          <td>${sym}${avgNative.toFixed(2)}</td>
-          <td>${sym}${liveNative.toFixed(2)}</td>
-          <td>€${itemTotalEUR.toFixed(2)}</td>
-          <td class="${plEUR >= 0 ? 'profit' : 'loss'}">
-            ${plEUR >= 0 ? '+' : ''}€${plEUR.toFixed(2)} (${roi >= 0 ? '+' : ''}${roi.toFixed(2)}%)
-          </td>
-          <td>${weight.toFixed(1)}%</td>
-          <td>
-            <button class="btn-chart" title="Ver Gráfico Individual" onclick="openAssetModal('${t}')">📈 Gráfico</button>
-            <button class="btn-action" onclick="openDrawer('${t}')">Datas</button>
-            <button class="btn-del" onclick="deleteTicker('${t}')">X</button>
-          </td>
-        `;
-        body.appendChild(row);
-      });
-
-      donutChart.data.labels = donutLabels;
-      donutChart.data.datasets[0].data = donutData;
-      donutChart.update();
-    }
-
-    // Modal Individual Garantido e Sem Bloqueios
-    function openAssetModal(ticker) {
-      activeModalTicker = (ticker || '').trim().toUpperCase();
-      assetCurrentPeriod = 'ALL';
-
-      const modal = document.getElementById('assetModal');
-      modal.style.display = 'flex';
-      document.getElementById('modalAssetTicker').innerText = activeModalTicker;
-
-      const tTrades = trades.filter(t => (t.ticker || '').trim().toUpperCase() === activeModalTicker);
-      if (!tTrades.length) return;
-
-      const broker = tTrades[0].broker || 'XTB';
-      const currency = (tTrades[0].currency || 'USD').trim().toUpperCase();
-      assetCurrencySymbol = (currency === 'USD') ? '$' : '€';
-
-      document.getElementById('modalAssetBroker').innerText = broker;
-      const curBadge = document.getElementById('modalAssetCurrencyBadge');
-      curBadge.innerText = currency === 'USD' ? 'USD ($)' : 'EUR (€)';
-      curBadge.style.background = currency === 'USD' ? '#065f46' : '#1e3a8a';
-      curBadge.style.color = currency === 'USD' ? '#6ee7b7' : '#93c5fd';
-
-      document.getElementById('assetChartTitle').innerText = `EVOLUÇÃO DA POSIÇÃO COM BREAK-EVEN (${currency})`;
-
-      let totalShares = 0;
-      let costNative = 0;
-
-      tTrades.forEach(t => {
-        const s = Number(t.shares) || 0;
-        const p = Number(t.price) || 0;
-        totalShares += s;
-        costNative += (s * p);
-      });
-
-      const avgNative = totalShares > 0 ? (costNative / totalShares) : 0;
-      const liveNative = (livePrices[activeModalTicker] !== undefined && livePrices[activeModalTicker] > 0) 
-        ? Number(livePrices[activeModalTicker]) 
-        : avgNative;
-      
-      const currentValNative = totalShares * liveNative;
-      const plNative = currentValNative - costNative;
-      const roi = costNative > 0 ? (plNative / costNative) * 100 : 0;
-
-      const bufferPct = avgNative > 0 ? ((liveNative - avgNative) / avgNative) * 100 : 0;
-      const isAboveBreakEven = liveNative >= avgNative;
-
-      // Preenchimento dos Cartões
-      document.getElementById('mAvgPrice').innerText = `${assetCurrencySymbol}${avgNative.toFixed(2)}`;
-      document.getElementById('mCurPrice').innerText = `${assetCurrencySymbol}${liveNative.toFixed(2)}`;
-      
-      const bufferEl = document.getElementById('mSafetyBuffer');
-      bufferEl.innerText = `${isAboveBreakEven ? '▲ +' : '▼ '}${bufferPct.toFixed(2)}%`;
-      bufferEl.style.color = isAboveBreakEven ? 'var(--green)' : 'var(--red)';
-
-      document.getElementById('mCost').innerText = `${assetCurrencySymbol}${costNative.toFixed(2)}`;
-      document.getElementById('mVal').innerText = `${assetCurrencySymbol}${currentValNative.toFixed(2)}`;
-      
-      const plEl = document.getElementById('mPL');
-      plEl.innerText = `${plNative >= 0 ? '+' : ''}${assetCurrencySymbol}${plNative.toFixed(2)} (${roi >= 0 ? '+' : ''}${roi.toFixed(2)}%)`;
-      plEl.style.color = plNative >= 0 ? 'var(--green)' : 'var(--red)';
-
-      // Tabela de Compras
-      const modalBody = document.getElementById('modalTradesBody');
-      modalBody.innerHTML = '';
-      tTrades.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-        const s = Number(t.shares) || 0;
-        const p = Number(t.price) || 0;
-        const totalNat = s * p;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${t.date}</td>
-          <td>${t.broker || 'XTB'}</td>
-          <td>${t.currency}</td>
-          <td>${s}</td>
-          <td>${assetCurrencySymbol}${p.toFixed(2)}</td>
-          <td>${assetCurrencySymbol}${totalNat.toFixed(2)}</td>
-          <td><button class="btn-del" onclick="deleteTrade('${t.id}')">Eliminar</button></td>
-        `;
-        modalBody.appendChild(row);
-      });
-
-      // Constrói o histórico da empresa e desenha o gráfico
-      setTimeout(() => {
-        buildIndividualAssetTimeline(activeModalTicker, currency);
-      }, 50);
-    }
-
-    function buildIndividualAssetTimeline(ticker, currency) {
-      const tTrades = trades.filter(t => (t.ticker || '').trim().toUpperCase() === ticker).sort((a,b) => new Date(a.date) - new Date(b.date));
-      if (!tTrades.length) return;
-
-      let firstDate = new Date(tTrades[0].date);
-      const now = new Date();
-      const diffDays = Math.ceil((now - firstDate) / (1000 * 60 * 60 * 24));
-      if (diffDays < 30) {
-        firstDate = new Date(now);
-        firstDate.setDate(now.getDate() - 30);
-      }
-
-      const cur = new Date(firstDate);
-      const days = [];
-      while (cur <= now) {
-        days.push(cur.toISOString().split('T')[0]);
-        cur.setDate(cur.getDate() + 1);
-      }
-
-      const dates = [];
-      const market = [];
-      const cost = [];
-
-      for (let i = 0; i < days.length; i++) {
-        const d = days[i];
-        const active = tTrades.filter(t => t.date <= d);
-
-        let dayCostNative = 0;
-        let dayShares = 0;
-
-        if (active.length > 0) {
-          active.forEach(t => {
-            const s = Number(t.shares) || 0;
-            const p = Number(t.price) || 0;
-            dayShares += s;
-            dayCostNative += (s * p);
-          });
-        }
-
-        const liveP = (livePrices[ticker] !== undefined && livePrices[ticker] > 0) 
-          ? Number(livePrices[ticker]) 
-          : Number(tTrades[0].price);
-        const targetValNative = dayShares * liveP;
-
-        dates.push(d);
-        cost.push(parseFloat(dayCostNative.toFixed(2)));
-        market.push(parseFloat(targetValNative.toFixed(2)));
-      }
-
-      assetTimeline = { dates, market, cost };
-      updateAssetChart();
-    }
-
-    function setAssetPeriod(period, el) {
-      assetCurrentPeriod = period;
-      document.querySelectorAll('#assetModal .period-chip').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      updateAssetChart();
-    }
-
-    function updateAssetChart() {
-      if (!assetTimeline || !assetTimeline.dates.length) return;
-
-      const { dates, market, cost } = assetTimeline;
-      const totalLen = dates.length;
-      let startIndex = 0;
-      const lastDate = new Date(dates[totalLen - 1]);
-      let cutoff = new Date(lastDate);
-
-      if (assetCurrentPeriod === '1D') startIndex = Math.max(0, totalLen - 2);
-      else if (assetCurrentPeriod === '1S') cutoff.setDate(cutoff.getDate() - 7);
-      else if (assetCurrentPeriod === '1M') cutoff.setMonth(cutoff.getMonth() - 1);
-      else if (assetCurrentPeriod === '1A') cutoff.setFullYear(cutoff.getFullYear() - 1);
-      else if (assetCurrentPeriod === 'YTD') cutoff = new Date(lastDate.getFullYear(), 0, 1);
-      else cutoff = null;
-
-      if (cutoff && assetCurrentPeriod !== '1D') {
-        const cutStr = cutoff.toISOString().split('T')[0];
-        startIndex = dates.findIndex(d => d >= cutStr);
-        if (startIndex === -1) startIndex = 0;
-      }
-
-      const pDates = dates.slice(startIndex);
-      const pMarket = market.slice(startIndex);
-      const pCost = cost.slice(startIndex);
-
-      const curMarket = pMarket[pMarket.length - 1] || 0;
-      const curCost = pCost[pCost.length - 1] || 0;
-      const inProfit = curMarket >= curCost;
-
-      const canvas = document.getElementById('assetChart');
-      if (assetChartInstance) {
-        assetChartInstance.destroy();
-      }
-
-      const ctx = canvas.getContext('2d');
-      assetChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: pDates,
-          datasets: [
-            {
-              label: `Valor de Mercado (${assetCurrencySymbol})`,
-              data: pMarket,
-              borderColor: inProfit ? '#10b981' : '#ef4444',
-              backgroundColor: inProfit ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-              borderWidth: 2.5,
-              fill: true,
-              tension: 0.1,
-              pointRadius: assetCurrentPeriod === '1D' ? 4 : 0
-            },
-            {
-              label: `⚖️ Linha de Break-Even / Custo (${assetCurrencySymbol})`,
-              data: pCost,
-              borderColor: '#f59e0b',
-              borderDash: [6, 4],
-              borderWidth: 2,
-              fill: false,
-              pointRadius: 0
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          scales: {
-            x: { grid: { color: '#12192c' }, ticks: { color: '#94a3b8', maxTicksLimit: 7 } },
-            y: { 
-              grid: { color: '#1e293b' }, 
-              ticks: { 
-                color: '#94a3b8', 
-                callback: v => assetCurrencySymbol + v.toLocaleString('pt-PT') 
-              } 
-            }
-          },
-          plugins: {
-            legend: { labels: { color: '#f8fafc', boxWidth: 14 } },
-            tooltip: {
-              callbacks: {
-                label: ctx => `${ctx.dataset.label}: ${assetCurrencySymbol}${ctx.parsed.y.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`
-              }
-            }
-          }
-        }
-      });
-    }
-
-    function closeAssetModal() {
-      document.getElementById('assetModal').style.display = 'none';
-      activeModalTicker = null;
-      if (assetChartInstance) {
-        assetChartInstance.destroy();
-        assetChartInstance = null;
-      }
-    }
-
-    document.getElementById('tradeForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const rawTicker = document.getElementById('ticker').value.trim().toUpperCase();
-      trades.push({
-        id: Date.now().toString(),
-        ticker: rawTicker,
-        date: document.getElementById('tradeDate').value,
-        broker: document.getElementById('broker').value,
-        currency: document.getElementById('currency').value,
-        shares: parseFloat(document.getElementById('shares').value),
-        price: parseFloat(document.getElementById('price').value)
-      });
-      localStorage.setItem('gq_trades', JSON.stringify(trades));
-      renderSummary();
-      buildPortfolioTimeline();
-      document.getElementById('tradeForm').reset();
-      document.getElementById('tradeDate').valueAsDate = new Date();
-      syncPortfolio();
+    if (index > peak) peak = index;
+
+    out.push({
+      date: s.snap_date,
+      value: v,
+      cost: Number(s.cost_eur),
+      index,
+      peak,
+      drawdown: (index / peak - 1) * 100,
+      benchValue: (bench && units !== null) ? units * bench : null
     });
+  });
+  return out;
+}
 
-    function openDrawer(ticker) {
-      const d = document.getElementById('historyDrawer');
-      const b = document.getElementById('drawerBody');
-      document.getElementById('drawerTitle').innerText = `Transações - ${ticker}`;
-      b.innerHTML = '';
-      d.style.display = 'block';
+function periodReturns(series){
+  const periods = [
+    { key:'1S', label:'1 semana', days:7 },
+    { key:'1M', label:'1 mês', days:30 },
+    { key:'3M', label:'3 meses', days:91 },
+    { key:'6M', label:'6 meses', days:182 },
+    { key:'YTD', label:'Este ano', ytd:true },
+    { key:'1A', label:'1 ano', days:365 },
+    { key:'ALL', label:'Tudo', all:true }
+  ];
+  if (!series) return periods.map(p => ({...p, value:null, bench:null, points:null}));
 
-      const fx = eurUsdRate || 1.08;
-      trades.filter(t => (t.ticker || '').trim().toUpperCase() === ticker).sort((x,y) => new Date(y.date) - new Date(x.date)).forEach(t => {
-        const sym = (t.currency || '').trim().toUpperCase() === 'USD' ? '$' : '€';
-        const s = Number(t.shares) || 0;
-        const p = Number(t.price) || 0;
-        const cEUR = (sym === '$') ? (s * p) / fx : (s * p);
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${t.date}</td>
-          <td>${t.broker || 'XTB'}</td>
-          <td>${t.currency}</td>
-          <td>${s}</td>
-          <td>${sym}${p.toFixed(2)}</td>
-          <td>€${cEUR.toFixed(2)}</td>
-          <td><button class="btn-del" onclick="deleteTrade('${t.id}')">Eliminar</button></td>
-        `;
-        b.appendChild(row);
-      });
+  const last = series[series.length - 1];
+  return periods.map(p => {
+    let start;
+    if (p.all) start = series[0];
+    else {
+      let cutoff;
+      if (p.ytd) cutoff = `${new Date().getFullYear()}-01-01`;
+      else { const d = new Date(); d.setDate(d.getDate() - p.days); cutoff = d.toISOString().slice(0,10); }
+      start = series.find(s => s.date >= cutoff);
+      if (!start || start === last) return {...p, value:null, bench:null, points:null};
     }
+    const value = (last.index / start.index - 1) * 100;
+    const bench = (start.benchValue && last.benchValue && start.value > 0)
+      ? (last.benchValue / start.benchValue - 1) * 100 : null;
+    const points = series.filter(s => s.date >= start.date);
+    return {...p, value, bench, points};
+  });
+}
 
-    function deleteTrade(id) {
-      trades = trades.filter(t => t.id !== id);
-      localStorage.setItem('gq_trades', JSON.stringify(trades));
-      renderSummary();
-      closeDrawer();
-      buildPortfolioTimeline();
-      if (activeModalTicker) openAssetModal(activeModalTicker);
-    }
+/* =======================================================================
+   HISTÓRICO DIÁRIO
+   ======================================================================= */
+async function saveSnapshot(){
+  if (!portfolio || !session) return;
+  if (portfolio.incomplete) return;   // um dia incompleto estraga a série
+  if (!(portfolio.totalValue > 0)) return;
 
-    function deleteTicker(ticker) {
-      if (confirm(`Eliminar todas as compras de ${ticker}?`)) {
-        trades = trades.filter(t => (t.ticker || '').trim().toUpperCase() !== ticker);
-        delete livePrices[ticker];
-        localStorage.setItem('gq_trades', JSON.stringify(trades));
-        localStorage.setItem('gq_prices', JSON.stringify(livePrices));
-        renderSummary();
-        closeDrawer();
-        closeAssetModal();
-        buildPortfolioTimeline();
+  const row = {
+    user_id: session.user.id,
+    snap_date: todayISO(),
+    value_eur: Number(portfolio.totalValue.toFixed(2)),
+    cost_eur: Number(portfolio.totalCost.toFixed(2)),
+    fx_eur_usd: fx.EURUSD,
+    benchmark_price: benchmark.price,
+    holdings: portfolio.holdings.filter(h => !h.closed).map(h => ({
+      ticker:h.ticker, shares:h.shares, price:h.price, currency:h.currency,
+      value_eur:h.valueEUR, cost_eur:h.costEUR
+    }))
+  };
+  try{
+    const { error } = await sb.from('snapshots').upsert(row, { onConflict:'user_id,snap_date' });
+    if (error) throw error;
+    const i = snapshots.findIndex(s => s.snap_date === row.snap_date);
+    if (i >= 0) snapshots[i] = row; else snapshots.push(row);
+    renderChart();
+    renderKpis();
+  }catch(e){ console.warn('Snapshot não gravado:', e.message); }
+}
+
+/* =======================================================================
+   ECRÃ
+   ======================================================================= */
+async function render(){
+  portfolio = await computePortfolio();
+  renderKpis();
+  renderHoldings();
+  renderChart();
+  renderSectors();
+  renderOverlap();
+}
+
+function renderKpis(){
+  const p = portfolio;
+  $('kValue').textContent = eur(p.totalValue);
+  $('kValue').className = 'k-val num';
+  $('kValueSub').innerHTML = p.dayEUR !== null
+    ? `<span class="${cls(p.dayEUR)}">Hoje ${eur(p.dayEUR, true)} · ${pct(p.dayPct)}</span>`
+    : 'Variação diária indisponível';
+
+  $('kCost').textContent = eur(p.totalCost);
+  $('kCostSub').textContent = p.estimated ? 'Alguns custos são estimados pelo câmbio do dia' : 'Custo real debitado pela corretora';
+
+  $('kUnreal').textContent = eur(p.unrealized, true);
+  $('kUnreal').className = 'k-val num ' + cls(p.unrealized);
+  $('kUnrealSub').textContent = pct(p.unrealizedPct) + ' sobre o investido';
+
+  $('kTotal').textContent = eur(p.totalResult, true);
+  $('kTotal').className = 'k-val num ' + cls(p.totalResult);
+  $('kTotalSub').textContent = `Vendas ${eur(p.realized, true)} · Dividendos ${eur(p.dividends, true)}`;
+
+  const series = buildSeries();
+  if (series){
+    const last = series[series.length - 1];
+    const twr = last.index - 100;
+    $('kTwr').textContent = pct(twr);
+    $('kTwr').className = 'k-val num ' + cls(twr);
+    $('kTwrSub').textContent = `${series.length} dias registados desde ${dateLabel(series[0].date)}`;
+
+    $('kDd').textContent = last.drawdown <= -0.05 ? pct(last.drawdown) : 'No máximo';
+    $('kDd').className = 'k-val num ' + (last.drawdown <= -0.05 ? 'down' : 'up');
+    const peakDay = series.reduce((a,b) => b.index >= a.index ? b : a, series[0]);
+    $('kDdSub').textContent = `Máximo em ${dateLabel(peakDay.date)} · ${eur(peakDay.value)}`;
+  } else {
+    $('kTwr').textContent = '—';
+    $('kTwr').className = 'k-val num muted';
+    $('kTwrSub').textContent = 'Precisa de dois dias de histórico';
+    $('kDd').textContent = '—';
+    $('kDd').className = 'k-val num muted';
+    $('kDdSub').textContent = 'O máximo começa a ser medido a partir de hoje';
+  }
+}
+
+function renderHoldings(){
+  const body = $('holdingsBody'), foot = $('holdingsFoot');
+  body.innerHTML = ''; foot.innerHTML = '';
+  const open = portfolio.holdings.filter(h => !h.closed);
+
+  if (open.length === 0){
+    body.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:36px;color:var(--t3)">Ainda não há posições. Começa por registar uma compra.</td></tr>`;
+    $('holdingsNote').textContent = '—';
+    return;
+  }
+
+  open.forEach(h => {
+    const meta = ASSET_META[h.ticker] || {};
+    const tr = document.createElement('tr');
+    tr.onclick = () => openAsset(h.ticker);
+    tr.innerHTML = `
+      <td>
+        <div class="asset">
+          <div class="mark">${h.ticker.slice(0,3)}</div>
+          <div>
+            <div class="a-name">${meta.name || h.ticker}</div>
+            <div class="a-sub">${h.ticker} · ${h.currency}${h.estimated ? ' · custo estimado' : ''}</div>
+          </div>
+        </div>
+      </td>
+      <td>${shares(h.shares)}<span class="sub">${h.lots.length} movimento${h.lots.length>1?'s':''}</span></td>
+      <td>${money(h.avgNative, h.currency)}<span class="sub">${eur(h.avgEUR)} por ação</span></td>
+      <td>${h.price !== null ? money(h.price, h.currency) : '<span class="stale">sem cotação</span>'}</td>
+      <td class="${cls(h.dayPct)}">${h.dayPct !== null ? pct(h.dayPct) : '—'}<span class="sub ${cls(h.dayEUR)}">${h.dayEUR !== null ? eur(h.dayEUR, true) : ''}</span></td>
+      <td>${eur(h.valueEUR)}<span class="sub">custo ${eur(h.costEUR)}</span></td>
+      <td>${h.weight !== null ? h.weight.toFixed(2) + '%' : '—'}<div class="bar"><i style="width:${Math.min(100, h.weight || 0)}%"></i></div></td>
+      <td><span class="tag ${h.plEUR >= 0 ? 'up' : 'down'}">${eur(h.plEUR, true)}</span><span class="sub ${cls(h.plPct)}">${pct(h.plPct)}</span></td>
+      <td class="${cls(h.contribution)}">${pct(h.contribution)}<span class="sub">do retorno total</span></td>`;
+    body.appendChild(tr);
+  });
+
+  foot.innerHTML = `<tr>
+    <td>Total</td><td></td><td></td><td></td>
+    <td class="${cls(portfolio.dayPct)}">${portfolio.dayPct !== null ? pct(portfolio.dayPct) : '—'}</td>
+    <td>${eur(portfolio.totalValue)}<span class="sub">custo ${eur(portfolio.totalCost)}</span></td>
+    <td>100%</td>
+    <td><span class="tag ${portfolio.unrealized >= 0 ? 'up':'down'}">${eur(portfolio.unrealized, true)}</span><span class="sub ${cls(portfolio.unrealizedPct)}">${pct(portfolio.unrealizedPct)}</span></td>
+    <td class="${cls(portfolio.unrealizedPct)}">${pct(portfolio.unrealizedPct)}</td>
+  </tr>`;
+
+  const closed = portfolio.holdings.filter(h => h.closed).length;
+  $('holdingsNote').textContent =
+    `${open.length} ativo${open.length>1?'s':''}${closed ? ` · ${closed} já vendido${closed>1?'s':''}` : ''}` +
+    (portfolio.incomplete ? ' · faltam cotações, os totais estão incompletos' : '');
+}
+
+function renderChart(){
+  const series = buildSeries();
+  const returns = periodReturns(series);
+
+  const box = $('periods');
+  box.innerHTML = '';
+  returns.forEach(r => {
+    const b = document.createElement('button');
+    b.className = 'p-btn' + (period === r.key ? ' active' : '');
+    b.disabled = r.value === null;
+    b.style.opacity = r.value === null ? .45 : 1;
+    b.innerHTML = `<span class="l">${r.label}</span><span class="v ${cls(r.value)}">${r.value === null ? '—' : pct(r.value)}</span>`;
+    b.onclick = () => { period = r.key; renderChart(); };
+    box.appendChild(b);
+  });
+
+  const canvas = $('equityCanvas'), empty = $('chartEmpty');
+  if (!series){
+    canvas.classList.add('hidden'); empty.classList.remove('hidden');
+    empty.textContent = snapshots.length === 1
+      ? 'Já ficou gravado o dia de hoje. A partir de amanhã aparece aqui a linha da carteira, comparada com o dinheiro que meteste e com o S&P 500.'
+      : 'Atualiza as cotações para gravar o primeiro dia. O gráfico usa só o histórico real da tua carteira.';
+    $('chartNote').textContent = 'Sem histórico suficiente';
+    if (equityChart){ equityChart.destroy(); equityChart = null; }
+    return;
+  }
+  canvas.classList.remove('hidden'); empty.classList.add('hidden');
+
+  const current = returns.find(r => r.key === period) || returns[returns.length - 1];
+  const points = current.points || series;
+  const alpha = (current.value !== null && current.bench !== null) ? current.value - current.bench : null;
+  $('chartNote').textContent = alpha !== null
+    ? `${current.label}: ${pct(current.value)} · S&P 500 ${pct(current.bench)} · diferença ${pct(alpha)}`
+    : `${current.label}: ${current.value === null ? 'sem dados' : pct(current.value)} · comparação com o S&P 500 ainda a formar-se`;
+
+  const ctx = canvas.getContext('2d');
+  if (equityChart) equityChart.destroy();
+  const grad = ctx.createLinearGradient(0,0,0,290);
+  grad.addColorStop(0,'rgba(56,189,248,.25)');
+  grad.addColorStop(1,'rgba(56,189,248,0)');
+
+  const datasets = [
+    { label:'Valor da carteira', data:points.map(p=>p.value), borderColor:'#38bdf8', backgroundColor:grad, fill:true, borderWidth:2, tension:.2, pointRadius:0, pointHoverRadius:5 },
+    { label:'Dinheiro investido', data:points.map(p=>p.cost), borderColor:'#f59e0b', borderWidth:1.5, borderDash:[5,4], fill:false, pointRadius:0 }
+  ];
+  if (points.some(p => p.benchValue !== null)){
+    datasets.push({ label:'O mesmo dinheiro no S&P 500', data:points.map(p=>p.benchValue), borderColor:'#a855f7', borderWidth:1.6, borderDash:[4,4], fill:false, pointRadius:0 });
+  }
+
+  equityChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels: points.map(p => dateLabel(p.date)), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor:'#111726', borderColor:'rgba(255,255,255,.1)', borderWidth:1, padding:12, displayColors:false,
+          callbacks:{ label: c => ` ${c.dataset.label}: ${eur(c.parsed.y)}` }
+        }
+      },
+      scales:{
+        x:{ grid:{ color:'rgba(255,255,255,.03)' }, ticks:{ color:'#64748b', font:{size:10}, maxTicksLimit:9 } },
+        y:{ position:'right', grid:{ color:'rgba(255,255,255,.04)' }, ticks:{ color:'#94a3b8', font:{size:11}, callback:v => '€' + v.toFixed(0) } }
       }
     }
+  });
+}
 
-    function closeDrawer() { document.getElementById('historyDrawer').style.display = 'none'; }
+function renderSectors(){
+  const totals = {};
+  portfolio.holdings.filter(h => !h.closed && h.valueEUR).forEach(h => {
+    const sec = (ASSET_META[h.ticker] || {}).sector || 'Sem setor definido';
+    totals[sec] = (totals[sec] || 0) + h.valueEUR;
+  });
+  const entries = Object.entries(totals).sort((a,b) => b[1] - a[1]);
+  const total = entries.reduce((s,e) => s + e[1], 0);
+  const colors = entries.map((_,i) => `hsl(${(200 + i*47) % 360} 75% 60%)`);
 
-    function exportData() {
-      const data = { trades, livePrices, fullTimeline, eurUsdRate };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `getquin_portfolio_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-    }
+  $('sectorNote').textContent = entries.length
+    ? `Maior fatia: ${entries[0][0]}, ${(entries[0][1]/total*100).toFixed(1)}%`
+    : 'Sem dados';
 
-    function importData(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const imp = JSON.parse(ev.target.result);
-          if (imp.trades) {
-            trades = imp.trades;
-            livePrices = imp.livePrices || {};
-            fullTimeline = imp.fullTimeline || null;
-            eurUsdRate = imp.eurUsdRate || 1.08;
-            localStorage.setItem('gq_trades', JSON.stringify(trades));
-            localStorage.setItem('gq_prices', JSON.stringify(livePrices));
-            localStorage.setItem('gq_timeline', JSON.stringify(fullTimeline));
-            localStorage.setItem('gq_fx', eurUsdRate);
-            renderSummary();
-            buildPortfolioTimeline();
-            alert('Portofólio importado com sucesso!');
-          }
-        } catch(err) { alert('Ficheiro inválido.'); }
-      };
-      reader.readAsText(file);
-    }
-  </script>
+  const legend = $('sectorLegend');
+  legend.innerHTML = '';
+  entries.forEach(([name, val], i) => {
+    const el = document.createElement('div');
+    el.className = 'legend-item';
+    el.innerHTML = `<span class="n"><i class="d" style="background:${colors[i]}"></i>${name}</span><span class="num" style="font-weight:700">${(val/total*100).toFixed(1)}%</span>`;
+    legend.appendChild(el);
+  });
+
+  const ctx = $('sectorCanvas').getContext('2d');
+  if (sectorChart) sectorChart.destroy();
+  if (!entries.length) return;
+  sectorChart = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels: entries.map(e=>e[0]), datasets:[{ data: entries.map(e=>e[1]), backgroundColor: colors, borderColor:'#0b0f19', borderWidth:2.5 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'72%',
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#111726', callbacks:{ label: c => ` ${eur(c.parsed)} (${(c.parsed/total*100).toFixed(1)}%)` } } } }
+  });
+}
+
+function renderOverlap(){
+  const list = $('overlapList');
+  list.innerHTML = '';
+  const open = portfolio.holdings.filter(h => !h.closed && h.valueEUR);
+  const total = portfolio.totalValue;
+  const heldEtfs = open.filter(h => ETF_HOLDINGS[h.ticker]);
+
+  if (!heldEtfs.length || total <= 0){
+    list.innerHTML = `<div class="hint">Sem ETFs configurados na carteira. A partir do momento em que tiveres um, mostro aqui quanto é que cada empresa pesa de verdade — somando o que tens diretamente e o que vem dentro do ETF.</div>`;
+    $('overlapNote').textContent = '—';
+    return;
+  }
+
+  const exposure = {};
+  open.forEach(h => { if (!ETF_HOLDINGS[h.ticker]) exposure[h.ticker] = { direct: h.valueEUR, viaEtf: 0 }; });
+  heldEtfs.forEach(etf => {
+    Object.entries(ETF_HOLDINGS[etf.ticker].weights).forEach(([tk, w]) => {
+      if (!exposure[tk]) exposure[tk] = { direct: 0, viaEtf: 0 };
+      exposure[tk].viaEtf += etf.valueEUR * w;
+    });
+  });
+
+  const rows = Object.entries(exposure)
+    .map(([tk, e]) => ({ tk, ...e, total: e.direct + e.viaEtf }))
+    .filter(r => r.viaEtf > 0)
+    .sort((a,b) => b.total - a.total);
+
+  if (!rows.length){ list.innerHTML = `<div class="hint">Não há sobreposição entre os teus ativos diretos e os ETFs.</div>`; }
+
+  rows.forEach(r => {
+    const el = document.createElement('div');
+    el.className = 'overlap-row';
+    el.innerHTML = `
+      <div>
+        <div style="font-size:13px;font-weight:650">${(ASSET_META[r.tk]||{}).name || r.tk}</div>
+        <div class="hint">Direto ${eur(r.direct)} · dentro do ETF ${eur(r.viaEtf)}</div>
+      </div>
+      <div class="num" style="text-align:right">
+        <div style="font-size:14px;font-weight:700;color:var(--accent)">${(r.total/total*100).toFixed(1)}%</div>
+        <div class="hint">direto ${(r.direct/total*100).toFixed(1)}%</div>
+      </div>`;
+    list.appendChild(el);
+  });
+
+  const asOf = ETF_HOLDINGS[heldEtfs[0].ticker].asOf;
+  $('overlapNote').textContent = `Composição do ETF de ${dateLabel(asOf)} — atualiza-a de vez em quando`;
+}
+
+/* =======================================================================
+   MODAL DE ATIVO
+   ======================================================================= */
+function openAsset(ticker){
+  activeTicker = ticker;
+  const h = portfolio.holdings.find(x => x.ticker === ticker);
+  if (!h) return;
+  const meta = ASSET_META[ticker] || {};
+
+  $('mName').textContent = meta.name || ticker;
+  $('mSub').textContent = `${ticker} · cotado em ${h.currency}${h.priceStale ? ' · sem cotação atual' : ''}`;
+  $('mShares').textContent = shares(h.shares);
+  $('mAvg').textContent = h.shares > 0 ? `${money(h.avgNative, h.currency)} · ${eur(h.avgEUR)}` : '—';
+  $('mPrice').textContent = h.price !== null ? money(h.price, h.currency) : '—';
+  $('mValue').textContent = eur(h.valueEUR);
+  $('mPL').textContent = h.plEUR !== null ? `${eur(h.plEUR, true)} (${pct(h.plPct)})` : '—';
+  $('mPL').className = cls(h.plEUR);
+  $('mRealized').textContent = eur(h.realizedEUR, true);
+  $('mRealized').className = cls(h.realizedEUR);
+  $('mDiv').textContent = eur(h.dividendsEUR);
+
+  const body = $('mLots');
+  body.innerHTML = '';
+  h.lots.forEach(lot => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" value="${lot.trade_date}" style="width:128px" data-f="trade_date"></td>
+      <td><select data-f="kind" style="width:86px"><option value="BUY"${(lot.kind||'BUY')==='BUY'?' selected':''}>Compra</option><option value="SELL"${lot.kind==='SELL'?' selected':''}>Venda</option></select></td>
+      <td><input type="text" value="${lot.broker||''}" style="width:78px" data-f="broker"></td>
+      <td><input type="number" step="any" value="${lot.shares}" style="width:82px" data-f="shares"></td>
+      <td><input type="number" step="any" value="${lot.price}" style="width:88px" data-f="price"></td>
+      <td><input type="number" step="any" value="${lot.cost_eur ?? ''}" style="width:92px" data-f="cost_eur" placeholder="—"></td>
+      <td><input type="number" step="any" value="${lot.fees_eur ?? 0}" style="width:70px" data-f="fees_eur"></td>
+      <td><button class="btn danger" style="padding:4px 9px">Apagar</button></td>`;
+    tr.querySelectorAll('[data-f]').forEach(input => {
+      input.onchange = () => updateLot(lot.id, input.dataset.f, input.value);
+    });
+    tr.querySelector('button').onclick = () => deleteLot(lot.id);
+    body.appendChild(tr);
+  });
+
+  const divs = dividends.filter(d => d.ticker === ticker);
+  $('divList').innerHTML = divs.length
+    ? divs.map(d => `${dateLabel(d.pay_date)} — ${eur(Number(d.amount_eur))} <button class="btn" style="padding:2px 7px;font-size:11px" onclick="deleteDividend('${d.id}')">apagar</button>`).join('<br>')
+    : 'Ainda não registaste dividendos deste ativo.';
+
+  $('lotDate').value = todayISO();
+  $('divDate').value = todayISO();
+  $('assetModal').classList.add('open');
+}
+
+async function updateLot(id, field, value){
+  const numeric = ['shares','price','cost_eur','fees_eur'];
+  let v = value;
+  if (numeric.includes(field)) v = value === '' ? null : (parseFloat(value) || 0);
+  if (field === 'kind') v = value;
+  const { error } = await sb.from('trades').update({ [field]: v }).eq('id', id);
+  if (error){ alert('Não foi possível gravar: ' + error.message); return; }
+  await loadAll(); await render(); openAsset(activeTicker);
+}
+
+async function deleteLot(id){
+  if (!confirm('Apagar este movimento?')) return;
+  const { error } = await sb.from('trades').delete().eq('id', id);
+  if (error){ alert('Não foi possível apagar: ' + error.message); return; }
+  await loadAll(); await render();
+  if (trades.some(t => t.ticker === activeTicker)) openAsset(activeTicker);
+  else $('assetModal').classList.remove('open');
+}
+
+window.deleteDividend = async function(id){
+  const { error } = await sb.from('dividends').delete().eq('id', id);
+  if (error) return alert(error.message);
+  await loadAll(); await render(); openAsset(activeTicker);
+};
+
+/* =======================================================================
+   ARRANQUE E LIGAÇÕES DE BOTÕES
+   ======================================================================= */
+async function boot(){
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('inpKey').value = settings.finnhubKey || '';
+  $('inpSymbols').value = settings.symbolMap || '';
+  status('A carregar dados', 'warn');
+  try{
+    await loadAll();
+    await render();
+    await refreshQuotes();
+  }catch(e){
+    status('Erro a ler a base de dados', 'bad');
+    console.error(e);
+    alert('A base de dados respondeu com: ' + e.message + '\n\nVerifica se as tabelas trades, dividends e snapshots existem e têm as políticas de acesso aplicadas.');
+  }
+}
+
+sb.auth.getSession().then(({ data }) => {
+  session = data.session;
+  if (session) boot();
+  else $('gate').classList.remove('hidden');
+});
+sb.auth.onAuthStateChange((_e, s) => {
+  const had = !!session;
+  session = s;
+  if (session && !had) boot();
+  if (!session){ $('app').classList.add('hidden'); $('gate').classList.remove('hidden'); }
+});
+
+$('gateBtn').onclick = async () => {
+  const email = $('gateEmail').value.trim();
+  if (!email) return;
+  $('gateMsg').textContent = 'A enviar…';
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: window.location.href } });
+  $('gateMsg').textContent = error ? 'Não deu: ' + error.message : 'Link enviado. Abre-o no mesmo dispositivo.';
+  $('gateMsg').className = 'msg ' + (error ? 'down' : 'up');
+};
+
+$('btnRefresh').onclick = refreshQuotes;
+$('btnSettings').onclick = () => $('drawer').classList.toggle('open');
+$('btnSaveSettings').onclick = () => {
+  settings.finnhubKey = $('inpKey').value.trim();
+  settings.symbolMap = $('inpSymbols').value.trim();
+  LS.set('carteira_settings', settings);
+  $('drawer').classList.remove('open');
+  refreshQuotes();
+};
+$('btnSignOut').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+$('btnExport').onclick = () => {
+  const blob = new Blob([JSON.stringify({ trades, dividends, snapshots }, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `carteira_${todayISO()}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+$('btnAdd').onclick = () => { $('nDate').value = todayISO(); $('newModal').classList.add('open'); };
+$('nClose').onclick = () => $('newModal').classList.remove('open');
+$('mClose').onclick = () => $('assetModal').classList.remove('open');
+[$('assetModal'), $('newModal')].forEach(m => m.onclick = e => { if (e.target === m) m.classList.remove('open'); });
+
+$('nSave').onclick = async () => {
+  const ticker = $('nTicker').value.trim().toUpperCase();
+  const sharesV = parseFloat($('nShares').value);
+  const priceV = parseFloat($('nPrice').value);
+  if (!ticker || !(sharesV > 0) || !(priceV > 0)){
+    $('nMsg').textContent = 'Falta o ticker, as ações ou o preço.';
+    $('nMsg').className = 'msg down';
+    return;
+  }
+  const row = {
+    user_id: session.user.id, ticker,
+    quote_symbol: $('nQuote').value.trim().toUpperCase() || null,
+    currency: $('nCurrency').value, trade_date: $('nDate').value || todayISO(),
+    broker: $('nBroker').value.trim(), kind:'BUY',
+    shares: sharesV, price: priceV,
+    cost_eur: parseFloat($('nCost').value) || null,
+    fees_eur: parseFloat($('nFees').value) || 0
+  };
+  const { error } = await sb.from('trades').insert(row);
+  if (error){ $('nMsg').textContent = error.message; $('nMsg').className = 'msg down'; return; }
+  $('newModal').classList.remove('open');
+  ['nTicker','nQuote','nShares','nPrice','nCost'].forEach(id => $(id).value = '');
+  $('nMsg').textContent = '';
+  await loadAll(); await refreshQuotes();
+};
+
+$('lotSave').onclick = async () => {
+  if (!activeTicker) return;
+  const h = portfolio.holdings.find(x => x.ticker === activeTicker);
+  const sharesV = parseFloat($('lotShares').value);
+  const priceV = parseFloat($('lotPrice').value);
+  if (!(sharesV > 0) || !(priceV > 0)) return alert('Preenche as ações e o preço.');
+  const row = {
+    user_id: session.user.id, ticker: activeTicker,
+    quote_symbol: h.quoteSymbol, currency: h.currency,
+    trade_date: $('lotDate').value || todayISO(), broker: $('lotBroker').value.trim(),
+    kind: $('lotKind').value, shares: sharesV, price: priceV,
+    cost_eur: parseFloat($('lotCost').value) || null,
+    fees_eur: parseFloat($('lotFees').value) || 0
+  };
+  const { error } = await sb.from('trades').insert(row);
+  if (error) return alert(error.message);
+  ['lotShares','lotPrice','lotCost'].forEach(id => $(id).value = '');
+  await loadAll(); await render(); openAsset(activeTicker);
+};
+
+$('divSave').onclick = async () => {
+  if (!activeTicker) return;
+  const amount = parseFloat($('divAmount').value);
+  if (!(amount > 0)) return alert('Indica o valor líquido recebido.');
+  const { error } = await sb.from('dividends').insert({
+    user_id: session.user.id, ticker: activeTicker,
+    pay_date: $('divDate').value || todayISO(), amount_eur: amount
+  });
+  if (error) return alert(error.message);
+  $('divAmount').value = '';
+  await loadAll(); await render(); openAsset(activeTicker);
+};
+
+$('mDelete').onclick = async () => {
+  if (!activeTicker) return;
+  if (!confirm(`Apagar ${activeTicker} e todos os seus movimentos?`)) return;
+  await sb.from('dividends').delete().eq('ticker', activeTicker);
+  const { error } = await sb.from('trades').delete().eq('ticker', activeTicker);
+  if (error) return alert(error.message);
+  $('assetModal').classList.remove('open');
+  activeTicker = null;
+  await loadAll(); await render();
+};
+
+/* atualiza a cada 5 minutos enquanto a página estiver visível */
+setInterval(() => { if (session && document.visibilityState === 'visible') refreshQuotes(); }, 300000);
+</script>
 </body>
 </html>
