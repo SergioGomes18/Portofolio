@@ -169,17 +169,17 @@
 
     <div class="drawer" id="drawer">
       <div class="field">
-        <label for="inpKey">Chave Finnhub (fica só neste dispositivo)</label>
+        <label for="inpKey">Chave Twelve Data (fica só neste dispositivo)</label>
         <input type="password" id="inpKey" placeholder="chave de cotações" style="width:200px">
       </div>
       <div class="field">
-        <label for="inpSymbols">Símbolos alternativos para cotação (ticker=símbolo, um por linha)</label>
-        <input type="text" id="inpSymbols" placeholder="SXRV=CNDX.L" style="width:230px">
+        <label for="inpSymbols">Símbolo de cotação por ativo (ticker=SÍMBOLO:BOLSA, um por linha)</label>
+        <input type="text" id="inpSymbols" placeholder="SXRV=SXRV:XETR" style="width:230px">
       </div>
       <button class="btn" id="btnSaveSettings">Guardar definições</button>
       <button class="btn" id="btnExport">Descarregar cópia dos dados</button>
       <button class="btn" id="btnSignOut">Sair da conta</button>
-      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador. Usa uma chave só de leitura de cotações.</div>
+      <div class="hint" style="width:100%">A chave Twelve Data fica guardada apenas no teu navegador. O plano gratuito cobre a Xetra e outras bolsas europeias, ao contrário da Finnhub. Para ativos ambíguos (ex. SXRV existe em várias bolsas), usa o formato TICKER:BOLSA — SXRV cota na Xetra como SXRV:XETR.</div>
     </div>
   </div>
 
@@ -345,6 +345,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const BENCHMARK_SYMBOL = 'SPY';          // proxy do S&P 500, cotado em USD
 const BENCHMARK_CURRENCY = 'USD';
+const QUOTE_PROVIDER = 'https://api.twelvedata.com';
 
 /* Composição de ETFs para a exposição repetida.
    Números manuais — atualiza-os e muda a data quando o fizeres. */
@@ -379,7 +380,7 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let settings = LS.get('carteira_settings', { finnhubKey:'', symbolMap:'' });
+let settings = LS.get('carteira_settings', { twelveDataKey:'', symbolMap:'' });
 fxHistory = LS.get('carteira_fx_history', {});
 
 /* =======================================================================
@@ -477,49 +478,78 @@ async function refreshFx(){
   fx.prev = last ? Number(last.fx_eur_usd) : fx.EURUSD;
 }
 
+/* A Twelve Data aceita vários símbolos separados por vírgula num único
+   pedido — devolve um objeto por símbolo (se pedires 2+) ou um único
+   objeto direto (se pedires só 1). Isto poupa muito no limite de
+   8 pedidos/minuto do plano gratuito: a carteira inteira sai numa
+   chamada só, incluindo o benchmark. */
 async function refreshQuotes(){
   status('A atualizar cotações', 'warn');
   await refreshFx();
 
   const tickers = [...new Set(trades.map(t => t.ticker))];
-  const key = (settings.finnhubKey || '').trim();
+  const key = (settings.twelveDataKey || '').trim();
 
-  if (!key){
+  if (!key || tickers.length === 0){
     tickers.forEach(tk => { if (!quotes[tk]) quotes[tk] = null; });
     render();
-    status('Sem chave de cotações — abre Definições', 'warn');
+    status(key ? 'Sem posições ainda' : 'Sem chave de cotações — abre Definições', 'warn');
     return;
   }
 
-  let ok = 0, failed = [];
-  for (const tk of tickers){
-    const sym = symbolFor(tk);
-    try{
-      const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(sym)}&token=${key}`);
-      if (!r.ok) throw new Error(r.status);
-      const j = await r.json();
-      if (j && Number(j.c) > 0){
-        const tradeCur = (trades.find(t => t.ticker === tk) || {}).currency || 'USD';
-        quotes[tk] = { price:Number(j.c), prevClose:Number(j.pc) > 0 ? Number(j.pc) : null, currency:tradeCur, asOf:new Date(), live:true, symbol:sym };
-        ok++;
-      } else { failed.push(tk); quotes[tk] = quotes[tk] || null; }
-    }catch(e){ failed.push(tk); quotes[tk] = quotes[tk] || null; }
-  }
+  // ticker interno -> símbolo pedido à API (mapeado em Definições, ex. SXRV -> SXRV:XETR)
+  const wanted = tickers.map(tk => ({ tk, sym: symbolFor(tk) }));
+  wanted.push({ tk: '__BENCHMARK__', sym: BENCHMARK_SYMBOL });
+  const symbolList = wanted.map(w => w.sym).join(',');
 
+  let ok = 0, failed = [];
   try{
-    const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${BENCHMARK_SYMBOL}&token=${key}`);
-    if (r.ok){
-      const j = await r.json();
-      if (j && Number(j.c) > 0) benchmark = { price:Number(j.c), prevClose:Number(j.pc) || null };
+    const url = `${QUOTE_PROVIDER}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(key)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+
+    // resposta com 1 símbolo pedido vem "achatada" (um único objeto);
+    // com vários símbolos vem indexada pelo símbolo pedido.
+    const bySymbol = wanted.length === 1 ? { [wanted[0].sym]: j } : j;
+
+    // a Twelve Data por vezes devolve a chave sem o sufixo de bolsa
+    // (ex. pediste "SXRV:XETR" e a chave vem "SXRV") — procura pelas duas formas.
+    function lookup(sym){
+      if (bySymbol[sym]) return bySymbol[sym];
+      const bare = sym.split(':')[0];
+      const foundKey = Object.keys(bySymbol).find(k => k.split(':')[0].toUpperCase() === bare.toUpperCase());
+      return foundKey ? bySymbol[foundKey] : null;
     }
-  }catch(e){}
+
+    wanted.forEach(({ tk, sym }) => {
+      const entry = lookup(sym);
+      const isBad = !entry || entry.status === 'error' || entry.code >= 400 || !entry.close;
+      if (isBad){
+        if (tk !== '__BENCHMARK__'){ failed.push(tk); quotes[tk] = quotes[tk] || null; }
+        return;
+      }
+      const price = Number(entry.close);
+      const prevClose = Number(entry.previous_close) || null;
+      if (tk === '__BENCHMARK__'){
+        benchmark = { price, prevClose };
+      } else {
+        const tradeCur = (trades.find(t => t.ticker === tk) || {}).currency || entry.currency || 'USD';
+        quotes[tk] = { price, prevClose, currency: tradeCur, asOf: new Date(), live: true, symbol: sym };
+        ok++;
+      }
+    });
+  }catch(e){
+    console.warn('Twelve Data indisponível:', e.message);
+    tickers.forEach(tk => failed.push(tk));
+  }
 
   render();
 
   const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
-  if (failed.length === 0) status(`Cotações de ${hora}`, 'ok');
+  if (failed.length === 0 && ok > 0) status(`Cotações de ${hora}`, 'ok');
   else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}`, 'warn');
-  else status('Nenhuma cotação obtida', 'bad');
+  else status('Nenhuma cotação obtida — confirma a chave e os símbolos', 'bad');
 
   if (ok > 0) await saveSnapshot();
 }
@@ -1102,7 +1132,7 @@ window.deleteDividend = async function(id){
 async function boot(){
   $('gate').classList.add('hidden');
   $('app').classList.remove('hidden');
-  $('inpKey').value = settings.finnhubKey || '';
+  $('inpKey').value = settings.twelveDataKey || '';
   $('inpSymbols').value = settings.symbolMap || '';
   status('A carregar dados', 'warn');
   try{
@@ -1140,7 +1170,7 @@ $('gateBtn').onclick = async () => {
 $('btnRefresh').onclick = refreshQuotes;
 $('btnSettings').onclick = () => $('drawer').classList.toggle('open');
 $('btnSaveSettings').onclick = () => {
-  settings.finnhubKey = $('inpKey').value.trim();
+  settings.twelveDataKey = $('inpKey').value.trim();
   settings.symbolMap = $('inpSymbols').value.trim();
   LS.set('carteira_settings', settings);
   $('drawer').classList.remove('open');
