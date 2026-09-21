@@ -173,6 +173,10 @@
         <input type="password" id="inpKey" placeholder="chave de cotações" style="width:200px">
       </div>
       <div class="field">
+        <label for="inpAvKey">Chave Alpha Vantage (só para o histórico do proxy)</label>
+        <input type="password" id="inpAvKey" placeholder="chave grátis em alphavantage.co" style="width:200px">
+      </div>
+      <div class="field">
         <label for="inpSymbols">Símbolo de cotação por ativo (ticker=SÍMBOLO, um por linha)</label>
         <input type="text" id="inpSymbols" placeholder="MSFT=MSFT" style="width:220px">
       </div>
@@ -187,7 +191,7 @@
       <button class="btn" id="btnSaveSettings">Guardar definições</button>
       <button class="btn" id="btnExport">Descarregar cópia dos dados</button>
       <button class="btn" id="btnSignOut">Sair da conta</button>
-      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador. A Finnhub cobre bem ações e ETFs dos EUA no plano gratuito, mas não dá cotações de bolsas europeias como a Xetra — por isso ativos como o SXRV são seguidos por <b>proxy</b>: em vez de uma cotação direta, o preço é estimado a partir da variação de um ETF equivalente dos EUA (ex. QQQ para o Nasdaq-100), aplicada a um preço de referência real que tu indicas. Sem referência definida, uso o preço e a data da primeira compra desse ativo. Isto é uma estimativa, não uma cotação exata — o desvio tende a crescer devagar com o tempo, porque o QQQ paga dividendos e o SXRV reinveste-os.</div>
+      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador e dá as cotações do dia a dia. A Finnhub bloqueou o histórico de preços no plano gratuito — por isso, só para descobrir o preço do proxy na data de referência (uma única vez, fica guardado para sempre), a app usa a Alpha Vantage, que continua a dar histórico de graça. Regista-te em alphavantage.co para uma chave gratuita. Ativos como o SXRV são seguidos por <b>proxy</b>: em vez de uma cotação direta, o preço é estimado a partir da variação de um ETF equivalente dos EUA (ex. QQQ para o Nasdaq-100), aplicada a um preço de referência real que tu indicas. Sem referência definida, uso o preço e a data da primeira compra desse ativo. Isto é uma estimativa, não uma cotação exata — o desvio tende a crescer devagar com o tempo, porque o QQQ paga dividendos e o SXRV reinveste-os.</div>
     </div>
   </div>
 
@@ -388,7 +392,7 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let settings = LS.get('carteira_settings', { finnhubKey:'', symbolMap:'', proxyMap:'', proxyAnchor:'' });
+let settings = LS.get('carteira_settings', { finnhubKey:'', alphaVantageKey:'', symbolMap:'', proxyMap:'', proxyAnchor:'' });
 fxHistory = LS.get('carteira_fx_history', {});
 
 /* =======================================================================
@@ -466,24 +470,32 @@ function proxyAnchorOverride(ticker){
 /* Preço de fecho do símbolo-proxy (ex. QQQ) numa data fixa, com cache permanente —
    pedido uma única vez por âncora, nunca refeito, para não gastar créditos à toa
    nem introduzir variação de dia para dia no ponto de partida.
-   Usa velas diárias da Finnhub (/stock/candle), com uma janela de alguns dias
-   para lidar com fins de semana e feriados em que a bolsa esteve fechada. */
-async function proxyAnchorClose(proxySym, dateISO, key){
+   A Finnhub bloqueou o histórico de preços no plano gratuito, por isso este
+   único pedido vai à Alpha Vantage, que ainda dá histórico diário de graça. */
+async function proxyAnchorClose(proxySym, dateISO, avKey){
   const cacheKey = `proxy_anchor:${proxySym}:${dateISO}`;
   const cached = LS.get(cacheKey, null);
   if (cached) return cached;
+  if (!avKey) return null;
   try{
-    const from = Math.floor(new Date(dateISO + 'T00:00:00Z').getTime() / 1000);
-    const to = from + 8 * 86400; // 8 dias de janela, cobre fins de semana/feriados
-    const url = `${QUOTE_PROVIDER}/stock/candle?symbol=${encodeURIComponent(proxySym)}&resolution=D&from=${from}&to=${to}&token=${encodeURIComponent(key)}`;
+    const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(proxySym)}&outputsize=full&apikey=${encodeURIComponent(avKey)}`;
     const r = await fetch(url);
     if (!r.ok) return null;
     const j = await r.json();
-    if (!j || j.s !== 'ok' || !Array.isArray(j.c) || !j.c.length) return null;
-    const price = Number(j.c[0]); // primeira vela da janela = mais próxima da data de referência
-    if (!isFinite(price) || price <= 0) return null;
-    LS.set(cacheKey, price);
-    return price;
+    const series = j && j['Time Series (Daily)'];
+    if (!series) return null; // chave inválida, limite atingido, ou símbolo desconhecido
+    // procura a primeira data disponível a partir da âncora (avança até 10 dias por fins de semana/feriados)
+    let d = new Date(dateISO + 'T00:00:00Z');
+    for (let i = 0; i < 10; i++){
+      const iso = d.toISOString().slice(0,10);
+      const day = series[iso];
+      if (day && day['4. close']){
+        const price = Number(day['4. close']);
+        if (isFinite(price) && price > 0){ LS.set(cacheKey, price); return price; }
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    return null;
   }catch(e){ return null; }
 }
 
@@ -548,6 +560,7 @@ async function refreshQuotes(){
 
   const tickers = [...new Set(trades.map(t => t.ticker))];
   const key = (settings.finnhubKey || '').trim();
+  const avKey = (settings.alphaVantageKey || '').trim();
 
   if (!key || tickers.length === 0){
     tickers.forEach(tk => { if (!quotes[tk]) quotes[tk] = null; });
@@ -615,10 +628,12 @@ async function refreshQuotes(){
   });
 
   // 2) tickers seguidos por proxy: preço estimado = âncora × (proxy hoje ÷ proxy na data da âncora)
+  let proxyMissingKey = false;
   for (const { tk, proxySym, anchor } of proxied){
     const entry = results[proxySym];
     if (!entry || entry.error){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
-    const anchorClose = await proxyAnchorClose(proxySym, anchor.date, key);
+    if (!avKey){ proxyMissingKey = true; failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
+    const anchorClose = await proxyAnchorClose(proxySym, anchor.date, avKey);
     if (!anchorClose){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
 
     const ratio = entry.price / anchorClose;
@@ -633,7 +648,7 @@ async function refreshQuotes(){
 
   const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
   if (failed.length === 0 && ok > 0) status(`Cotações de ${hora}`, 'ok');
-  else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}`, 'warn');
+  else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}${proxyMissingKey ? ' (falta a chave Alpha Vantage)' : ''}`, 'warn');
   else status(`Nenhuma cotação obtida${firstError ? ': ' + firstError : ''}`, 'bad');
 
   if (ok > 0) await saveSnapshot();
@@ -1220,6 +1235,7 @@ async function boot(){
   $('gate').classList.add('hidden');
   $('app').classList.remove('hidden');
   $('inpKey').value = settings.finnhubKey || '';
+  $('inpAvKey').value = settings.alphaVantageKey || '';
   $('inpSymbols').value = settings.symbolMap || '';
   $('inpProxy').value = settings.proxyMap || '';
   $('inpProxyAnchor').value = settings.proxyAnchor || '';
@@ -1260,6 +1276,7 @@ $('btnRefresh').onclick = refreshQuotes;
 $('btnSettings').onclick = () => $('drawer').classList.toggle('open');
 $('btnSaveSettings').onclick = () => {
   settings.finnhubKey = $('inpKey').value.trim();
+  settings.alphaVantageKey = $('inpAvKey').value.trim();
   settings.symbolMap = $('inpSymbols').value.trim();
   settings.proxyMap = $('inpProxy').value.trim();
   settings.proxyAnchor = $('inpProxyAnchor').value.trim();
