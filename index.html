@@ -169,7 +169,7 @@
 
     <div class="drawer" id="drawer">
       <div class="field">
-        <label for="inpKey">Chave Twelve Data (fica só neste dispositivo)</label>
+        <label for="inpKey">Chave Finnhub (fica só neste dispositivo)</label>
         <input type="password" id="inpKey" placeholder="chave de cotações" style="width:200px">
       </div>
       <div class="field">
@@ -187,7 +187,7 @@
       <button class="btn" id="btnSaveSettings">Guardar definições</button>
       <button class="btn" id="btnExport">Descarregar cópia dos dados</button>
       <button class="btn" id="btnSignOut">Sair da conta</button>
-      <div class="hint" style="width:100%">A chave Twelve Data fica guardada apenas no teu navegador. Bolsas europeias como a Xetra exigem plano pago na Twelve Data — por isso ativos como o SXRV são seguidos por <b>proxy</b>: em vez de uma cotação direta, o preço é estimado a partir da variação de um ETF equivalente dos EUA (ex. QQQ para o Nasdaq-100), aplicada a um preço de referência real que tu indicas. Sem referência definida, uso o preço e a data da primeira compra desse ativo. Isto é uma estimativa, não uma cotação exata — o desvio tende a crescer devagar com o tempo, porque o QQQ paga dividendos e o SXRV reinveste-os.</div>
+      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador. A Finnhub cobre bem ações e ETFs dos EUA no plano gratuito, mas não dá cotações de bolsas europeias como a Xetra — por isso ativos como o SXRV são seguidos por <b>proxy</b>: em vez de uma cotação direta, o preço é estimado a partir da variação de um ETF equivalente dos EUA (ex. QQQ para o Nasdaq-100), aplicada a um preço de referência real que tu indicas. Sem referência definida, uso o preço e a data da primeira compra desse ativo. Isto é uma estimativa, não uma cotação exata — o desvio tende a crescer devagar com o tempo, porque o QQQ paga dividendos e o SXRV reinveste-os.</div>
     </div>
   </div>
 
@@ -353,7 +353,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const BENCHMARK_SYMBOL = 'SPY';          // proxy do S&P 500, cotado em USD
 const BENCHMARK_CURRENCY = 'USD';
-const QUOTE_PROVIDER = 'https://api.twelvedata.com';
+const QUOTE_PROVIDER = 'https://finnhub.io/api/v1';
 
 /* Composição de ETFs para a exposição repetida.
    Números manuais — atualiza-os e muda a data quando o fizeres. */
@@ -388,7 +388,7 @@ const LS = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let settings = LS.get('carteira_settings', { twelveDataKey:'', symbolMap:'', proxyMap:'', proxyAnchor:'' });
+let settings = LS.get('carteira_settings', { finnhubKey:'', symbolMap:'', proxyMap:'', proxyAnchor:'' });
 fxHistory = LS.get('carteira_fx_history', {});
 
 /* =======================================================================
@@ -465,20 +465,22 @@ function proxyAnchorOverride(ticker){
 
 /* Preço de fecho do símbolo-proxy (ex. QQQ) numa data fixa, com cache permanente —
    pedido uma única vez por âncora, nunca refeito, para não gastar créditos à toa
-   nem introduzir variação de dia para dia no ponto de partida. */
+   nem introduzir variação de dia para dia no ponto de partida.
+   Usa velas diárias da Finnhub (/stock/candle), com uma janela de alguns dias
+   para lidar com fins de semana e feriados em que a bolsa esteve fechada. */
 async function proxyAnchorClose(proxySym, dateISO, key){
   const cacheKey = `proxy_anchor:${proxySym}:${dateISO}`;
   const cached = LS.get(cacheKey, null);
   if (cached) return cached;
   try{
-    const end = new Date(dateISO); end.setDate(end.getDate() + 6);
-    const url = `${QUOTE_PROVIDER}/time_series?symbol=${encodeURIComponent(proxySym)}&interval=1day&start_date=${dateISO}&end_date=${end.toISOString().slice(0,10)}&outputsize=6&apikey=${encodeURIComponent(key)}`;
+    const from = Math.floor(new Date(dateISO + 'T00:00:00Z').getTime() / 1000);
+    const to = from + 8 * 86400; // 8 dias de janela, cobre fins de semana/feriados
+    const url = `${QUOTE_PROVIDER}/stock/candle?symbol=${encodeURIComponent(proxySym)}&resolution=D&from=${from}&to=${to}&token=${encodeURIComponent(key)}`;
     const r = await fetch(url);
     if (!r.ok) return null;
     const j = await r.json();
-    if (!j || !Array.isArray(j.values) || !j.values.length) return null;
-    const sorted = [...j.values].sort((a,b) => a.datetime < b.datetime ? -1 : 1);
-    const price = Number(sorted[0].close);
+    if (!j || j.s !== 'ok' || !Array.isArray(j.c) || !j.c.length) return null;
+    const price = Number(j.c[0]); // primeira vela da janela = mais próxima da data de referência
     if (!isFinite(price) || price <= 0) return null;
     LS.set(cacheKey, price);
     return price;
@@ -534,17 +536,18 @@ async function refreshFx(){
   fx.prev = last ? Number(last.fx_eur_usd) : fx.EURUSD;
 }
 
-/* A Twelve Data aceita vários símbolos separados por vírgula num único
-   pedido — devolve um objeto por símbolo (se pedires 2+) ou um único
-   objeto direto (se pedires só 1). Isto poupa muito no limite de
-   8 pedidos/minuto do plano gratuito: a carteira inteira sai numa
-   chamada só, incluindo o benchmark e os proxies. */
+/* A Finnhub não aceita vários símbolos num único pedido — percorre-se um a
+   um, o que é seguro porque o plano gratuito permite 60 pedidos/minuto
+   (bem mais folgado do que a Twelve Data). Cotações diretas cobrem ações
+   e ETFs dos EUA; para ativos de bolsas europeias (ex. SXRV na Xetra), a
+   Finnhub não dá cotação nenhuma — por isso esses ficam marcados para
+   seguir por proxy (ver proxyFor). */
 async function refreshQuotes(){
   status('A atualizar cotações', 'warn');
   await refreshFx();
 
   const tickers = [...new Set(trades.map(t => t.ticker))];
-  const key = (settings.twelveDataKey || '').trim();
+  const key = (settings.finnhubKey || '').trim();
 
   if (!key || tickers.length === 0){
     tickers.forEach(tk => { if (!quotes[tk]) quotes[tk] = null; });
@@ -553,8 +556,8 @@ async function refreshQuotes(){
     return;
   }
 
-  const direct = [];   // { tk, sym }            — cotação direta na Twelve Data
-  const proxied = [];  // { tk, proxySym, anchor } — seguido pela variação de outro ativo
+  const direct = [];   // { tk, sym }              — cotação direta na Finnhub
+  const proxied = [];  // { tk, proxySym, anchor }  — seguido pela variação de outro ativo
   tickers.forEach(tk => {
     const px = proxyFor(tk);
     if (px){
@@ -562,80 +565,65 @@ async function refreshQuotes(){
       const firstTrade = [...trades].filter(t => t.ticker === tk).sort((a,b) => a.trade_date < b.trade_date ? -1 : 1)[0];
       const anchor = override || (firstTrade ? { price: Number(firstTrade.price), date: firstTrade.trade_date } : null);
       if (anchor) proxied.push({ tk, proxySym: px, anchor });
-      else { direct.push({ tk, sym: symbolFor(tk) }); } // sem âncora possível, tenta cotação direta na mesma
+      else direct.push({ tk, sym: symbolFor(tk) }); // sem âncora possível, tenta cotação direta na mesma
     } else {
       direct.push({ tk, sym: symbolFor(tk) });
     }
   });
 
-  // um único pedido para: símbolos diretos + benchmark + símbolos-proxy (sem duplicados)
-  const wanted = [...direct];
-  wanted.push({ tk: '__BENCHMARK__', sym: BENCHMARK_SYMBOL });
-  proxied.forEach(p => { if (!wanted.some(w => w.sym === p.proxySym)) wanted.push({ tk: '__PROXY__' + p.proxySym, sym: p.proxySym }); });
-  const symbolList = wanted.map(w => w.sym).join(',');
+  // símbolos-proxy a pedir (sem duplicados), além dos diretos e do benchmark
+  const proxySymbols = [...new Set(proxied.map(p => p.proxySym))];
+  const wanted = [...direct, { tk: '__BENCHMARK__', sym: BENCHMARK_SYMBOL }, ...proxySymbols.map(s => ({ tk: '__PROXY__' + s, sym: s }))];
+
+  async function fetchOne(sym){
+    try{
+      const url = `${QUOTE_PROVIDER}/quote?symbol=${encodeURIComponent(sym)}&token=${encodeURIComponent(key)}`;
+      const r = await fetch(url);
+      const raw = await r.text();
+      let j; try{ j = JSON.parse(raw); }catch(e){ return { error: `resposta inválida (HTTP ${r.status})` }; }
+      if (!r.ok) return { error: j.error || `HTTP ${r.status}` };
+      if (!j || !(Number(j.c) > 0)) return { error: 'sem preço' };
+      return { price: Number(j.c), prevClose: Number(j.pc) > 0 ? Number(j.pc) : null };
+    }catch(e){ return { error: e.message }; }
+  }
+
+  const results = {};
+  let firstError = null;
+  for (const { sym } of wanted){
+    const res = await fetchOne(sym);
+    results[sym] = res;
+    if (res.error && !firstError) firstError = res.error;
+  }
 
   let ok = 0, failed = [];
-  let bySymbol = {};
-  try{
-    const url = `${QUOTE_PROVIDER}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(key)}`;
-    const r = await fetch(url);
-    const raw = await r.text();
-    let j;
-    try{ j = JSON.parse(raw); }catch(parseErr){ throw new Error(`Resposta não é JSON (HTTP ${r.status}): ${raw.slice(0,140)}`); }
-    if (!r.ok || j.status === 'error'){
-      throw new Error(j.message || `HTTP ${r.status}`);
-    }
-    // resposta com 1 símbolo pedido vem "achatada" (um único objeto);
-    // com vários símbolos vem indexada pelo símbolo pedido.
-    bySymbol = wanted.length === 1 ? { [wanted[0].sym]: j } : j;
-  }catch(e){
-    console.warn('Twelve Data indisponível:', e.message);
-    tickers.forEach(tk => failed.push(tk));
-    render();
-    status(`Erro: ${e.message}`, 'bad');
-    return;
-  }
-
-  // a Twelve Data por vezes devolve a chave sem o sufixo de bolsa — procura pelas duas formas.
-  function lookup(sym){
-    if (bySymbol[sym]) return bySymbol[sym];
-    const bare = sym.split(':')[0];
-    const foundKey = Object.keys(bySymbol).find(k => k.split(':')[0].toUpperCase() === bare.toUpperCase());
-    return foundKey ? bySymbol[foundKey] : null;
-  }
-  function isBad(entry){ return !entry || entry.status === 'error' || Number(entry.code) >= 400 || !entry.close; }
 
   // 1) benchmark e tickers diretos
   wanted.forEach(({ tk, sym }) => {
     if (tk.startsWith('__PROXY__')) return; // tratados no passo 2
-    const entry = lookup(sym);
-    if (isBad(entry)){
+    const entry = results[sym];
+    if (!entry || entry.error){
       if (tk !== '__BENCHMARK__'){ failed.push(tk); quotes[tk] = quotes[tk] || null; }
       return;
     }
-    const price = Number(entry.close);
-    const prevClose = Number(entry.previous_close) || null;
     if (tk === '__BENCHMARK__'){
-      benchmark = { price, prevClose };
+      benchmark = { price: entry.price, prevClose: entry.prevClose };
     } else {
-      const tradeCur = (trades.find(t => t.ticker === tk) || {}).currency || entry.currency || 'USD';
-      quotes[tk] = { price, prevClose, currency: tradeCur, asOf: new Date(), live: true, symbol: sym };
+      const tradeCur = (trades.find(t => t.ticker === tk) || {}).currency || 'USD';
+      quotes[tk] = { price: entry.price, prevClose: entry.prevClose, currency: tradeCur, asOf: new Date(), live: true, symbol: sym };
       ok++;
     }
   });
 
   // 2) tickers seguidos por proxy: preço estimado = âncora × (proxy hoje ÷ proxy na data da âncora)
   for (const { tk, proxySym, anchor } of proxied){
-    const proxyEntry = lookup(proxySym);
-    if (isBad(proxyEntry)){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
-    const proxyNow = Number(proxyEntry.close);
-    const proxyPrevClose = Number(proxyEntry.previous_close) || null;
+    const entry = results[proxySym];
+    if (!entry || entry.error){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
     const anchorClose = await proxyAnchorClose(proxySym, anchor.date, key);
     if (!anchorClose){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
 
-    const ratio = proxyNow / anchorClose;
+    const ratio = entry.price / anchorClose;
     const price = anchor.price * ratio;
-    const prevClose = proxyPrevClose ? anchor.price * (proxyPrevClose / anchorClose) : null;
+    const prevClose = entry.prevClose ? anchor.price * (entry.prevClose / anchorClose) : null;
     const tradeCur = (trades.find(t => t.ticker === tk) || {}).currency || 'EUR';
     quotes[tk] = { price, prevClose, currency: tradeCur, asOf: new Date(), live: true, estimated: true, via: proxySym, anchorDate: anchor.date };
     ok++;
@@ -646,7 +634,7 @@ async function refreshQuotes(){
   const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
   if (failed.length === 0 && ok > 0) status(`Cotações de ${hora}`, 'ok');
   else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}`, 'warn');
-  else status('Nenhuma cotação obtida — confirma a chave e os símbolos', 'bad');
+  else status(`Nenhuma cotação obtida${firstError ? ': ' + firstError : ''}`, 'bad');
 
   if (ok > 0) await saveSnapshot();
 }
@@ -1231,7 +1219,7 @@ window.deleteDividend = async function(id){
 async function boot(){
   $('gate').classList.add('hidden');
   $('app').classList.remove('hidden');
-  $('inpKey').value = settings.twelveDataKey || '';
+  $('inpKey').value = settings.finnhubKey || '';
   $('inpSymbols').value = settings.symbolMap || '';
   $('inpProxy').value = settings.proxyMap || '';
   $('inpProxyAnchor').value = settings.proxyAnchor || '';
@@ -1271,7 +1259,7 @@ $('gateBtn').onclick = async () => {
 $('btnRefresh').onclick = refreshQuotes;
 $('btnSettings').onclick = () => $('drawer').classList.toggle('open');
 $('btnSaveSettings').onclick = () => {
-  settings.twelveDataKey = $('inpKey').value.trim();
+  settings.finnhubKey = $('inpKey').value.trim();
   settings.symbolMap = $('inpSymbols').value.trim();
   settings.proxyMap = $('inpProxy').value.trim();
   settings.proxyAnchor = $('inpProxyAnchor').value.trim();
