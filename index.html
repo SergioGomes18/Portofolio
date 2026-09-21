@@ -41,7 +41,7 @@
     font-family: var(--font);
     background-color: var(--bg);
     color: var(--t1);
-    padding: 24px 20px 72px;
+    padding: 20px 16px 60px;
     min-height: 100vh;
     background-image: 
       radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.08) 0, transparent 40%),
@@ -142,7 +142,7 @@
   .btn.danger { color: var(--down); border-color: var(--down-br); background: var(--down-bg); }
   .btn.danger:hover { background: rgba(244, 63, 94, 0.2); color: #fff; }
 
-  /* Drawer / Painel deslizante */
+  /* Drawer */
   .drawer {
     display: none;
     width: 100%;
@@ -221,7 +221,7 @@
     font-weight: 500;
   }
 
-  /* Cards Genéricos */
+  /* Cards */
   .card {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -334,7 +334,7 @@
     background: linear-gradient(90deg, #38bdf8, #2563eb);
   }
 
-  /* Gráfico */
+  /* Gráficos */
   .chart-box { height: 300px; position: relative; }
   .periods {
     display: flex;
@@ -377,7 +377,7 @@
     padding: 0 20px;
   }
 
-  /* Layout 2 Colunas */
+  /* 2 Colunas */
   .two-col {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
@@ -413,7 +413,7 @@
     margin-bottom: 10px;
   }
 
-  /* Modal de Detalhe */
+  /* Modal */
   .overlay {
     display: none;
     position: fixed;
@@ -514,13 +514,14 @@
   /* Login / Gate */
   .gate {
     max-width: 400px;
-    margin: 14vh auto 0;
+    margin: 6vh auto 0;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
-    padding: 32px;
+    padding: 28px;
     box-shadow: var(--shadow);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
   .gate h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; color: #fff; }
   .gate p { font-size: 13px; color: var(--t2); line-height: 1.6; margin-bottom: 22px; }
@@ -533,8 +534,8 @@
 </head>
 <body>
 
-<!-- ECRÃ DE ENTRADA -->
-<div id="gate" class="gate hidden">
+<!-- ECRÃ DE ENTRADA (Visível por defeito para evitar ecrã em branco no telemóvel) -->
+<div id="gate" class="gate">
   <h1>A tua carteira</h1>
   <p>Escreve o teu email. Recebes um link que te dá entrada — sem palavra-passe. Os dados ficam ligados à tua conta e mais ninguém lhes chega.</p>
   <div class="field">
@@ -596,4 +597,120 @@
     <div class="kpi"><div class="k-label">Investido por liquidar</div><div class="k-val num" id="kCost">€0,00</div><div class="k-sub" id="kCostSub">—</div></div>
     <div class="kpi"><div class="k-label">Ganho por realizar</div><div class="k-val num" id="kUnreal">€0,00</div><div class="k-sub" id="kUnrealSub">—</div></div>
     <div class="kpi"><div class="k-label">Resultado total</div><div class="k-val num" id="kTotal">€0,00</div><div class="k-sub" id="kTotalSub">inclui vendas e dividendos</div></div>
-    <div class="kpi"><div class="k-label">Rendimento da carteira</div><
+    <div class="kpi"><div class="k-label">Rendimento da carteira</div><div class="k-val num" id="kTwr">—</div><div class="k-sub" id="kTwrSub">sem efeito dos reforços</div></div>
+    <div class="kpi"><div class="k-label">Distância do máximo</div><div class="k-val num" id="kDd">—</div><div class="k-sub" id="kDdSub">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Posições</div>
+        <div class="card-note" id="holdingsNote">—</div>
+      </div>
+      <div class="card-note">Clica numa linha para ver e corrigir os lotes</div>
+    </div>
+    <div class="table-scroll">
+      <table class="holdings">
+        <thead>
+          <tr>
+            <th>Ativo</th>
+            <th>Ações</th>
+            <th>Preço médio</th>
+            <th>Cotação</th>
+            <th>Hoje</th>
+            <th>Valor</th>
+            <th>Peso</th>
+            <th>Ganho</th>
+            <th>Contributo</th>
+          </tr>
+        </thead>
+        <tbody id="holdingsBody"></tbody>
+        <tfoot id="holdingsFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Evolução</div>
+        <div class="card-note" id="chartNote">—</div>
+      </div>
+      <div class="legend">
+        <span><i class="swatch" style="background:#38bdf8"></i> Valor da carteira</span>
+        <span><i class="swatch" style="background:#f59e0b"></i> Dinheiro investido</span>
+        <span><i class="swatch" style="background:#a855f7"></i> O mesmo dinheiro no S&amp;P 500</span>
+      </div>
+    </div>
+    <div class="chart-box"><canvas id="equityCanvas"></canvas><div class="empty hidden" id="chartEmpty"></div></div>
+    <div class="periods" id="periods"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Onde está o dinheiro</div>
+        <div class="card-note" id="sectorNote">—</div>
+      </div>
+      <div class="donut-row">
+        <div class="donut"><canvas id="sectorCanvas"></canvas></div>
+        <div class="legend-list" id="sectorLegend"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Exposição repetida</div>
+        <div class="card-note" id="overlapNote">—</div>
+      </div>
+      <div id="overlapList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ATIVO -->
+<div class="overlay" id="assetModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="mName" style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:#fff">—</h2>
+        <div class="card-note" id="mSub" style="margin-top:4px">—</div>
+      </div>
+      <button class="btn" id="mClose">Fechar</button>
+    </div>
+
+    <div class="stats">
+      <div><span>Ações</span><strong id="mShares">—</strong></div>
+      <div><span>Preço médio pago</span><strong id="mAvg">—</strong></div>
+      <div><span>Cotação</span><strong id="mPrice">—</strong></div>
+      <div><span>Valor</span><strong id="mValue">—</strong></div>
+      <div><span>Ganho por realizar</span><strong id="mPL">—</strong></div>
+      <div><span>Já realizado</span><strong id="mRealized">—</strong></div>
+      <div><span>Dividendos recebidos</span><strong id="mDiv">—</strong></div>
+    </div>
+
+    <div class="section-label">Movimentos</div>
+    <div class="table-scroll">
+      <table class="lots">
+        <thead><tr><th>Data</th><th>Tipo</th><th>Corretora</th><th>Ações</th><th>Preço</th><th>Valor em euros</th><th>Comissão €</th><th></th></tr></thead>
+        <tbody id="mLots"></tbody>
+      </table>
+    </div>
+
+    <div class="section-label">Registar movimento neste ativo</div>
+    <div class="lot-form">
+      <div class="field"><label>Data</label><input type="date" id="lotDate"></div>
+      <div class="field"><label>Tipo</label><select id="lotKind"><option value="BUY">Compra</option><option value="SELL">Venda</option></select></div>
+      <div class="field"><label>Corretora</label><input type="text" id="lotBroker" value="XTB"></div>
+      <div class="field"><label>Ações</label><input type="number" step="any" id="lotShares"></div>
+      <div class="field"><label>Preço</label><input type="number" step="any" id="lotPrice"></div>
+      <div class="field"><label>Valor em euros</label><input type="number" step="any" id="lotCost" placeholder="o que saiu da conta"></div>
+      <div class="field"><label>Comissão €</label><input type="number" step="any" id="lotFees" value="0"></div>
+      <button class="btn primary" id="lotSave">Guardar</button>
+    </div>
+    <div class="hint" style="margin-top:12px">O valor em euros é o que a corretora debitou. Preenche-o sempre: é o que torna o cálculo de rentabilidade exato.</div>
+  </div>
+</div>
+
+</body>
+</html>
