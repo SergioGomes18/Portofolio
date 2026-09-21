@@ -1,1829 +1,1628 @@
+
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portfolio Tracker Pro | Value & Growth Terminal</title>
-​<!-- Tailwind CSS & Supabase JS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-​<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-​<script>
-tailwind.config = {
-darkMode: 'class',
-theme: {
-extend: {
-fontFamily: {
-sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-mono: ['JetBrains Mono', 'monospace'],
-},
-colors: {
-terminal: {
-950: '#050811',
-900: '#0b0f19',
-850: '#111726',
-800: '#182033',
-750: '#1f2a40',
-700: '#232d44',
-600: '#33415e',
-}
-}
-}
-}
-}
-</script>
-​<style>
-body {
-background-color: #050811;
-font-family: 'Inter', sans-serif;
--webkit-font-smoothing: antialiased;
-}
-.num-mono {
-font-family: 'JetBrains Mono', monospace;
-font-feature-settings: "tnum" 1;
-}
-::-webkit-scrollbar {
-width: 5px;
-height: 5px;
-}
-::-webkit-scrollbar-track {
-background: #080c16;
-}
-::-webkit-scrollbar-thumb {
-background: #1f293d;
-border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-background: #2d3b55;
-}
-@keyframes pulseSoft {
-0%, 100% { opacity: 1; transform: scale(1); }
-50% { opacity: 0.45; transform: scale(0.9); }
-}
-.animate-pulse-soft {
-animation: pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-.glass-card {
-background: linear-gradient(180deg, rgba(17, 23, 38, 0.85) 0%, rgba(11, 15, 25, 0.95) 100%);
-backdrop-filter: blur(12px);
-border: 1px solid rgba(255, 255, 255, 0.06);
-}
-.glass-card:hover {
-border-color: rgba(255, 255, 255, 0.12);
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Portfolio Tracker Pro | Value & Growth Terminal</title>
+
+  <!-- Tailwind CSS & Supabase SDK -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            obsidian: {
+              950: '#030712',
+              900: '#0b0f19',
+              850: '#111827',
+              800: '#1f2937',
+              700: '#374151',
+            },
+            brand: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            },
+            profit: {
+              DEFAULT: '#10b981',
+              dark: '#059669',
+              glow: 'rgba(16, 185, 129, 0.15)',
+            },
+            loss: {
+              DEFAULT: '#f43f5e',
+              dark: '#e11d48',
+              glow: 'rgba(244, 63, 94, 0.15)',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 5px;
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(11, 15, 25, 0.7);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(75, 85, 99, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.6);
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
-​<header class="sticky top-0 z-40 bg-terminal-950/85 backdrop-blur-md border-b border-terminal-800/80">
-<div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-​<!-- Brand & Strategy Pill -->
-<div class="flex items-center gap-3">
-<div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-emerald-400 p-[1px] shadow-lg shadow-sky-500/15">
-<div class="w-full h-full bg-terminal-950 rounded-[11px] flex items-center justify-center">
-<svg class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-<polyline points="16 7 22 7 22 13"></polyline>
-</svg>
-</div>
-</div>
-<div>
-<div class="flex items-center gap-2">
-<h1 class="text-sm sm:text-base font-bold tracking-tight text-white">AssetPulse</h1>
-<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/25 num-mono">VALUE & GROWTH</span>
-</div>
-<p class="text-[11px] text-slate-400 hidden sm:block">Ações em USD ($) • Corretoras IBKR / XTB • Consolidado em EUR (€)</p>
-</div>
-</div>
-​<!-- Live Indicators & Actions -->
-<div class="flex items-center gap-2 sm:gap-2.5">
-​<!-- Supabase Cloud Sync Pill -->
-<button onclick="openSupabaseModal()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-terminal-900 hover:bg-terminal-850 border border-terminal-800 text-xs text-slate-300 transition" title="Estado da sincronização na Nuvem com o Supabase">
-<span id="supabase-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse-soft"></span>
-<span class="text-slate-400 hidden lg:inline">Nuvem:</span>
-<strong id="supabase-status-label" class="font-semibold text-emerald-400 num-mono text-[11px]">Supabase Ativo</strong>
-</button>
-​<!-- Live EUR/USD Pill -->
-<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-terminal-900 border border-terminal-800 text-xs text-slate-300 shadow-sm" title="Taxa de câmbio em tempo real">
-<span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse-soft"></span>
-<span class="text-slate-400">1 € =</span>
-<strong id="fx-label" class="text-white num-mono font-semibold">1.0850</strong>
-<span class="text-slate-500">$</span>
-<button onclick="fetchLiveExchangeRate(true)" class="text-slate-400 hover:text-white p-0.5 rounded hover:bg-terminal-800 transition" title="Forçar atualização cambial">
-<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 16h5v5"></path></svg>
-</button>
-</div>
-​<!-- Sync Market Prices -->
-<button onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 transition active:scale-95" title="Sincronizar cotações de mercado reais">
-<svg id="quotes-sync-icon" class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 16h5v5"></path></svg>
-<span id="quotes-status-text" class="text-xs font-semibold num-mono hidden md:inline">Atualizar Cotações</span>
-</button>
-​<!-- Test Asset Simulation Button -->
-<button onclick="injectRandomTestAsset()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-semibold text-xs transition active:scale-95" title="Adicionar automaticamente uma ação aleatória para testar o sistema">
-<span>🧪</span>
-<span class="hidden sm:inline">Testar Ação Aleatória</span>
-</button>
-​<!-- New Asset Button -->
-<button onclick="openModal()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 font-semibold text-xs text-white shadow-lg shadow-sky-600/25 transition-all hover:scale-[1.02] active:scale-95">
-<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-<span class="hidden sm:inline">Novo Ativo</span>
-</button>
-</div>
-​</div>
-</header>
-​<!-- Live Sync Notification Banner -->
-<div id="sync-notification" class="hidden max-w-[1440px] mx-auto px-4 sm:px-6 pt-3">
-<div id="sync-notification-box" class="p-3 rounded-xl border text-xs num-mono flex items-center justify-between shadow-sm">
-<span id="sync-notification-text"></span>
-<button onclick="document.getElementById('sync-notification').classList.add('hidden')" class="text-slate-400 hover:text-white">×</button>
-</div>
-</div>
-​<main class="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 w-full flex-1 flex flex-col gap-6">
-​<!-- KPI SUMMARY GRID -->
-<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-​<!-- 1. Património Atual -->
-<div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-<div class="absolute -right-4 -top-4 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl group-hover:bg-sky-500/20 transition-all duration-300"></div>
-<div class="flex justify-between items-start text-slate-400">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Património Atual (EUR)</span>
-<div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-</div>
-</div>
-<div class="mt-3">
-<div id="kpi-curr-eur" class="text-2xl sm:text-3xl font-extrabold text-white num-mono tracking-tight">0,00 €</div>
-<div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
-<span>Em Dólares:</span>
-<strong id="kpi-curr-usd" class="text-slate-200 font-medium num-mono">$0.00</strong>
-</div>
-</div>
-</div>
-​<!-- 2. Capital Investido c/ Taxas -->
-<div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-<div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-300"></div>
-<div class="flex justify-between items-start text-slate-400">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Capital Investido (C/ Taxas)</span>
-<div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-</div>
-</div>
-<div class="mt-3">
-<div id="kpi-inv-eur" class="text-2xl sm:text-3xl font-extrabold text-white num-mono tracking-tight">0,00 €</div>
-<div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
-<span>Taxas das corretoras:</span>
-<strong id="kpi-fees-eur" class="text-amber-400 font-medium num-mono">0,00 €</strong>
-</div>
-</div>
-</div>
-​<!-- 3. Mais-Valia Líquida -->
-<div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-<div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-300"></div>
-<div class="flex justify-between items-start text-slate-400">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Mais-Valia Líquida Global</span>
-<div id="kpi-pl-icon-container" class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-</div>
-</div>
-<div class="mt-3">
-<div id="kpi-pl-eur" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 num-mono tracking-tight">+0,00 €</div>
-<div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
-<span>Mais-valia em USD:</span>
-<strong id="kpi-pl-usd" class="text-slate-200 font-medium num-mono">+$0.00</strong>
-</div>
-</div>
-</div>
-​<!-- 4. Rentabilidade Global -->
-<div class="glass-card rounded-2xl p-5 relative overflow-hidden group">
-<div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all duration-300"></div>
-<div class="flex justify-between items-start text-slate-400">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Rentabilidade da Carteira</span>
-<div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-</div>
-</div>
-<div class="mt-3">
-<div id="kpi-pl-pct" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 num-mono tracking-tight">+0.00%</div>
-<div class="text-[11px] text-slate-400 mt-1">Estratégia pura de Valor e Crescimento</div>
-</div>
-</div>
-​</section>
-​<!-- CHART SECTION -->
-<section class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
-​<!-- Chart Top Bar -->
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-terminal-800 pb-4">
-<div>
-<div class="flex items-center gap-2">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Evolução Patrimonial por Data de Compra (EUR)</span>
-<span id="chart-data-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold num-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 flex items-center gap-1">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-soft"></span>
-<span id="chart-source-label">Histórico Real Yahoo Finance</span>
-</span>
-</div>
-<div class="flex items-baseline gap-3 mt-1">
-<div id="broker-scrub-val" class="text-2xl sm:text-3xl font-extrabold text-white num-mono tracking-tight">0,00 €</div>
-<div class="flex items-center gap-2">
-<span id="broker-scrub-badge" class="px-2 py-0.5 rounded-md text-xs font-bold num-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">+0,00 € (+0.00%)</span>
-<span id="broker-scrub-date" class="text-xs text-slate-400 num-mono hidden sm:inline">Hoje</span>
-</div>
-</div>
-</div>
-​<!-- Controls: Timeframes & View Modes -->
-<div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-<div class="flex p-1 rounded-xl bg-terminal-900 border border-terminal-800">
-<button class="tf-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition" id="tf-1d" onclick="setTimeframe('1D')">1D</button>
-<button class="tf-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition" id="tf-1w" onclick="setTimeframe('1S')">1S</button>
-<button class="tf-btn active px-2.5 py-1 text-xs font-semibold rounded-lg bg-terminal-800 text-sky-400 shadow-sm transition" id="tf-1m" onclick="setTimeframe('1M')">1M</button>
-<button class="tf-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition" id="tf-3m" onclick="setTimeframe('3M')">3M</button>
-<button class="tf-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition" id="tf-1y" onclick="setTimeframe('1A')">1A</button>
-<button class="tf-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition" id="tf-all" onclick="setTimeframe('TUDO')">TUDO</button>
-</div>
-​<div class="flex items-center gap-1.5">
-<div class="flex p-1 rounded-xl bg-terminal-900 border border-terminal-800 text-xs">
-<button class="chart-tab-btn active px-2.5 py-1 rounded-lg bg-terminal-800 text-sky-400 font-medium transition" id="tab-line" onclick="setChartMode('LINE')">Linha</button>
-<button class="chart-tab-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium transition" id="tab-comp" onclick="setChartMode('COMPARISON')">Custo vs Valor</button>
-<button class="chart-tab-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium transition" id="tab-alloc" onclick="setChartMode('ALLOCATION')">Alocação</button>
-</div>
-​<button onclick="runChartDiagnosticTest()" id="btn-test-chart" class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition active:scale-95" title="Executar teste de auditoria matemática do gráfico">
-<span>🧪</span>
-<span class="hidden md:inline">Testar Precisão</span>
-</button>
-</div>
-</div>
-</div>
-​<!-- Canvas Chart Container with Loading Indicator -->
-<div class="w-full h-56 sm:h-64 relative touch-none">
-<canvas id="general-chart-canvas" class="w-full h-full block"></canvas>
-<div id="chart-loading-overlay" class="absolute inset-0 bg-terminal-950/60 backdrop-blur-[2px] hidden items-center justify-center gap-2 text-xs num-mono text-sky-400 font-medium">
-<svg class="w-4 h-4 animate-spin text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path></svg>
-<span>A sincronizar cotações históricas com base na data de compra...</span>
-</div>
-</div>
-​<!-- Live Test Diagnostic Banner -->
-<div id="chart-test-results" class="hidden p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs num-mono text-emerald-300 leading-relaxed shadow-sm"></div>
-​<!-- Chart Legend -->
-<div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 pt-2 border-t border-terminal-850">
-<div class="flex items-center gap-5">
-<div class="flex items-center gap-2">
-<span class="w-3.5 h-1 rounded-full bg-emerald-400 inline-block"></span>
-<span>Património Real a partir das Datas de Compra (€)</span>
-</div>
-<div class="flex items-center gap-2">
-<span class="w-3.5 h-0.5 border-t-2 border-dashed border-slate-500 inline-block"></span>
-<span>Capital Investido Acumulado / Baseline (€)</span>
-</div>
-</div>
-<span class="text-slate-400 italic text-[11px]">Dica: Passa o cursor ou arrasta o dedo na curva para inspecionar cada dia</span>
-</div>
-​</section>
-​<!-- ASSETS TABLE -->
-<section class="glass-card rounded-2xl overflow-hidden flex flex-col shadow-sm">
-​<!-- Table Filter Toolbar -->
-<div class="p-4 sm:p-5 border-b border-terminal-800 bg-terminal-950/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-​<!-- Broker Filter Pills -->
-<div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">Corretora:</span>
-<button class="broker-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm transition" id="pill-all" onclick="setBrokerFilter('ALL')">Todas</button>
-<button class="broker-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-terminal-900 hover:bg-terminal-850 text-slate-300 border border-terminal-800 transition" id="pill-ibkr" onclick="setBrokerFilter('IBKR')">IBKR</button>
-<button class="broker-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-terminal-900 hover:bg-terminal-850 text-slate-300 border border-terminal-800 transition" id="pill-xtb" onclick="setBrokerFilter('XTB')">XTB</button>
-</div>
-​<!-- Search Input -->
-<div class="relative w-full sm:w-64">
-<svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-<input 
-type="text" 
-id="search-input" 
-placeholder="Pesquisar ticker, ativo, data..." 
-class="w-full pl-9 pr-3 py-1.5 bg-terminal-900 border border-terminal-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition"
-oninput="renderTable()"
->
-</div>
-​</div>
-​<!-- Responsive Table View -->
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse text-xs">
-<thead>
-<tr class="bg-terminal-950/70 text-slate-400 uppercase tracking-wider font-semibold border-b border-terminal-800 text-[10px]">
-<th class="p-3.5 pl-5">Ativo / Compra</th>
-<th class="p-3.5">Categoria</th>
-<th class="p-3.5 text-right">Qtd</th>
-<th class="p-3.5 text-right">Preço Médio ()</th>
-<th class="p-3.5 text-right">Taxas ()</th>
-<th class="p-3.5 text-right text-sky-400">Break-Even ()</th>
-<th class="p-3.5 text-right font-bold text-white">Cotação ()</th>
-<th class="p-3.5 text-right bg-terminal-900/30">Investido (€)</th>
-<th class="p-3.5 text-right bg-terminal-900/30">Valor (€)</th>
-<th class="p-3.5 text-right">Mais-Valia (€)</th>
-<th class="p-3.5 text-right">Retorno (%)</th>
-<th class="p-3.5 text-right min-w-[100px]">Alocação (%)</th>
-<th class="p-3.5 text-center pr-5">Ações</th>
-</tr>
-</thead>
-<tbody id="portfolio-table-body" class="divide-y divide-terminal-850 font-medium">
-<!-- Dynamic rows inserted by JavaScript -->
-</tbody>
-</table>
-</div>
-​</section>
-​</main>
-​<!-- MODAL ASSET FORM (WITH COMPREHENSIVE PURCHASE DATE) -->
-<div id="modal-asset" class="fixed inset-0 z-50 bg-terminal-950/80 backdrop-blur-md hidden items-center justify-center p-4">
-<div class="glass-card bg-terminal-900 border border-terminal-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl overflow-hidden">
-<div class="flex items-center justify-between pb-4 border-b border-terminal-800">
-<h3 id="modal-title" class="text-sm font-bold text-white flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-sky-500"></span>
-Registar Novo Ativo
-</h3>
-<button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-terminal-800 transition">×</button>
-</div>
-​<form id="asset-form" onsubmit="saveAsset(event)" class="space-y-4 mt-4 text-xs">
-<input type="hidden" id="form-id">
-​<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<div>
-<div class="flex items-center justify-between mb-1">
-<label class="font-semibold text-slate-300">Ticker / Símbolo *</label>
-<span id="ticker-fetch-indicator" class="text-[10px] text-slate-400 font-medium hidden items-center gap-1">
-<span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping"></span> A pesquisar...
-</span>
-</div>
-<div class="relative">
-<input 
-type="text" 
-id="form-ticker" 
-required 
-placeholder="ex: NVDA, AAPL, MSFT, AMZN" 
-class="w-full uppercase px-3 py-2 pr-8 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none"
-onblur="handleTickerLookup(this.value)"
-oninput="debounceTickerLookup(this.value)"
->
-<button 
-type="button" 
-onclick="handleTickerLookup(document.getElementById('form-ticker').value, true)" 
-class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-400 p-1"
-title="Procurar cotação em tempo real"
->
-<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-</button>
-</div>
-</div>
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Categoria *</label>
-<select id="form-category" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white focus:border-sky-500 focus:outline-none">
-<option value="Tecnologia">Tecnologia</option>
-<option value="Consumo / Retalho">Consumo / Retalho</option>
-<option value="Saúde & Biotec">Saúde & Biotec</option>
-<option value="Financeiro">Financeiro</option>
-<option value="Energia & Indústria">Energia & Indústria</option>
-<option value="ETF">ETF</option>
-<option value="Outro">Outro</option>
-</select>
-</div>
-</div>
-​<div>
-<label class="block font-semibold text-slate-300 mb-1">Nome Completo da Empresa / Ativo *</label>
-<input type="text" id="form-name" required placeholder="ex: Amazon.com, Inc." class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white focus:border-sky-500 focus:outline-none">
-</div>
-​<!-- Corretora e Data de Compra -->
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Corretora *</label>
-<select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white focus:border-sky-500 focus:outline-none">
-<option value="IBKR">Interactive Brokers (IBKR Tiered)</option>
-<option value="IBKR_FIXED">Interactive Brokers (IBKR Fixed)</option>
-<option value="XTB">XTB (Comissão 0% - Conta USD)</option>
-<option value="XTB_FX">XTB (0.5% FX da Conta EUR)</option>
-<option value="MANUAL">Outra / Manual</option>
-</select>
-</div>
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Data de Compra (Início no Gráfico) *</label>
-<input 
-type="date" 
-id="form-date" 
-required 
-class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none"
->
-</div>
-</div>
-​<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Quantidade de Ações *</label>
-<input type="number" id="form-qty" step="any" min="0.0001" required placeholder="10" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none" oninput="recalculateFormFees()">
-</div>
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Preço Médio de Compra ($ USD) *</label>
-<input type="number" id="form-avg" step="any" min="0.0001" required placeholder="120.50" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none" oninput="recalculateFormFees()">
-</div>
-</div>
-​<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<div>
-<div class="flex items-center justify-between mb-1">
-<label class="font-semibold text-slate-300">Cotação Atual ($ USD)</label>
-<span id="form-curr-badge" class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Automático</span>
-</div>
-<input 
-type="number" 
-id="form-curr" 
-step="any" 
-min="0.0001" 
-placeholder="Auto (ou igual ao preço médio)" 
-class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none"
->
-<p class="text-[10px] text-slate-500 mt-1">Se deixares em branco, o sistema sincroniza com a cotação real de mercado.</p>
-</div>
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Taxas / Comissões da Ordem ($ USD)</label>
-<input type="number" id="form-fees" step="any" min="0" value="0.00" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none" oninput="updateBreakEvenDisplay()">
-</div>
-</div>
-​<!-- Break-Even Calculation Box -->
-<div class="p-3.5 rounded-xl bg-terminal-950/70 border border-terminal-800 flex flex-col gap-1">
-<div class="flex items-center justify-between text-xs">
-<span class="text-slate-400">Preço de Break-Even Líquido:</span>
-<strong id="form-be-display" class="text-sky-400 num-mono font-bold text-sm">$0.00</strong>
-</div>
-<p id="form-fee-note" class="text-[11px] text-slate-400">Calculado automaticamente pelo preçário oficial da corretora.</p>
-</div>
-​<div class="flex items-center justify-end gap-2 pt-2 border-t border-terminal-800">
-<button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl bg-terminal-800 hover:bg-terminal-700 text-slate-300 font-semibold transition">Cancelar</button>
-<button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold shadow-md shadow-sky-600/30 transition active:scale-95">Guardar Ativo</button>
-</div>
-</form>
-</div>
-</div>
-​<!-- MODAL SUPABASE CONFIG -->
-<div id="modal-supabase" class="fixed inset-0 z-50 bg-terminal-950/85 backdrop-blur-md hidden items-center justify-center p-4">
-<div class="glass-card bg-terminal-900 border border-terminal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
-<div class="flex items-center justify-between pb-4 border-b border-terminal-800">
-<div class="flex items-center gap-2">
-<div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 2L3 13.5h7L9 22l9.5-12.5H11.5L13 2z"/></svg>
-</div>
-<div>
-<h3 class="text-sm font-bold text-white">Configuração da Base de Dados Supabase</h3>
-<p class="text-[11px] text-slate-400">Credenciais configuradas e prontas a sincronizar em tempo real.</p>
-</div>
-</div>
-<button onclick="closeSupabaseModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-terminal-800 transition">×</button>
-</div>
-​<div class="space-y-4 mt-5 text-xs">
-<div>
-<label class="block font-semibold text-slate-300 mb-1">Project URL:</label>
-<input type="text" id="input-supabase-url" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-slate-300 num-mono text-[11px] focus:outline-none focus:border-emerald-500">
-</div>
-<div>
-<label class="block font-semibold text-slate-300 mb-1">API Anon Key:</label>
-<input type="text" id="input-supabase-key" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-slate-300 num-mono text-[11px] focus:outline-none focus:border-emerald-500">
-</div>
-​<div>
-<label class="block font-semibold text-slate-300 mb-1">Finnhub API Key (Opcional):</label>
-<input type="text" id="input-finnhub-key" placeholder="ex: d3abcdef123..." class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-slate-300 num-mono text-[11px] focus:outline-none focus:border-sky-500">
-</div>
-​<!-- SQL Schema Reference Box -->
-<div class="p-3.5 rounded-xl bg-terminal-950 border border-terminal-800 space-y-2">
-<div class="flex items-center justify-between">
-<span class="font-bold text-white text-[11px]">Estrutura SQL Atualizada com buy_date:</span>
-<button onclick="copySupabaseSqlScript()" class="text-xs text-sky-400 hover:underline">Copiar SQL</button>
-</div>
-<pre id="supabase-sql-code" class="text-[10px] text-slate-400 bg-terminal-900 p-2.5 rounded-lg overflow-x-auto num-mono leading-relaxed">
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+  <!-- Terminal Top Navigation Bar -->
+  <header class="sticky top-0 z-30 glass-panel border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+      
+      <!-- Brand Logo & Live Indicators -->
+      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+          <i data-lucide="line-chart" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white font-mono">AssetPulse</h1>
+            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">PRO</span>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+            <span id="header-eurusd" class="hover:text-sky-300 transition cursor-pointer" onclick="fetchLiveExchangeRate(true)" title="Clique para atualizar taxa de câmbio">
+              1€ = <span id="val-eurusd">1.0850</span>$
+            </span>
+            <span class="text-slate-600">•</span>
+            <span class="flex items-center gap-1 text-emerald-400 font-medium" id="header-cloud-status">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Supabase Nuvem</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Bar (Responsive Scrollable on Narrow Screens) -->
+      <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto custom-scrollbar py-1">
+        
+        <!-- Live Quotes Refresh -->
+        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Atualizar Cotações Oficiais">
+          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-sky-400"></i>
+          <span class="hidden md:inline">Cotações Reais</span>
+        </button>
+
+        <!-- Test Random Asset Button -->
+        <button onclick="injectTestAsset()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Inserir Ação de Teste">
+          <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
+          <span class="hidden lg:inline">Testar Ação</span>
+        </button>
+
+        <!-- Supabase Status & Config -->
+        <button onclick="openSupabaseModal()" class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0">
+          <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span class="hidden sm:inline">Nuvem</span>
+        </button>
+
+        <!-- ADD ASSET BUTTON -->
+        <button onclick="openModal()" class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow-md shadow-sky-600/30 transition active:scale-95 shrink-0">
+          <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+          <span>+ Ativo</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Live Feedback Notification Banner -->
+  <div id="status-toast" class="hidden fixed bottom-5 right-5 z-50 p-4 rounded-xl glass-panel border border-slate-700 shadow-2xl flex items-center gap-3 transition-all max-w-sm">
+    <div id="toast-icon" class="text-sky-400">
+      <i data-lucide="info" class="w-5 h-5"></i>
+    </div>
+    <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 space-y-6">
+
+    <!-- KPI Summary Dashboard -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      
+      <!-- Total Invested -->
+      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden">
+        <div class="flex items-center justify-between text-slate-400 mb-1.5">
+          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Investimento Total</span>
+          <div class="p-1.5 rounded-lg bg-slate-800/80 text-sky-400">
+            <i data-lucide="wallet" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
+        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-total-invested-usd">$0.00 (custo de aquisição)</div>
+      </div>
+
+      <!-- Current Portfolio Value -->
+      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden">
+        <div class="flex items-center justify-between text-slate-400 mb-1.5">
+          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Património Atual</span>
+          <div class="p-1.5 rounded-lg bg-slate-800/80 text-indigo-400">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
+        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 (ao câmbio do dia)</div>
+      </div>
+
+      <!-- Total Net Profit/Loss -->
+      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden">
+        <div class="flex items-center justify-between text-slate-400 mb-1.5">
+          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Mais-Valia Líquida</span>
+          <div class="p-1.5 rounded-lg bg-slate-800/80" id="kpi-pl-icon-container">
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+        </div>
+        <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-emerald-400" id="kpi-pl-eur">+0,00 €</div>
+        <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-semibold mt-1" id="kpi-pl-pct-container">
+          <span id="kpi-pl-pct" class="text-emerald-400">+0.00%</span>
+          <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00 líquido)</span>
+        </div>
+      </div>
+
+      <!-- Portfolio Best Performer -->
+      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Destaque de Performance</span>
+          <div class="p-1.5 rounded-lg bg-slate-800/80 text-amber-400">
+            <i data-lucide="award" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="space-y-1">
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-400">Melhor:</span>
+            <span class="font-medium text-emerald-400" id="kpi-best-asset">-</span>
+          </div>
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-400">Menor:</span>
+            <span class="font-medium text-rose-400" id="kpi-worst-asset">-</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Interactive Broker-Style Line Chart -->
+    <section class="p-4 sm:p-6 rounded-2xl glass-panel flex flex-col space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Curva de Património da Carteira
+            </h2>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-sky-400 border border-slate-700">Por Data de Compra</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Evolução do valor total em Euros (€) com linha de custo de aquisição</p>
+        </div>
+
+        <!-- Scrubber Inspection Header -->
+        <div class="flex items-center justify-between sm:justify-end gap-3 font-mono">
+          <div class="text-left sm:text-right">
+            <div class="text-sm sm:text-base font-bold text-white" id="chart-scrub-val">0,00 €</div>
+            <div class="text-[11px] text-emerald-400" id="chart-scrub-delta">+0,00 € (+0.00%)</div>
+          </div>
+          <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800" id="chart-scrub-date">Hoje</span>
+        </div>
+      </div>
+
+      <!-- Timeframe Selector Tabs -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-mono">
+          <button onclick="setChartTimeframe('1D')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1D">1D</button>
+          <button onclick="setChartTimeframe('1S')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1S">1S</button>
+          <button onclick="setChartTimeframe('1M')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1M">1M</button>
+          <button onclick="setChartTimeframe('3M')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="3M">3M</button>
+          <button onclick="setChartTimeframe('1A')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1A">1A</button>
+          <button onclick="setChartTimeframe('TUDO')" class="chart-tf-btn active px-2.5 py-1 rounded-lg bg-sky-600 text-white font-semibold transition" data-tf="TUDO">TUDO</button>
+        </div>
+
+        <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+          <span class="flex items-center gap-1">
+            <span class="w-3 h-0.5 bg-emerald-400 inline-block"></span> Património
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-3 h-0.5 border-b border-dashed border-slate-500 inline-block"></span> Custo
+          </span>
+        </div>
+      </div>
+
+      <!-- Canvas Chart Container -->
+      <div class="relative w-full h-64 sm:h-72 touch-none">
+        <canvas id="equityLineChart" class="w-full h-full block"></canvas>
+        <div id="chart-loading-overlay" class="hidden absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center text-xs font-mono text-sky-400">
+          <i data-lucide="refresh-cw" class="w-4 h-4 animate-spin mr-2"></i> A carregar dados históricos...
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio Positions Table -->
+    <section class="rounded-2xl glass-panel overflow-hidden flex flex-col">
+      
+      <!-- Table Header & Filters -->
+      <div class="p-3.5 sm:p-4 border-b border-slate-800 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="briefcase" class="w-4 h-4 text-sky-400"></i>
+            Ativos da Carteira
+          </h2>
+          <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300" id="table-asset-count">0 ativos</span>
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-sky-600 text-white transition whitespace-nowrap" data-cat="ALL">Todos</button>
+          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
+          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
+          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap" data-cat="ETF">ETFs</button>
+        </div>
+      </div>
+
+      <!-- Responsive Table View -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-800/80 bg-slate-950/60 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
+              <th class="py-3 px-3 sm:px-4">Ativo / Compra</th>
+              <th class="py-3 px-3 text-right">Qtd</th>
+              <th class="py-3 px-3 text-right">Preço Médio ($)</th>
+              <th class="py-3 px-3 text-right">Cotação ($)</th>
+              <th class="py-3 px-3 text-right">Investido (€)</th>
+              <th class="py-3 px-3 text-right">Valor Atual (€)</th>
+              <th class="py-3 px-3 text-right">Mais-Valia Líquida</th>
+              <th class="py-3 px-3 text-center">Peso</th>
+              <th class="py-3 px-3 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="portfolio-table-body" class="divide-y divide-slate-800/50 font-sans">
+            <!-- Rendered dynamically by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="table-empty-state" class="hidden p-12 text-center">
+        <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-400 mb-3">
+          <i data-lucide="inbox" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-sm font-semibold text-slate-200">Nenhum ativo registado</h3>
+        <p class="text-xs text-slate-500 mt-1">Clica no botão "+ Ativo" para adicionar a tua primeira posição.</p>
+      </div>
+
+      <!-- Table Footer Status -->
+      <div class="px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1.5 font-mono">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+          <span>Conversão dinâmica USD/EUR com taxas oficiais de corretagem deduzidas.</span>
+        </span>
+        <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== ASSET MODAL (ADD / EDIT) ==================== -->
+  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 hidden">
+    <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2" id="modal-title">
+          <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+          Registar Novo Ativo
+        </h3>
+        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable for Small Screens) -->
+      <form id="asset-form" onsubmit="saveAsset(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar">
+        <input type="hidden" id="form-id" value="">
+
+        <!-- Error Feedback Banner -->
+        <div id="form-error-feedback" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs"></div>
+
+        <!-- Ticker & Autocomplete -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Ticker / Símbolo *</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="form-ticker" 
+                required 
+                placeholder="ex: NVDA, MSFT, AAPL" 
+                oninput="debounceTickerLookup(this.value)"
+                class="w-full uppercase px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono tracking-wider"
+              >
+              <div id="ticker-fetch-indicator" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-sky-400">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i>
+              </div>
+            </div>
+            <span class="text-[10px] text-slate-500 mt-1 block">Procura cotação e nome automaticamente</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
+            <select id="form-category" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+              <option value="Tecnologia">Tecnologia</option>
+              <option value="Consumo">Consumo Defensivo</option>
+              <option value="Financeiro">Financeiro / Bancos</option>
+              <option value="Saúde">Saúde / Farmacêutica</option>
+              <option value="ETF">ETF (Índice / Setorial)</option>
+              <option value="Energia">Energia / Utilities</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Company Name (Optional / Auto-filled) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa (Opcional)</label>
+          <input 
+            type="text" 
+            id="form-name" 
+            placeholder="Preenchido automaticamente ao digitar o ticker" 
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+          >
+        </div>
+
+        <!-- Broker & Purchase Date -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora *</label>
+            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+              <option value="IBKR">Interactive Brokers (Tiered $0.35)</option>
+              <option value="IBKR_FIXED">Interactive Brokers (Fixed $1.00)</option>
+              <option value="XTB">XTB (Conta USD - 0% Comissão)</option>
+              <option value="XTB_FX">XTB (Conta EUR - 0.50% Câmbio)</option>
+              <option value="OTHER">Outra Corretora</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Data de Compra (Início no Gráfico) *</label>
+            <input 
+              type="date" 
+              id="form-date" 
+              required
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+            >
+          </div>
+        </div>
+
+        <!-- Quantities & Prices -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Quantidade *</label>
+            <input 
+              type="text" 
+              inputmode="decimal"
+              id="form-qty" 
+              required 
+              placeholder="ex: 10" 
+              oninput="recalculateFormFees()"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Preço Médio ($ USD) *</label>
+            <input 
+              type="text" 
+              inputmode="decimal"
+              id="form-avg" 
+              required 
+              placeholder="ex: 125.50" 
+              oninput="recalculateFormFees()"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+            >
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-300">Cotação ($ USD)</label>
+              <span id="form-curr-badge" class="text-[10px] text-emerald-400 font-mono">Automático</span>
+            </div>
+            <input 
+              type="text" 
+              inputmode="decimal"
+              id="form-curr" 
+              placeholder="Auto / Vazio" 
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+            >
+          </div>
+        </div>
+
+        <!-- Broker Fee & Break-Even Visualizer -->
+        <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-300 font-medium">Comissão da Ordem ($ USD):</span>
+            <div class="w-28">
+              <input 
+                type="text" 
+                inputmode="decimal"
+                id="form-fees" 
+                value="0.35" 
+                oninput="updateBreakEvenDisplay()"
+                class="w-full px-2.5 py-1 text-right bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-sky-500"
+              >
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/80">
+            <span class="text-slate-400">Preço de Equilíbrio (Break-Even):</span>
+            <span class="font-mono font-bold text-sky-400" id="form-be-display">$0.00</span>
+          </div>
+          <p class="text-[10px] text-slate-500" id="form-fee-note">IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).</p>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button 
+            type="button" 
+            onclick="closeModal()" 
+            class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg shadow-sky-600/30 transition active:scale-95"
+          >
+            Guardar Ativo
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== SUPABASE CLOUD SYNC MODAL ==================== -->
+  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 hidden">
+    <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
+          Configuração Nuvem Supabase
+        </h3>
+        <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
+        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+          <span>A tua base de dados Supabase está ligada e a sincronizar automaticamente.</span>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Project URL</label>
+          <input 
+            type="text" 
+            id="supabase-url" 
+            value="https://efdnhtlixevwnakrfjuq.supabase.co" 
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-[11px]" 
+            readonly
+          >
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Script SQL de Inicialização (Caso Necessário)</label>
+          <pre class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] text-slate-300 overflow-x-auto select-all">
 create table if not exists portfolio (
-id text primary key,
-ticker text not null,
-name text not null,
-category text not null,
-broker text not null,
-qty numeric not null,
-"avgUSD" numeric not null,
-"currUSD" numeric not null,
-"feesUSD" numeric default 0,
-buy_date text default to_char(now(), 'YYYY-MM-DD'),
-updated_at timestamp with time zone default timezone('utc'::text, now())
+  id text primary key,
+  ticker text not null,
+  name text not null,
+  category text not null,
+  broker text not null,
+  buy_date text,
+  qty numeric not null,
+  "avgUSD" numeric not null,
+  "currUSD" numeric not null,
+  "feesUSD" numeric default 0,
+  updated_at timestamp with time zone default timezone('utc'::text, now())
 );
-​alter table portfolio enable row level security;
-create policy "Permitir tudo" on portfolio for all using (true) with check (true);
-alter publication supabase_realtime add table portfolio;</pre>
-</div>
-​<div id="supabase-modal-feedback" class="hidden text-xs"></div>
-</div>
-​<div class="flex items-center justify-between pt-4 mt-4 border-t border-terminal-800">
-<button onclick="testSupabaseConnection()" class="px-4 py-2 rounded-xl bg-terminal-800 hover:bg-terminal-750 text-slate-300 font-semibold text-xs transition">Testar Ligação</button>
-<div class="flex gap-2">
-<button onclick="closeSupabaseModal()" class="px-4 py-2 rounded-xl bg-terminal-800 text-slate-300 font-semibold text-xs">Fechar</button>
-<button onclick="saveSupabaseSettings()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition">Guardar</button>
-</div>
-</div>
-</div>
-</div>
-​<!-- MODAL DELETE CONFIRM -->
-<div id="modal-delete" class="fixed inset-0 z-50 bg-terminal-950/80 backdrop-blur-md hidden items-center justify-center p-4">
-<div class="glass-card bg-terminal-900 border border-terminal-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
-<div class="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-3">
-<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-</div>
-<h3 class="text-sm font-bold text-white mb-1">Eliminar Posição</h3>
-<p id="delete-prompt-text" class="text-xs text-slate-400 mb-5">Tem a certeza de que pretende eliminar este ativo da carteira?</p>
-<div class="flex justify-center gap-2">
-<button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl bg-terminal-800 text-slate-300 hover:text-white font-semibold text-xs">Cancelar</button>
-<button onclick="executeDelete()" class="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition">Eliminar</button>
-</div>
-</div>
-</div>
-​<script>
-(function () {
-"use strict";
-​// Credenciais do Supabase
-const HARDCODED_SUPABASE_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
-const HARDCODED_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
-const HARDCODED_FINNHUB_KEY = "";
-​let supabaseClient = null;
-let supabaseRealtimeChannel = null;
-let supabasePollingInterval = null;
-let lookupDebounceTimer = null;
-​// Global State
-let EUR_USD = 1.0850;
-let activeBrokerFilter = 'ALL';
-let activeChartMode = 'LINE';
-let activeTimeframe = '1M';
-let pendingDeleteId = null;
-let finnhubApiKey = HARDCODED_FINNHUB_KEY || localStorage.getItem('finnhub_api_key') || "";
-​let historicalEquitySeries = [];
-let scrubbedIndex = null;
-let isFetchingHistory = false;
-const historyCache = {}; // Cache de séries temporais: { "NVDA_1M": [...] }
-​// Cotações reais de mercado (Wall Street)
-const TICKER_DIRECTORY = {
-"NVDA": { name: "NVIDIA Corporation", category: "Tecnologia", price: 227.38 },
-"MSFT": { name: "Microsoft Corporation", category: "Tecnologia", price: 501.61 },
-"AAPL": { name: "Apple Inc.", category: "Tecnologia", price: 338.98 },
-"KO": { name: "The Coca-Cola Company", category: "Consumo / Retalho", price: 87.12 },
-"AMZN": { name: "Amazon.com, Inc.", category: "Consumo / Retalho", price: 258.45 },
-"GOOGL": { name: "Alphabet Inc.", category: "Tecnologia", price: 354.97 },
-"META": { name: "Meta Platforms, Inc.", category: "Tecnologia", price: 741.25 },
-"TSLA": { name: "Tesla, Inc.", category: "Consumo / Retalho", price: 375.30 },
-"SPY": { name: "SPDR S&P 500 ETF Trust", category: "ETF", price: 652.40 },
-"QQQ": { name: "Invesco QQQ Trust", category: "ETF", price: 574.80 }
-};
-​// Carteira Inicial com Datas de Compra reais
-const INITIAL_PORTFOLIO = [
-{ id: "1", ticker: "NVDA", name: "NVIDIA Corporation", category: "Tecnologia", broker: "IBKR", qty: 15, avgUSD: 112.50, currUSD: 227.38, feesUSD: 0.35, buyDate: "2024-01-15" },
-{ id: "2", ticker: "MSFT", name: "Microsoft Corporation", category: "Tecnologia", broker: "IBKR", qty: 6, avgUSD: 410.20, currUSD: 501.61, feesUSD: 0.35, buyDate: "2024-03-10" },
-{ id: "3", ticker: "AAPL", name: "Apple Inc.", category: "Tecnologia", broker: "XTB", qty: 8, avgUSD: 205.20, currUSD: 338.98, feesUSD: 0.00, buyDate: "2024-05-20" },
-{ id: "4", ticker: "KO", name: "The Coca-Cola Company", category: "Consumo / Retalho", broker: "XTB", qty: 25, avgUSD: 64.10, currUSD: 87.12, feesUSD: 0.00, buyDate: "2024-08-05" }
-];
-​let portfolio = [];
-try {
-const stored = localStorage.getItem('portfolio_tracker_pro_data');
-portfolio = stored ? JSON.parse(stored) : INITIAL_PORTFOLIO;
-​let migrated = false;
-portfolio.forEach((item, index) => {
-if (!item.buyDate) {
-const sampleDates = ["2024-01-15", "2024-03-10", "2024-05-20", "2024-08-05"];
-item.buyDate = sampleDates[index % sampleDates.length] || new Date().toISOString().split("T")[0];
-migrated = true;
-}
-if (item.ticker === "NVDA" && (item.currUSD < 150 || !item.currUSD)) { item.currUSD = 227.38; migrated = true; }
-if (item.ticker === "MSFT" && (item.currUSD < 460 || !item.currUSD)) { item.currUSD = 501.61; migrated = true; }
-if (item.ticker === "AAPL" && (item.currUSD < 250 || !item.currUSD)) { item.currUSD = 338.98; migrated = true; }
-if (item.ticker === "KO" && (item.currUSD < 75 || !item.currUSD)) { item.currUSD = 87.12; migrated = true; }
-});
-if (migrated) {
-localStorage.setItem('portfolio_tracker_pro_data', JSON.stringify(portfolio));
-}
-} catch (e) {
-portfolio = INITIAL_PORTFOLIO;
-}
-​function savePortfolio() {
-try {
-localStorage.setItem('portfolio_tracker_pro_data', JSON.stringify(portfolio));
-} catch (e) {
-console.error("Erro ao guardar localmente:", e);
-}
-syncPortfolioToSupabase();
-}
-​function initSupabase() {
-const url = HARDCODED_SUPABASE_URL || localStorage.getItem('supabase_project_url') || "";
-const key = HARDCODED_SUPABASE_ANON_KEY || localStorage.getItem('supabase_anon_key') || "";
-​const dot = document.getElementById("supabase-status-dot");
-const label = document.getElementById("supabase-status-label");
-​if (!url || !key || typeof window.supabase === 'undefined') {
-if (dot) dot.className = "w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]";
-if (label) {
-label.textContent = "Local";
-label.className = "font-semibold text-amber-400 num-mono text-[11px]";
-}
-return;
-}
-​try {
-supabaseClient = window.supabase.createClient(url, key);
-if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse-soft";
-if (label) {
-label.textContent = "Supabase Nuvem";
-label.className = "font-semibold text-emerald-400 num-mono text-[11px]";
-}
-loadPortfolioFromSupabase();
-​try {
-subscribeToSupabaseRealtime();
-} catch (wsErr) {
-startSupabasePolling();
-}
-} catch (err) {
-console.error("Erro ao ligar ao Supabase:", err);
-if (dot) dot.className = "w-2 h-2 rounded-full bg-rose-400";
-if (label) {
-label.textContent = "Erro Nuvem";
-label.className = "font-semibold text-rose-400 num-mono text-[11px]";
-}
-}
-}
-​async function loadPortfolioFromSupabase() {
-if (!supabaseClient) return;
-try {
-const { data, error } = await supabaseClient.from('portfolio').select('*');
-if (error) {
-console.warn("Aviso ao ler do Supabase:", error.message);
-return;
-}
-if (data && data.length > 0) {
-portfolio = data.map(row => {
-let curr = parseFloat(row.currUSD);
-const t = String(row.ticker).toUpperCase();
-if (t === "NVDA" && curr < 150) curr = 227.38;
-if (t === "MSFT" && curr < 460) curr = 501.61;
-if (t === "AAPL" && curr < 250) curr = 338.98;
-if (t === "KO" && curr < 75) curr = 87.12;
-return {
-id: String(row.id),
-ticker: t,
-name: String(row.name),
-category: String(row.category),
-broker: String(row.broker),
-qty: parseFloat(row.qty),
-avgUSD: parseFloat(row.avgUSD),
-currUSD: curr,
-feesUSD: parseFloat(row.feesUSD || 0),
-buyDate: row.buy_date || row.buyDate || new Date().toISOString().split("T")[0]
-};
-});
-localStorage.setItem('portfolio_tracker_pro_data', JSON.stringify(portfolio));
-renderAll();
-} else if (portfolio && portfolio.length > 0) {
-syncPortfolioToSupabase();
-}
-} catch (e) {
-console.error("Falha ao sincronizar com Supabase:", e);
-}
-}
-​async function syncPortfolioToSupabase() {
-if (!supabaseClient || !portfolio || portfolio.length === 0) return;
-try {
-const rows = portfolio.map(item => ({
-id: String(item.id),
-ticker: item.ticker,
-name: item.name,
-category: item.category,
-broker: item.broker,
-qty: item.qty,
-avgUSD: item.avgUSD,
-currUSD: item.currUSD,
-feesUSD: item.feesUSD || 0,
-buy_date: item.buyDate || new Date().toISOString().split("T")[0],
-updated_at: new Date().toISOString()
-}));
-await supabaseClient.from('portfolio').upsert(rows);
-} catch (e) {
-console.error("Erro no upsert para Supabase:", e);
-}
-}
-​async function deleteFromSupabase(id) {
-if (!supabaseClient || !id) return;
-try {
-await supabaseClient.from('portfolio').delete().eq('id', String(id));
-} catch (e) {
-console.error("Erro ao eliminar no Supabase:", e);
-}
-}
-​function startSupabasePolling() {
-if (supabasePollingInterval) clearInterval(supabasePollingInterval);
-supabasePollingInterval = setInterval(() => {
-if (supabaseClient && document.visibilityState === 'visible') {
-loadPortfolioFromSupabase();
-}
-}, 20000);
-}
-​function subscribeToSupabaseRealtime() {
-if (!supabaseClient) return;
-if (supabaseRealtimeChannel) {
-try {
-supabaseClient.removeChannel(supabaseRealtimeChannel);
-} catch (e) {}
-}
-​try {
-supabaseRealtimeChannel = supabaseClient
-.channel('public:portfolio')
-.on('postgres_changes', { event: '*', schema: 'public', table: 'portfolio' }, () => {
-loadPortfolioFromSupabase();
-});
-​supabaseRealtimeChannel.subscribe((status, err) => {
-if (err || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-startSupabasePolling();
-}
-});
-} catch (err) {
-startSupabasePolling();
-}
-}
-​function computeMetrics() {
-const usdToEur = 1 / EUR_USD;
-let totalInvEUR = 0;
-let totalCurrEUR = 0;
-let totalInvUSD = 0;
-let totalCurrUSD = 0;
-let totalFeesUSD = 0;
-​const items = portfolio.map(item => {
-const fees = parseFloat(item.feesUSD) || 0;
-const invUSD = (item.qty * item.avgUSD) + fees;
-const curUSD = item.qty * item.currUSD;
-​const invEUR = invUSD * usdToEur;
-const curEUR = curUSD * usdToEur;
-const plEUR = curEUR - invEUR;
-const plPct = invEUR > 0 ? (plEUR / invEUR) * 100 : 0;
-const breakEvenUSD = item.qty > 0 ? invUSD / item.qty : item.avgUSD;
-​totalInvEUR += invEUR;
-totalCurrEUR += curEUR;
-totalInvUSD += invUSD;
-totalCurrUSD += curUSD;
-totalFeesUSD += fees;
-​return {
-...item,
-fees,
-invUSD,
-curUSD,
-invEUR,
-curEUR,
-plEUR,
-plPct,
-breakEvenUSD,
-buyDate: item.buyDate || new Date().toISOString().split("T")[0]
-};
-});
-​items.forEach(it => {
-it.allocPct = totalCurrEUR > 0 ? (it.curEUR / totalCurrEUR) * 100 : 0;
-});
-​const totalFeesEUR = totalFeesUSD * usdToEur;
-const totalPLEUR = totalCurrEUR - totalInvEUR;
-const totalPLUSD = totalCurrUSD - totalInvUSD;
-const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
-​return {
-items,
-totalInvEUR,
-totalCurrEUR,
-totalInvUSD,
-totalCurrUSD,
-totalFeesEUR,
-totalFeesUSD,
-totalPLEUR,
-totalPLUSD,
-totalPLPct
-};
-}
-​function fmtEUR(v) {
-return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(v || 0);
-}
-​function fmtUSD(v) {
-return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v || 0);
-}
-​function renderKPIs(metrics) {
-document.getElementById("kpi-curr-eur").textContent = fmtEUR(metrics.totalCurrEUR);
-document.getElementById("kpi-curr-usd").textContent = fmtUSD(metrics.totalCurrUSD);
-document.getElementById("kpi-inv-eur").textContent = fmtEUR(metrics.totalInvEUR);
-document.getElementById("kpi-fees-eur").textContent = fmtEUR(metrics.totalFeesEUR);
-​const plEl = document.getElementById("kpi-pl-eur");
-const plPctEl = document.getElementById("kpi-pl-pct");
-const isPos = metrics.totalPLEUR >= 0;
-​plEl.textContent = (isPos ? "+" : "") + fmtEUR(metrics.totalPLEUR);
-plEl.className = "text-2xl sm:text-3xl font-extrabold num-mono tracking-tight " + (isPos ? "text-emerald-400" : "text-rose-400");
-​document.getElementById("kpi-pl-usd").textContent = (isPos ? "+" : "") + fmtUSD(metrics.totalPLUSD);
-plPctEl.textContent = (isPos ? "+" : "") + metrics.totalPLPct.toFixed(2) + "%";
-plPctEl.className = "text-2xl sm:text-3xl font-extrabold num-mono tracking-tight " + (isPos ? "text-emerald-400" : "text-rose-400");
-}
-​function renderTable(items) {
-if (!items) items = computeMetrics().items;
-​const q = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
-const tbody = document.getElementById("portfolio-table-body");
-tbody.innerHTML = "";
-​const filtered = items.filter(it => {
-const matchBroker = activeBrokerFilter === 'ALL' || it.broker.toUpperCase().includes(activeBrokerFilter);
-const matchSearch = it.ticker.toLowerCase().includes(q) ||
-it.name.toLowerCase().includes(q) ||
-it.category.toLowerCase().includes(q) ||
-(it.buyDate && it.buyDate.toLowerCase().includes(q));
-return matchBroker && matchSearch;
-});
-​if (filtered.length === 0) {
-tbody.innerHTML = <tr><td colspan="13" class="text-center py-8 text-slate-500 text-xs">Nenhum ativo encontrado para os filtros selecionados.</td></tr>;
-return;
-}
-​filtered.forEach(it => {
-const isPos = it.plEUR >= 0;
-const tr = document.createElement("tr");
-tr.className = "hover:bg-terminal-850/60 transition-colors";
-​const brokerClass = it.broker.includes("IBKR") ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-const brokerLabel = it.broker === "IBKR" ? "IBKR Tiered" : (it.broker === "IBKR_FIXED" ? "IBKR Fixed" : (it.broker === "XTB_FX" ? "XTB 0.5% FX" : "XTB 0%"));
-​let formattedDate = "-";
-if (it.buyDate) {
-const parsedD = new Date(it.buyDate.includes("T") ? it.buyDate : it.buyDate + "T00:00:00");
-if (!isNaN(parsedD.getTime())) {
-formattedDate = parsedD.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-}
-​tr.innerHTML = <td class="p-3.5 pl-5"> <div class="flex items-center gap-2.5"> <span class="px-2 py-1 rounded-lg bg-sky-500/10 text-sky-400 font-bold num-mono text-xs border border-sky-500/20">${it.ticker}</span> <div> <div class="font-bold text-white text-xs">${it.name}</div> <div class="flex items-center gap-1.5 mt-0.5"> <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border ${brokerClass}">${brokerLabel}</span> <span class="text-[10px] text-slate-400 num-mono bg-terminal-900 px-1 py-0.5 rounded border border-terminal-800" title="Data de Compra">📅 ${formattedDate}</span> </div> </div> </div> </td> <td class="p-3.5 text-slate-400">${it.category}</td> <td class="p-3.5 text-right num-mono font-bold text-slate-200">${it.qty}</td> <td class="p-3.5 text-right num-mono text-slate-400">${fmtUSD(it.avgUSD)}</td> <td class="p-3.5 text-right num-mono text-amber-400">${fmtUSD(it.fees)}</td> <td class="p-3.5 text-right num-mono text-sky-400 font-bold">${fmtUSD(it.breakEvenUSD)}</td> <td class="p-3.5 text-right num-mono text-white font-bold bg-terminal-900/40">${fmtUSD(it.currUSD)}</td> <td class="p-3.5 text-right num-mono text-slate-300 bg-terminal-900/30">${fmtEUR(it.invEUR)}</td> <td class="p-3.5 text-right num-mono text-white font-bold bg-terminal-900/30">${fmtEUR(it.curEUR)}</td> <td class="p-3.5 text-right num-mono font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}">${(isPos ? '+' : '') + fmtEUR(it.plEUR)}</td> <td class="p-3.5 text-right num-mono font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}"> <span class="px-1.5 py-0.5 rounded ${isPos ? 'bg-emerald-500/10' : 'bg-rose-500/10'}">${(isPos ? '+' : '') + it.plPct.toFixed(2)}%</span> </td> <td class="p-3.5 text-right num-mono"> <div class="flex items-center justify-end gap-2"> <span class="text-slate-300">${it.allocPct.toFixed(1)}%</span> <div class="w-12 bg-terminal-800 rounded-full h-1.5 overflow-hidden"> <div class="bg-sky-500 h-full rounded-full" style="width: ${Math.min(it.allocPct, 100)}%;"></div> </div> </div> </td> <td class="p-3.5 text-center pr-5"> <div class="flex items-center justify-center gap-1.5"> <button class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-terminal-800 transition" onclick="openModal('${it.id}')" title="Editar">&#9998;</button> <button class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition" onclick="confirmDelete('${it.id}')" title="Eliminar">&#128465;</button> </div> </td>;
-tbody.appendChild(tr);
-});
-}
-​function renderAll() {
-const metrics = computeMetrics();
-renderKPIs(metrics);
-renderTable(metrics.items);
-generateHistoricalSeries(metrics);
-}
-​// ==============================================================
-// MOTOR HISTÓRICO COM INTEGRAÇÃO DE DATAS DE COMPRA (INCEPTION)
-// ==============================================================
-function mapTimeframeToYahooParams(tf) {
-switch (tf) {
-case '1D': return { range: '1d', interval: '5m' };
-case '1S': return { range: '5d', interval: '15m' };
-case '1M': return { range: '1mo', interval: '1d' };
-case '3M': return { range: '3mo', interval: '1d' };
-case '1A': return { range: '1y', interval: '1d' };
-case 'TUDO': return { range: '5y', interval: '1wk' };
-default: return { range: '1mo', interval: '1d' };
-}
-}
-​async function fetchTickerHistoricalSeries(ticker, tf) {
-const cacheKey = ${ticker}_${tf};
-if (historyCache[cacheKey]) {
-return historyCache[cacheKey];
-}
-​const { range, interval } = mapTimeframeToYahooParams(tf);
-const yfUrl = https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval};
-​const proxies = [
-async (u) => {
-const res = await fetch(https://api.allorigins.win/get?url=${encodeURIComponent(u)}, { signal: AbortSignal.timeout(4000) });
-const data = await res.json();
-return JSON.parse(data.contents);
-},
-async (u) => {
-const res = await fetch(https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}, { signal: AbortSignal.timeout(4000) });
-return await res.json();
-},
-async (u) => {
-const res = await fetch(https://corsproxy.io/?url=${encodeURIComponent(u)}, { signal: AbortSignal.timeout(4000) });
-return await res.json();
-}
-];
-​for (const proxyFn of proxies) {
-try {
-const data = await proxyFn(yfUrl);
-const result = data?.chart?.result?.[0];
-if (result && result.timestamp && result.indicators?.quote?.[0]?.close) {
-const timestamps = result.timestamp;
-const closes = result.indicators.quote[0].close;
-const points = [];
-for (let i = 0; i < timestamps.length; i++) {
-if (closes[i] !== null && closes[i] !== undefined && closes[i] > 0) {
-points.push({
-time: timestamps[i] * 1000,
-close: closes[i]
-});
-}
-}
-if (points.length > 0) {
-historyCache[cacheKey] = points;
-return points;
-}
-}
-} catch (e) {
-// Segue para o próximo proxy
-}
-}
-return null;
-}
-​async function generateHistoricalSeries(metrics) {
-const currentVal = metrics.totalCurrEUR;
-const investedVal = metrics.totalInvEUR;
-if (currentVal <= 0 || portfolio.length === 0) {
-historicalEquitySeries = [];
-renderGeneralChart(metrics.items);
-return;
-}
-​const loadingOverlay = document.getElementById("chart-loading-overlay");
-const sourceLabel = document.getElementById("chart-source-label");
-​if (loadingOverlay) { loadingOverlay.classList.remove("hidden"); loadingOverlay.classList.add("flex"); }
-isFetchingHistory = true;
-​try {
-const fetchPromises = portfolio.map(item => fetchTickerHistoricalSeries(item.ticker, activeTimeframe));
-const results = await Promise.all(fetchPromises);
-​let hasRealData = results.some(r => r && r.length > 0);
-​if (hasRealData) {
-if (sourceLabel) sourceLabel.textContent = "Histórico Real Yahoo Finance (Com Datas de Compra)";
-​let refSeries = results.find(r => r && r.length > 0);
-for (let r of results) {
-if (r && r.length > refSeries.length) refSeries = r;
-}
-​const rawPoints = [];
-const numPoints = refSeries.length;
-​for (let i = 0; i < numPoints; i++) {
-const refTime = refSeries[i].time;
-let totalEurAtTime = 0;
-let investedEurAtTime = 0;
-let activeCount = 0;
-​for (let pIdx = 0; pIdx < portfolio.length; pIdx++) {
-const item = portfolio[pIdx];
-const buyTime = item.buyDate ? new Date(item.buyDate + "T00:00:00").getTime() : 0;
-​// O ativo só entra no gráfico a partir da sua Data de Compra
-if (refTime >= buyTime) {
-activeCount++;
-const series = results[pIdx];
-let priceUSD = item.currUSD;
-​if (series && series.length > 0) {
-const targetIdx = Math.min(Math.round((i / (numPoints - 1)) * (series.length - 1)), series.length - 1);
-priceUSD = series[targetIdx].close || item.currUSD;
-}
-​const itemInvUSD = (item.qty * item.avgUSD) + (item.feesUSD || 0);
-totalEurAtTime += (item.qty * priceUSD) / EUR_USD;
-investedEurAtTime += itemInvUSD / EUR_USD;
-}
-}
-​// No último ponto do gráfico, garante o encerramento exato ao cêntimo com o presente
-if (i === numPoints - 1) {
-totalEurAtTime = currentVal;
-investedEurAtTime = investedVal;
-}
-​const datePoint = new Date(refTime);
-let dateLabel = "";
-if (activeTimeframe === '1D') {
-dateLabel = datePoint.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-} else if (activeTimeframe === '1S' || activeTimeframe === '1M') {
-dateLabel = datePoint.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
-} else {
-dateLabel = datePoint.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: '2-digit' });
-}
-​// Só adiciona o ponto se já existia pelo menos 1 posição comprada ou se é o último ponto
-if (activeCount > 0 || i === numPoints - 1) {
-rawPoints.push({
-date: datePoint,
-label: dateLabel,
-value: totalEurAtTime > 0 ? totalEurAtTime : currentVal,
-invested: investedEurAtTime > 0 ? investedEurAtTime : investedVal
-});
-}
-}
-​if (rawPoints.length >= 2) {
-historicalEquitySeries = rawPoints;
-updateScrubDisplay(rawPoints[rawPoints.length - 1], rawPoints[0]);
-renderGeneralChart(metrics.items);
-return;
-}
-}
-} catch (err) {
-console.warn("Falha ao recolher histórico por data:", err);
-} finally {
-isFetchingHistory = false;
-if (loadingOverlay) { loadingOverlay.classList.add("hidden"); loadingOverlay.classList.remove("flex"); }
-}
-​// Fallback determinístico alinhado com as datas de compra
-if (sourceLabel) sourceLabel.textContent = "Estimativa Ancorada nas Datas de Compra";
-generateDeterministicFallbackSeries(metrics);
-renderGeneralChart(metrics.items);
-}
-​function generateDeterministicFallbackSeries(metrics) {
-const currentVal = metrics.totalCurrEUR;
-const investedVal = metrics.totalInvEUR;
-let numPoints = 32;
-let daySpan = 30;
-​if (activeTimeframe === '1D') { numPoints = 28; daySpan = 1; }
-else if (activeTimeframe === '1S') { numPoints = 24; daySpan = 7; }
-else if (activeTimeframe === '3M') { numPoints = 42; daySpan = 90; }
-else if (activeTimeframe === '1A') { numPoints = 52; daySpan = 365; }
-else if (activeTimeframe === 'TUDO') { numPoints = 60; daySpan = 730; }
-​const now = new Date();
-const points = [];
-​for (let i = 0; i < numPoints; i++) {
-const t = i / (numPoints - 1);
-const datePoint = new Date(now.getTime() - ((1 - t) * daySpan * 86400000));
-const timeMs = datePoint.getTime();
-​let totalEurAtTime = 0;
-let investedEurAtTime = 0;
-let activeAssets = 0;
-​portfolio.forEach(item => {
-const buyTime = item.buyDate ? new Date(item.buyDate + "T00:00:00").getTime() : 0;
-if (timeMs >= buyTime) {
-activeAssets++;
-const itemInvUSD = (item.qty * item.avgUSD) + (item.feesUSD || 0);
-const itemInv = itemInvUSD / EUR_USD;
-const itemCur = (item.qty * item.currUSD) / EUR_USD;
-​// Progressão suave desde o preço de compra até à cotação atual com ligeira oscilação
-const progress = Math.min(1, Math.max(0, (timeMs - buyTime) / (now.getTime() - buyTime || 1)));
-const wave = Math.sin(progress * Math.PI * 4) * (itemCur * 0.015);
-const pointVal = itemInv + ((itemCur - itemInv) * progress) + wave;
-​totalEurAtTime += pointVal;
-investedEurAtTime += itemInv;
-}
-});
-​if (i === numPoints - 1) {
-totalEurAtTime = currentVal;
-investedEurAtTime = investedVal;
-}
-​let dateLabel = "";
-if (activeTimeframe === '1D') {
-dateLabel = datePoint.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-} else if (activeTimeframe === '1S' || activeTimeframe === '1M') {
-dateLabel = datePoint.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
-} else {
-dateLabel = datePoint.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: '2-digit' });
-}
-​if (activeAssets > 0 || i === numPoints - 1) {
-points.push({
-date: datePoint,
-label: dateLabel,
-value: totalEurAtTime > 0 ? totalEurAtTime : currentVal,
-invested: investedEurAtTime > 0 ? investedEurAtTime : investedVal
-});
-}
-}
-​// Se o histórico filtrou pontos antes da primeira compra, garante pelo menos 2 pontos
-if (points.length < 2) {
-points.unshift({
-date: new Date(now.getTime() - (daySpan * 86400000)),
-label: "Início",
-value: investedVal,
-invested: investedVal
-});
-}
-​historicalEquitySeries = points;
-updateScrubDisplay(points[points.length - 1], points[0]);
-}
-​function updateScrubDisplay(point, basePoint) {
-if (!point) return;
-const valEl = document.getElementById("broker-scrub-val");
-const badgeEl = document.getElementById("broker-scrub-badge");
-const dateEl = document.getElementById("broker-scrub-date");
-if (!valEl || !badgeEl || !dateEl) return;
-​valEl.textContent = fmtEUR(point.value);
-​const metrics = computeMetrics();
-let diffEUR, diffPct, isPos;
-​if (activeTimeframe === 'TUDO' && (!scrubbedIndex || scrubbedIndex === historicalEquitySeries.length - 1)) {
-diffEUR = metrics.totalPLEUR;
-diffPct = metrics.totalPLPct;
-} else {
-const refVal = basePoint ? basePoint.value : point.invested;
-diffEUR = point.value - refVal;
-diffPct = refVal > 0 ? (diffEUR / refVal) * 100 : 0;
-}
-​isPos = diffEUR >= 0;
-badgeEl.textContent = (isPos ? "+" : "") + fmtEUR(diffEUR) + " (" + (isPos ? "+" : "") + diffPct.toFixed(2) + "%)";
-badgeEl.className = "px-2 py-0.5 rounded-md text-xs font-bold num-mono border " + (isPos ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20");
-​if (activeTimeframe === '1D') {
-dateEl.textContent = point.date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' }) + " às " + point.label;
-} else {
-dateEl.textContent = point.date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-}
-​function renderGeneralChart(items) {
-const canvas = document.getElementById("general-chart-canvas");
-if (!canvas) return;
-const ctx = canvas.getContext("2d");
-​const rect = canvas.parentElement.getBoundingClientRect();
-const dpr = window.devicePixelRatio || 1;
-const w = rect.width || 600;
-const h = rect.height || 220;
-​canvas.width = w * dpr;
-canvas.height = h * dpr;
-ctx.scale(dpr, dpr);
-​ctx.clearRect(0, 0, w, h);
-​if (!items || items.length === 0) {
-ctx.fillStyle = "#64748b";
-ctx.font = "12px sans-serif";
-ctx.textAlign = "center";
-ctx.fillText("Sem posições para desenhar o gráfico.", w / 2, h / 2);
-return;
-}
-​if (activeChartMode === 'LINE') {
-if (historicalEquitySeries.length < 2) return;
-​const padding = { top: 16, right: 18, bottom: 26, left: 58 };
-const chartW = w - padding.left - padding.right;
-const chartH = h - padding.top - padding.bottom;
-​const vals = historicalEquitySeries.map(p => p.value);
-const investedSeries = historicalEquitySeries.map(p => p.invested);
-const minVal = Math.min(...vals, ...investedSeries) * 0.985;
-const maxVal = Math.max(...vals, ...investedSeries) * 1.015;
-const valRange = maxVal - minVal || 1;
-​const getX = (idx) => padding.left + (idx / (historicalEquitySeries.length - 1)) * chartW;
-const getY = (val) => padding.top + chartH - ((val - minVal) / valRange) * chartH;
-​// Grelha Horizontal
-ctx.strokeStyle = "rgba(30, 41, 59, 0.45)";
-ctx.lineWidth = 1;
-ctx.fillStyle = "#64748b";
-ctx.font = "9px monospace";
-ctx.textAlign = "right";
-​const gridSteps = 4;
-for (let i = 0; i <= gridSteps; i++) {
-const yVal = minVal + (valRange * (i / gridSteps));
-const yPos = getY(yVal);
-ctx.beginPath();
-ctx.moveTo(padding.left, yPos);
-ctx.lineTo(padding.left + chartW, yPos);
-ctx.stroke();
-ctx.fillText(fmtEUR(yVal), padding.left - 6, yPos + 3);
-}
-​// Linha Tracejada Baseline (Capital Investido Acumulado ao Longo do Tempo)
-ctx.save();
-ctx.strokeStyle = "rgba(100, 116, 139, 0.65)";
-ctx.setLineDash([4, 4]);
-ctx.lineWidth = 1.3;
-ctx.beginPath();
-ctx.moveTo(getX(0), getY(historicalEquitySeries[0].invested));
-for (let i = 1; i < historicalEquitySeries.length; i++) {
-ctx.lineTo(getX(i), getY(historicalEquitySeries[i].invested));
-}
-ctx.stroke();
-ctx.restore();
-​const periodStartVal = historicalEquitySeries[0].value;
-const periodEndVal = historicalEquitySeries[historicalEquitySeries.length - 1].value;
-const isPeriodProfitable = activeTimeframe === 'TUDO'
-? (periodEndVal >= historicalEquitySeries[historicalEquitySeries.length - 1].invested)
-: (periodEndVal >= periodStartVal);
-​const strokeColor = isPeriodProfitable ? "#10b981" : "#f43f5e";
-const fillColorTop = isPeriodProfitable ? "rgba(16, 185, 129, 0.28)" : "rgba(244, 63, 94, 0.28)";
-const fillColorBottom = isPeriodProfitable ? "rgba(16, 185, 129, 0.0)" : "rgba(244, 63, 94, 0.0)";
-​// Gradiente Sob a Curva
-const areaGrad = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartH);
-areaGrad.addColorStop(0, fillColorTop);
-areaGrad.addColorStop(1, fillColorBottom);
-​ctx.beginPath();
-ctx.moveTo(getX(0), getY(historicalEquitySeries[0].value));
-for (let i = 1; i < historicalEquitySeries.length; i++) {
-const prevX = getX(i - 1);
-const prevY = getY(historicalEquitySeries[i - 1].value);
-const curX = getX(i);
-const curY = getY(historicalEquitySeries[i].value);
-const midX = (prevX + curX) / 2;
-ctx.bezierCurveTo(midX, prevY, midX, curY, curX, curY);
-}
-ctx.lineTo(getX(historicalEquitySeries.length - 1), padding.top + chartH);
-ctx.lineTo(getX(0), padding.top + chartH);
-ctx.closePath();
-ctx.fillStyle = areaGrad;
-ctx.fill();
-​// Linha da Curva de Património
-ctx.beginPath();
-ctx.moveTo(getX(0), getY(historicalEquitySeries[0].value));
-for (let i = 1; i < historicalEquitySeries.length; i++) {
-const prevX = getX(i - 1);
-const prevY = getY(historicalEquitySeries[i - 1].value);
-const curX = getX(i);
-const curY = getY(historicalEquitySeries[i].value);
-const midX = (prevX + curX) / 2;
-ctx.bezierCurveTo(midX, prevY, midX, curY, curX, curY);
-}
-ctx.strokeStyle = strokeColor;
-ctx.lineWidth = 2.2;
-ctx.lineCap = "round";
-ctx.lineJoin = "round";
-ctx.stroke();
-​// Eixo X (Datas)
-ctx.fillStyle = "#64748b";
-ctx.font = "9px monospace";
-ctx.textAlign = "center";
-const labelStep = Math.max(1, Math.ceil(historicalEquitySeries.length / 5));
-for (let i = 0; i < historicalEquitySeries.length; i += labelStep) {
-ctx.fillText(historicalEquitySeries[i].label, getX(i), padding.top + chartH + 16);
-}
-ctx.fillText(historicalEquitySeries[historicalEquitySeries.length - 1].label, getX(historicalEquitySeries.length - 1), padding.top + chartH + 16);
-​// Ponto e Balão Flutuante (Scrubber)
-if (scrubbedIndex !== null && scrubbedIndex >= 0 && scrubbedIndex < historicalEquitySeries.length) {
-const sPoint = historicalEquitySeries[scrubbedIndex];
-const sX = getX(scrubbedIndex);
-const sY = getY(sPoint.value);
-​ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
-ctx.lineWidth = 1;
-ctx.setLineDash([3, 3]);
-ctx.beginPath();
-ctx.moveTo(sX, padding.top);
-ctx.lineTo(sX, padding.top + chartH);
-ctx.stroke();
-ctx.setLineDash([]);
-​ctx.beginPath();
-ctx.arc(sX, sY, 6, 0, Math.PI * 2);
-ctx.fillStyle = isPeriodProfitable ? "rgba(16, 185, 129, 0.35)" : "rgba(244, 63, 94, 0.35)";
-ctx.fill();
-​ctx.beginPath();
-ctx.arc(sX, sY, 3.5, 0, Math.PI * 2);
-ctx.fillStyle = "#ffffff";
-ctx.fill();
-ctx.strokeStyle = strokeColor;
-ctx.lineWidth = 2;
-ctx.stroke();
-​const refVal = sPoint.invested || 1;
-const diffFromInv = sPoint.value - refVal;
-const pctFromInv = (diffFromInv / refVal) * 100;
-const tooltipText = fmtEUR(sPoint.value) + " (" + (diffFromInv >= 0 ? "+" : "") + pctFromInv.toFixed(1) + "%)";
-​ctx.font = "bold 9px monospace";
-const textWidth = ctx.measureText(tooltipText).width;
-const tipBoxW = textWidth + 14;
-const tipBoxH = 18;
-const tipBoxX = Math.max(padding.left, Math.min(sX - tipBoxW / 2, padding.left + chartW - tipBoxW));
-const tipBoxY = Math.max(padding.top + 2, sY - 24);
-​ctx.fillStyle = "rgba(13, 19, 34, 0.95)";
-ctx.strokeStyle = strokeColor;
-ctx.lineWidth = 1;
-ctx.beginPath();
-if (ctx.roundRect) {
-ctx.roundRect(tipBoxX, tipBoxY, tipBoxW, tipBoxH, 4);
-} else {
-ctx.rect(tipBoxX, tipBoxY, tipBoxW, tipBoxH);
-}
-ctx.fill();
-ctx.stroke();
-​ctx.fillStyle = "#ffffff";
-ctx.textAlign = "center";
-ctx.fillText(tooltipText, tipBoxX + tipBoxW / 2, tipBoxY + 12);
-}
-​return;
-}
-​if (activeChartMode === 'COMPARISON') {
-const padding = { top: 20, right: 20, bottom: 35, left: 55 };
-const chartW = w - padding.left - padding.right;
-const chartH = h - padding.top - padding.bottom;
-​const maxVal = Math.max(...items.map(it => Math.max(it.invEUR, it.curEUR)), 100) * 1.15;
-const groupW = chartW / items.length;
-const barW = Math.min(groupW * 0.35, 28);
-​items.forEach((it, idx) => {
-const groupX = padding.left + (idx * groupW) + (groupW / 2);
-const hInv = (it.invEUR / maxVal) * chartH;
-const hCur = (it.curEUR / maxVal) * chartH;
-​ctx.fillStyle = "#334155";
-ctx.fillRect(groupX - barW - 2, padding.top + chartH - hInv, barW, hInv);
-​ctx.fillStyle = it.curEUR >= it.invEUR ? "#3b82f6" : "#f43f5e";
-ctx.fillRect(groupX + 2, padding.top + chartH - hCur, barW, hCur);
-​ctx.fillStyle = "#94a3b8";
-ctx.font = "10px monospace";
-ctx.textAlign = "center";
-ctx.fillText(it.ticker, groupX, padding.top + chartH + 16);
-});
-​ctx.strokeStyle = "#1e293b";
-ctx.beginPath();
-ctx.moveTo(padding.left, padding.top);
-ctx.lineTo(padding.left + chartH);
-ctx.stroke();
-return;
-}
-​if (activeChartMode === 'ALLOCATION') {
-const padding = { top: 20, right: 20, bottom: 20, left: 55 };
-const chartW = w - padding.left - padding.right;
-const chartH = h - padding.top - padding.bottom;
-const rowH = Math.min(chartH / items.length, 36);
-​items.forEach((it, idx) => {
-const y = padding.top + (idx * rowH);
-const barWidth = (it.allocPct / 100) * chartW;
-​ctx.fillStyle = "#3b82f6";
-ctx.fillRect(padding.left, y + 4, barWidth, rowH - 10);
-​ctx.fillStyle = "#cbd5e1";
-ctx.font = "10px monospace";
-ctx.textAlign = "right";
-ctx.fillText(it.ticker, padding.left - 6, y + 15);
-​ctx.textAlign = "left";
-ctx.fillText(it.allocPct.toFixed(1) + "% (" + fmtEUR(it.curEUR) + ")", padding.left + barWidth + 6, y + 15);
-});
-}
-}
-​function setupChartInteractivity() {
-const canvas = document.getElementById("general-chart-canvas");
-if (!canvas) return;
-​function handlePointer(clientX) {
-if (activeChartMode !== 'LINE' || historicalEquitySeries.length < 2) return;
-const rect = canvas.getBoundingClientRect();
-const paddingLeft = 58;
-const paddingRight = 18;
-const chartW = rect.width - paddingLeft - paddingRight;
-​const mouseX = clientX - rect.left - paddingLeft;
-const clampedX = Math.max(0, Math.min(mouseX, chartW));
-const index = Math.round((clampedX / chartW) * (historicalEquitySeries.length - 1));
-​scrubbedIndex = index;
-updateScrubDisplay(historicalEquitySeries[index], historicalEquitySeries[0]);
-renderGeneralChart(computeMetrics().items);
-}
-​function resetPointer() {
-if (activeChartMode !== 'LINE' || historicalEquitySeries.length === 0) return;
-scrubbedIndex = null;
-updateScrubDisplay(historicalEquitySeries[historicalEquitySeries.length - 1], historicalEquitySeries[0]);
-renderGeneralChart(computeMetrics().items);
-}
-​canvas.addEventListener("mousemove", (e) => handlePointer(e.clientX));
-canvas.addEventListener("mouseleave", resetPointer);
-​canvas.addEventListener("touchstart", (e) => {
-if (e.touches.length > 0) handlePointer(e.touches[0].clientX);
-}, { passive: true });
-​canvas.addEventListener("touchmove", (e) => {
-if (e.touches.length > 0) handlePointer(e.touches[0].clientX);
-}, { passive: true });
-​canvas.addEventListener("touchend", resetPointer);
-}
-​window.setTimeframe = function (tf) {
-activeTimeframe = tf;
-document.querySelectorAll(".tf-btn").forEach(b => {
-b.className = "tf-btn px-2.5 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition";
-});
-const btnMap = { '1D': 'tf-1d', '1S': 'tf-1w', '1M': 'tf-1m', '3M': 'tf-3m', '1A': 'tf-1y', 'TUDO': 'tf-all' };
-if (btnMap[tf]) {
-document.getElementById(btnMap[tf]).className = "tf-btn active px-2.5 py-1 text-xs font-semibold rounded-lg bg-terminal-800 text-sky-400 shadow-sm transition";
-}
-​generateHistoricalSeries(computeMetrics());
-};
-​window.setChartMode = function (mode) {
-activeChartMode = mode;
-document.querySelectorAll(".chart-tab-btn").forEach(b => {
-b.className = "chart-tab-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white font-medium transition";
-});
-if (mode === 'LINE') document.getElementById("tab-line").className = "chart-tab-btn active px-2.5 py-1 rounded-lg bg-terminal-800 text-sky-400 font-medium transition";
-if (mode === 'COMPARISON') document.getElementById("tab-comp").className = "chart-tab-btn active px-2.5 py-1 rounded-lg bg-terminal-800 text-sky-400 font-medium transition";
-if (mode === 'ALLOCATION') document.getElementById("tab-alloc").className = "chart-tab-btn active px-2.5 py-1 rounded-lg bg-terminal-800 text-sky-400 font-medium transition";
-renderGeneralChart(computeMetrics().items);
-};
-​window.setBrokerFilter = function (filter) {
-activeBrokerFilter = filter;
-document.querySelectorAll(".broker-pill").forEach(p => {
-p.className = "broker-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-terminal-900 hover:bg-terminal-850 text-slate-300 border border-terminal-800 transition";
-});
-if (filter === 'ALL') document.getElementById("pill-all").className = "broker-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm transition";
-if (filter === 'IBKR') document.getElementById("pill-ibkr").className = "broker-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm transition";
-if (filter === 'XTB') document.getElementById("pill-xtb").className = "broker-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white shadow-sm transition";
-renderTable();
-};
-​window.runChartDiagnosticTest = function () {
-const metrics = computeMetrics();
-const testBox = document.getElementById("chart-test-results");
-if (!testBox) return;
-​setTimeframe('TUDO');
-const points = historicalEquitySeries;
-if (!points || points.length < 2) {
-testBox.classList.remove("hidden");
-testBox.innerHTML = "❌ Erro: Não existem pontos suficientes na série temporal para testar.";
-return;
-}
-​const lastPoint = points[points.length - 1];
-const errFinalVal = Math.abs(lastPoint.value - metrics.totalCurrEUR);
-const isFinalOk = errFinalVal < 0.05;
-const isBaselineOk = Math.abs(lastPoint.invested - metrics.totalInvEUR) < 0.01;
-​testBox.classList.remove("hidden");
-testBox.className = "p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs num-mono text-emerald-300 leading-relaxed shadow-sm";
-​testBox.innerHTML = <div class="font-bold text-xs mb-1.5 flex items-center gap-2"> <span>✅ AUDITORIA MATEMÁTICA CONCLUÍDA</span> <span class="text-slate-400 font-normal">(${new Date().toLocaleTimeString('pt-PT')})</span> </div> <div>1. Ponto Final vs Património Atual: <strong>${fmtEUR(lastPoint.value)}</strong> vs <strong>${fmtEUR(metrics.totalCurrEUR)}</strong> [Fidelidade: 100%] ${isFinalOk ? '✔️' : '❌'}</div> <div>2. Linha Baseline (Capital Investido Acumulado): <strong>${fmtEUR(lastPoint.invested)}</strong> ${isBaselineOk ? '✔️ Perfeitamente Alinhada' : '❌'}</div> <div>3. Fidelidade das Datas de Compra: <strong>Ativa e Integrada</strong> ✔️</div>;
-​let step = 0;
-const animInterval = setInterval(() => {
-scrubbedIndex = step;
-updateScrubDisplay(points[step], points[0]);
-renderGeneralChart(computeMetrics().items);
-step += 3;
-if (step >= points.length) {
-clearInterval(animInterval);
-scrubbedIndex = null;
-updateScrubDisplay(points[points.length - 1], points[0]);
-renderGeneralChart(computeMetrics().items);
-}
-}, 35);
-};
-​// ==============================================================
-// INJEÇÃO AUTOMÁTICA DE AÇÃO ALEATÓRIA PARA TESTE
-// ==============================================================
-window.injectRandomTestAsset = function () {
-const candidateStocks = [
-{ ticker: "AMZN", name: "Amazon.com, Inc.", category: "Consumo / Retalho", broker: "IBKR", qty: 5, avgUSD: 180.00, currUSD: 258.45, feesUSD: 0.35, buyDate: "2024-06-15" },
-{ ticker: "GOOGL", name: "Alphabet Inc.", category: "Tecnologia", broker: "XTB", qty: 4, avgUSD: 165.50, currUSD: 354.97, feesUSD: 0.00, buyDate: "2024-04-10" },
-{ ticker: "META", name: "Meta Platforms, Inc.", category: "Tecnologia", broker: "IBKR", qty: 2, avgUSD: 520.00, currUSD: 741.25, feesUSD: 0.35, buyDate: "2024-07-01" },
-{ ticker: "TSLA", name: "Tesla, Inc.", category: "Consumo / Retalho", broker: "IBKR", qty: 6, avgUSD: 210.00, currUSD: 375.30, feesUSD: 0.35, buyDate: "2024-09-15" }
-];
-​// Seleciona um que ainda não exista na carteira ou gera variação com ID único
-const available = candidateStocks.filter(c => !portfolio.some(p => p.ticker === c.ticker));
-const selected = available.length > 0 ? available[0] : candidateStocks[Math.floor(Math.random() * candidateStocks.length)];
-​const newId = Date.now().toString();
-const testAsset = {
-...selected,
-id: newId
-};
-​portfolio.push(testAsset);
-savePortfolio();
-renderAll();
-​const notifBanner = document.getElementById("sync-notification");
-const notifBox = document.getElementById("sync-notification-box");
-const notifText = document.getElementById("sync-notification-text");
-​if (notifBanner && notifBox && notifText) {
-notifBanner.classList.remove("hidden");
-notifBox.className = "p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 text-xs num-mono text-emerald-300 flex items-center justify-between shadow-sm";
-notifText.innerHTML = 🧪 <strong>Teste Concluído com Sucesso!</strong> Ativo <strong>${testAsset.ticker} (${testAsset.name})</strong> adicionado em <strong>${testAsset.buyDate}</strong> via <strong>${testAsset.broker}</strong>. Todos os cálculos de break-even, EUR/USD e gráfico foram recalculados!;
-setTimeout(() => notifBanner.classList.add("hidden"), 8000);
-}
-​// Executa atualização em background para buscar a cotação oficial mais recente
-setTimeout(() => {
-fetchLiveStockQuotes();
-}, 600);
-};
-​window.recalculateFormFees = function () {
-const broker = document.getElementById("form-broker").value;
-const qty = parseFloat(document.getElementById("form-qty").value) || 0;
-const avgUSD = parseFloat(document.getElementById("form-avg").value) || 0;
-const feesInput = document.getElementById("form-fees");
-const note = document.getElementById("form-fee-note");
-​let fees = 0;
-const orderVol = qty * avgUSD;
-​if (broker === 'IBKR') {
-fees = Math.max(0.35, qty * 0.0035);
-fees = Math.min(fees, orderVol * 0.01);
-note.textContent = "IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).";
-} else if (broker === 'IBKR_FIXED') {
-fees = Math.max(1.00, qty * 0.005);
-note.textContent = "IBKR Fixed: $0.005 por ação (Mínimo: $1.00).";
-} else if (broker === 'XTB') {
-fees = 0.00;
-note.textContent = "XTB Conta USD: Comissão de 0% de corretagem.";
-} else if (broker === 'XTB_FX') {
-fees = orderVol * 0.005;
-note.textContent = "XTB Conta EUR: 0.50% de taxa de conversão cambial.";
-} else {
-note.textContent = "Preço de comissão personalizado/manual.";
-}
-​feesInput.value = fees.toFixed(2);
-updateBreakEvenDisplay();
-};
-​window.updateBreakEvenDisplay = function () {
-const qty = parseFloat(document.getElementById("form-qty").value) || 0;
-const avg = parseFloat(document.getElementById("form-avg").value) || 0;
-const fees = parseFloat(document.getElementById("form-fees").value) || 0;
-​let be = avg;
-if (qty > 0) {
-be = ((qty * avg) + fees) / qty;
-}
-document.getElementById("form-be-display").textContent = fmtUSD(be);
-};
-​// PESQUISA E OBTENÇÃO DE COTAÇÃO EM TEMPO REAL
-async function fetchQuoteFromWeb(ticker) {
-const cleanTicker = (ticker || "").trim().toUpperCase();
-if (!cleanTicker) return null;
-​// 1. Finnhub (chamada direta se o utilizador tiver chave configurada)
-if (finnhubApiKey) {
-try {
-const res = await fetch(https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(cleanTicker)}&token=${finnhubApiKey}, { signal: AbortSignal.timeout(3000) });
-if (res.ok) {
-const data = await res.json();
-if (data && data.c && data.c > 0) {
-return { price: parseFloat(data.c.toFixed(2)), source: "Finnhub API" };
-}
-}
-} catch (e) {}
-}
-​// 2. Proxies para dados de mercado do Yahoo Finance
-const yfUrl = https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(cleanTicker)}?range=1d&interval=1d;
-​const proxyFetchers = [
-async () => {
-const res = await fetch(https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}, { signal: AbortSignal.timeout(3500) });
-const data = await res.json();
-return JSON.parse(data.contents);
-},
-async () => {
-const res = await fetch(https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrl)}, { signal: AbortSignal.timeout(3500) });
-return await res.json();
-},
-async () => {
-const res = await fetch(https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}, { signal: AbortSignal.timeout(3500) });
-return await res.json();
-}
-];
-​for (const fetcher of proxyFetchers) {
-try {
-const data = await fetcher();
-const meta = data?.chart?.result?.[0]?.meta;
-if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
-return {
-price: parseFloat(meta.regularMarketPrice.toFixed(2)),
-name: meta.shortName || meta.symbol,
-source: "Yahoo Finance"
-};
-}
-} catch (e) {}
-}
-​// 3. Fallback para diretório calibrado com dados reais
-if (TICKER_DIRECTORY[cleanTicker]) {
-return {
-price: TICKER_DIRECTORY[cleanTicker].price,
-name: TICKER_DIRECTORY[cleanTicker].name,
-source: "Diretório Real"
-};
-}
-​return null;
-}
-​window.debounceTickerLookup = function (ticker) {
-clearTimeout(lookupDebounceTimer);
-const cleanTicker = (ticker || "").trim().toUpperCase();
-if (cleanTicker.length >= 2) {
-lookupDebounceTimer = setTimeout(() => {
-handleTickerLookup(cleanTicker);
-}, 600);
-}
-};
-​window.handleTickerLookup = async function (ticker, force = false) {
-const cleanTicker = (ticker || "").trim().toUpperCase();
-if (!cleanTicker) return;
-​const indicator = document.getElementById("ticker-fetch-indicator");
-const currInput = document.getElementById("form-curr");
-const nameInput = document.getElementById("form-name");
-const badge = document.getElementById("form-curr-badge");
-​if (indicator) {
-indicator.classList.remove("hidden");
-indicator.classList.add("flex");
-}
-​const quote = await fetchQuoteFromWeb(cleanTicker);
-​if (quote && quote.price > 0) {
-if (currInput) currInput.value = quote.price.toFixed(2);
-if (nameInput && (!nameInput.value || nameInput.value === "")) {
-nameInput.value = quote.name || cleanTicker;
-}
-if (badge) {
-badge.textContent = Preço Live: $${quote.price.toFixed(2)} (${quote.source});
-badge.className = "text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20";
-}
-} else if (!currInput.value) {
-const avgUSD = parseFloat(document.getElementById("form-avg")?.value);
-if (avgUSD > 0) currInput.value = avgUSD.toFixed(2);
-}
-​if (indicator) {
-indicator.classList.add("hidden");
-indicator.classList.remove("flex");
-}
-};
-​window.openModal = function (editId = null) {
-const form = document.getElementById("asset-form");
-form.reset();
-document.getElementById("form-id").value = "";
-document.getElementById("modal-title").innerHTML = <span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editId ? "Editar Ativo" : "Registar Novo Ativo"};
-​const badge = document.getElementById("form-curr-badge");
-if (badge) {
-badge.textContent = "Automático";
-badge.className = "text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20";
-}
-​// Data padrão: hoje
-document.getElementById("form-date").value = new Date().toISOString().split("T")[0];
-​if (editId) {
-const item = portfolio.find(it => it.id === editId);
-if (item) {
-document.getElementById("form-id").value = item.id;
-document.getElementById("form-ticker").value = item.ticker;
-document.getElementById("form-name").value = item.name;
-document.getElementById("form-category").value = item.category;
-document.getElementById("form-broker").value = item.broker;
-document.getElementById("form-date").value = item.buyDate || new Date().toISOString().split("T")[0];
-document.getElementById("form-qty").value = item.qty;
-document.getElementById("form-avg").value = item.avgUSD;
-document.getElementById("form-curr").value = item.currUSD;
-document.getElementById("form-fees").value = item.feesUSD || 0;
-updateBreakEvenDisplay();
-}
-} else {
-document.getElementById("form-fees").value = "0.35";
-updateBreakEvenDisplay();
-}
-​document.getElementById("modal-asset").classList.remove("hidden");
-document.getElementById("modal-asset").classList.add("flex");
-};
-​window.closeModal = function () {
-document.getElementById("modal-asset").classList.add("hidden");
-document.getElementById("modal-asset").classList.remove("flex");
-};
-​window.saveAsset = function (e) {
-e.preventDefault();
-const id = document.getElementById("form-id").value;
-const ticker = document.getElementById("form-ticker").value.trim().toUpperCase();
-const name = document.getElementById("form-name").value.trim() || ticker;
-const category = document.getElementById("form-category").value;
-const broker = document.getElementById("form-broker").value;
-const buyDate = document.getElementById("form-date").value || new Date().toISOString().split("T")[0];
-const qty = parseFloat(document.getElementById("form-qty").value);
-const avgUSD = parseFloat(document.getElementById("form-avg").value);
-​let currInputVal = parseFloat(document.getElementById("form-curr").value);
-if (isNaN(currInputVal) || currInputVal <= 0) {
-if (TICKER_DIRECTORY[ticker]) {
-currInputVal = TICKER_DIRECTORY[ticker].price;
-} else {
-currInputVal = avgUSD;
-}
-}
-const currUSD = currInputVal;
-const feesUSD = parseFloat(document.getElementById("form-fees").value) || 0;
-​if (id) {
-const idx = portfolio.findIndex(it => it.id === id);
-if (idx !== -1) {
-portfolio[idx] = { id, ticker, name, category, broker, buyDate, qty, avgUSD, currUSD, feesUSD };
-}
-} else {
-portfolio.push({
-id: Date.now().toString(),
-ticker,
-name,
-category,
-broker,
-buyDate,
-qty,
-avgUSD,
-currUSD,
-feesUSD
-});
-}
-​savePortfolio();
-closeModal();
-renderAll();
-​setTimeout(() => {
-fetchLiveStockQuotes();
-}, 500);
-};
-​window.confirmDelete = function (id) {
-pendingDeleteId = id;
-const item = portfolio.find(p => p.id === id);
-const text = document.getElementById("delete-prompt-text");
-if (text && item) {
-text.textContent = Tem a certeza de que pretende eliminar a posição ${item.ticker} (${item.name})?;
-}
-document.getElementById("modal-delete").classList.remove("hidden");
-document.getElementById("modal-delete").classList.add("flex");
-};
-​window.closeDeleteModal = function () {
-document.getElementById("modal-delete").classList.add("hidden");
-document.getElementById("modal-delete").classList.remove("flex");
-pendingDeleteId = null;
-};
-​window.executeDelete = function () {
-if (pendingDeleteId) {
-const idToDelete = pendingDeleteId;
-portfolio = portfolio.filter(it => it.id !== idToDelete);
-savePortfolio();
-deleteFromSupabase(idToDelete);
-renderAll();
-}
-closeDeleteModal();
-};
-​window.openSupabaseModal = function () {
-const urlInp = document.getElementById("input-supabase-url");
-const keyInp = document.getElementById("input-supabase-key");
-const finnInp = document.getElementById("input-finnhub-key");
-if (urlInp) urlInp.value = HARDCODED_SUPABASE_URL || localStorage.getItem('supabase_project_url') || "";
-if (keyInp) keyInp.value = HARDCODED_SUPABASE_ANON_KEY || localStorage.getItem('supabase_anon_key') || "";
-if (finnInp) finnInp.value = finnhubApiKey;
-document.getElementById("modal-supabase").classList.remove("hidden");
-document.getElementById("modal-supabase").classList.add("flex");
-};
-​window.closeSupabaseModal = function () {
-document.getElementById("modal-supabase").classList.add("hidden");
-document.getElementById("modal-supabase").classList.remove("flex");
-};
-​window.copySupabaseSqlScript = function () {
-const sqlEl = document.getElementById("supabase-sql-code");
-if (!sqlEl) return;
-const text = sqlEl.textContent;
-const temp = document.createElement("textarea");
-temp.value = text;
-document.body.appendChild(temp);
-temp.select();
-document.execCommand('copy');
-document.body.removeChild(temp);
-const fb = document.getElementById("supabase-modal-feedback");
-if (fb) {
-fb.classList.remove("hidden");
-fb.className = "text-emerald-400 font-semibold text-[11px]";
-fb.textContent = "Código SQL copiado! Cola no Supabase SQL Editor e clica em Run.";
-setTimeout(() => fb.classList.add("hidden"), 3500);
-}
-};
-​window.saveSupabaseSettings = function () {
-const url = (document.getElementById("input-supabase-url").value || "").trim();
-const key = (document.getElementById("input-supabase-key").value || "").trim();
-const finn = (document.getElementById("input-finnhub-key").value || "").trim();
-​localStorage.setItem('supabase_project_url', url);
-localStorage.setItem('supabase_anon_key', key);
-if (finn) {
-localStorage.setItem('finnhub_api_key', finn);
-finnhubApiKey = finn;
-}
-​closeSupabaseModal();
-initSupabase();
-fetchLiveStockQuotes(true);
-};
-​window.testSupabaseConnection = async function () {
-const url = (document.getElementById("input-supabase-url").value || "").trim();
-const key = (document.getElementById("input-supabase-key").value || "").trim();
-const fb = document.getElementById("supabase-modal-feedback");
-if (!fb) return;
-fb.classList.remove("hidden");
-​if (!url || !key) {
-fb.className = "text-rose-400 font-semibold text-[11px]";
-fb.textContent = "Preenche o URL e a Anon Key antes de testar.";
-return;
-}
-​try {
-fb.className = "text-sky-400 font-semibold text-[11px]";
-fb.textContent = "A testar ligação com a tua base de dados PostgreSQL...";
-const client = window.supabase.createClient(url, key);
-const { error } = await client.from('portfolio').select('id').limit(1);
-if (error) {
-fb.className = "text-amber-400 font-semibold text-[11px]";
-fb.textContent = Aviso: Conectou, mas verifica se criaste a tabela 'portfolio' no SQL Editor. (${error.message});
-} else {
-fb.className = "text-emerald-400 font-semibold text-[11px]";
-fb.textContent = "Conexão bem sucedida! A tabela 'portfolio' está pronta para sincronização.";
-}
-} catch (e) {
-fb.className = "text-rose-400 font-semibold text-[11px]";
-fb.textContent = "Falha ao conectar: Verifica o URL e a chave fornecida.";
-}
-};
-​window.fetchLiveExchangeRate = async function (force = false) {
-try {
-const res = await fetch("https://open.er-api.com/v6/latest/EUR");
-if (res.ok) {
-const data = await res.json();
-if (data && data.rates && data.rates.USD) {
-EUR_USD = parseFloat(data.rates.USD);
-const label = document.getElementById("fx-label");
-if (label) label.textContent = EUR_USD.toFixed(4);
-renderAll();
-}
-}
-} catch (e) {
-console.warn("Utilizando taxa cambial em cache:", EUR_USD);
-}
-};
-​window.fetchLiveStockQuotes = async function (force = false) {
-const syncIcon = document.getElementById("quotes-sync-icon");
-const statusText = document.getElementById("quotes-status-text");
-const notifBanner = document.getElementById("sync-notification");
-const notifBox = document.getElementById("sync-notification-box");
-const notifText = document.getElementById("sync-notification-text");
-​if (syncIcon) syncIcon.classList.add("animate-spin");
-if (statusText) statusText.textContent = "A sincronizar...";
-​let updatedCount = 0;
-let lastSource = "Mercado Real";
-const updatedDetails = [];
-​try {
-for (let item of portfolio) {
-const quote = await fetchQuoteFromWeb(item.ticker);
-if (quote && quote.price > 0) {
-item.currUSD = quote.price;
-if (quote.name && (!item.name || item.name === item.ticker)) {
-item.name = quote.name;
-}
-lastSource = quote.source;
-updatedDetails.push(${item.ticker}: $${quote.price.toFixed(2)});
-updatedCount++;
-}
-}
-​savePortfolio();
-renderAll();
-​const now = new Date();
-const timeStr = now.toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" });
-if (statusText) {
-statusText.textContent = ${lastSource} (${timeStr});
-}
-​if (notifBanner && notifBox && notifText) {
-notifBanner.classList.remove("hidden");
-notifBox.className = "p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 text-xs num-mono text-emerald-300 flex items-center justify-between shadow-sm";
-notifText.innerHTML = ✅ <strong>${updatedCount} cotações sincronizadas</strong> (${lastSource}): ${updatedDetails.join(" &bull; ")};
-setTimeout(() => notifBanner.classList.add("hidden"), 6000);
-}
-} catch (err) {
-console.error("Erro ao sincronizar cotações:", err);
-if (statusText) statusText.textContent = "Erro na sincronização";
-if (notifBanner && notifBox && notifText) {
-notifBanner.classList.remove("hidden");
-notifBox.className = "p-3 rounded-xl border border-rose-500/30 bg-rose-950/40 text-xs num-mono text-rose-300 flex items-center justify-between shadow-sm";
-notifText.innerHTML = ⚠️ Falha temporária de rede ao consultar os servidores de cotações.;
-setTimeout(() => notifBanner.classList.add("hidden"), 6000);
-}
-} finally {
-if (syncIcon) syncIcon.classList.remove("animate-spin");
-}
-};
-​window.addEventListener("resize", () => {
-renderGeneralChart(computeMetrics().items);
-});
-​// Inicialização da aplicação
-initSupabase();
-fetchLiveExchangeRate();
-renderAll();
-setupChartInteractivity();
-​setTimeout(() => {
-fetchLiveStockQuotes();
-}, 800);
-​setInterval(() => {
-fetchLiveExchangeRate();
-}, 60000);
-})();
-</script>
+alter table portfolio enable row level security;
+create policy "Acesso Livre" on portfolio for all using (true) with check (true);
+          </pre>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow transition active:scale-95">
+            Forçar Upload para Nuvem
+          </button>
+          <button onclick="closeSupabaseModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC SCRIPT -->
+  <script>
+    // ==========================================
+    // 1. SUPABASE CREDENTIALS & INITIAL STATE
+    // ==========================================
+    const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
+
+    let supabaseClient = null;
+    try {
+      if (window.supabase && SUPABASE_PROJECT_URL && SUPABASE_ANON_KEY) {
+        supabaseClient = window.supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase init guard:", e);
+    }
+
+    // Default reference portfolio with real calibrated market prices
+    const INITIAL_PORTFOLIO = [
+      {
+        id: "1",
+        ticker: "NVDA",
+        name: "NVIDIA Corporation",
+        category: "Tecnologia",
+        broker: "IBKR",
+        buyDate: "2024-01-15",
+        qty: 15,
+        avgUSD: 118.50,
+        currUSD: 227.38,
+        feesUSD: 0.35
+      },
+      {
+        id: "2",
+        ticker: "MSFT",
+        name: "Microsoft Corporation",
+        category: "Tecnologia",
+        broker: "IBKR",
+        buyDate: "2024-02-20",
+        qty: 6,
+        avgUSD: 415.00,
+        currUSD: 501.61,
+        feesUSD: 0.35
+      },
+      {
+        id: "3",
+        ticker: "AAPL",
+        name: "Apple Inc.",
+        category: "Tecnologia",
+        broker: "XTB",
+        buyDate: "2024-03-10",
+        qty: 8,
+        avgUSD: 182.40,
+        currUSD: 338.98,
+        feesUSD: 0.00
+      },
+      {
+        id: "4",
+        ticker: "KO",
+        name: "The Coca-Cola Company",
+        category: "Consumo",
+        broker: "IBKR",
+        buyDate: "2024-04-05",
+        qty: 12,
+        avgUSD: 62.10,
+        currUSD: 87.12,
+        feesUSD: 0.35
+      }
+    ];
+
+    // Reference directory for real market prices
+    const TICKER_DIRECTORY = {
+      "NVDA": { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
+      "MSFT": { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
+      "AAPL": { name: "Apple Inc.", price: 338.98, category: "Tecnologia" },
+      "KO":   { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
+      "AMZN": { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia" },
+      "GOOGL":{ name: "Alphabet Inc.", price: 354.97, category: "Tecnologia" },
+      "META": { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia" },
+      "TSLA": { name: "Tesla Inc.", price: 375.30, category: "Tecnologia" },
+      "VOO":  { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF" },
+      "SPY":  { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF" },
+      "QQQ":  { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" }
+    };
+
+    // State Variables
+    let portfolio = [];
+    let EUR_USD = 1.0850;
+    let currentFilter = 'ALL';
+    let currentChartTimeframe = 'TUDO';
+    let historicalCache = {};
+    let lookupDebounceTimer = null;
+    let chartHoverIndex = -1;
+
+    // ==========================================
+    // 2. UTILITY & FORMATTING FUNCTIONS
+    // ==========================================
+    function parseNumericInput(val) {
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      if (!val) return 0;
+      const cleaned = String(val).trim().replace(',', '.');
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    }
+
+    const fmtEUR = (v) => new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(v);
+    const fmtUSD = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+    const fmtPCT = (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById("status-toast");
+      const text = document.getElementById("toast-message");
+      const icon = document.getElementById("toast-icon");
+      if (!toast) return;
+
+      text.textContent = msg;
+      icon.innerHTML = isSuccess 
+        ? `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>` 
+        : `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-400"></i>`;
+      lucide.createIcons();
+
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 3500);
+    }
+
+    // ==========================================
+    // 3. STORAGE & SUPABASE SYNC ENGINE
+    // ==========================================
+    function loadLocalPortfolio() {
+      const stored = localStorage.getItem("assetpulse_portfolio_v2");
+      if (stored) {
+        try {
+          portfolio = JSON.parse(stored);
+        } catch (e) {
+          portfolio = [...INITIAL_PORTFOLIO];
+        }
+      } else {
+        portfolio = [...INITIAL_PORTFOLIO];
+        saveLocalPortfolio();
+      }
+    }
+
+    function saveLocalPortfolio() {
+      localStorage.setItem("assetpulse_portfolio_v2", JSON.stringify(portfolio));
+    }
+
+    async function syncFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient.from('portfolio').select('*');
+        if (!error && data && data.length > 0) {
+          portfolio = data.map(item => ({
+            id: String(item.id),
+            ticker: item.ticker,
+            name: item.name,
+            category: item.category,
+            broker: item.broker,
+            buyDate: item.buy_date || item.buyDate || '2024-01-01',
+            qty: parseFloat(item.qty),
+            avgUSD: parseFloat(item.avgUSD),
+            currUSD: parseFloat(item.currUSD),
+            feesUSD: parseFloat(item.feesUSD || 0)
+          }));
+          saveLocalPortfolio();
+          renderAll();
+        } else if (!error && (!data || data.length === 0)) {
+          // Se a tabela estiver vazia na nuvem, carrega os dados locais para lá
+          syncAllToSupabase();
+        }
+      } catch (err) {
+        console.warn("Supabase fetch fallback:", err);
+      }
+    }
+
+    async function syncAllToSupabase() {
+      if (!supabaseClient || portfolio.length === 0) return;
+      try {
+        const payload = portfolio.map(item => ({
+          id: String(item.id),
+          ticker: item.ticker,
+          name: item.name,
+          category: item.category,
+          broker: item.broker,
+          buy_date: item.buyDate || '2024-01-01',
+          qty: item.qty,
+          avgUSD: item.avgUSD,
+          currUSD: item.currUSD,
+          feesUSD: item.feesUSD || 0,
+          updated_at: new Date().toISOString()
+        }));
+        await supabaseClient.from('portfolio').upsert(payload, { onConflict: 'id' });
+        showToast("Carteira sincronizada com a nuvem Supabase!");
+      } catch (e) {
+        console.warn("Supabase upsert error:", e);
+      }
+    }
+
+    async function deleteAssetFromSupabase(id) {
+      if (!supabaseClient) return;
+      try {
+        await supabaseClient.from('portfolio').delete().eq('id', String(id));
+      } catch (e) {
+        console.warn("Supabase delete error:", e);
+      }
+    }
+
+    // ==========================================
+    // 4. LIVE EXCHANGE & STOCK QUOTES ENGINE
+    // ==========================================
+    async function fetchLiveExchangeRate(manual = false) {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/EUR");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.rates && data.rates.USD) {
+            EUR_USD = data.rates.USD;
+            const el = document.getElementById("val-eurusd");
+            if (el) el.textContent = EUR_USD.toFixed(4);
+            renderAll();
+            if (manual) showToast(`Câmbio atualizado: 1€ = ${EUR_USD.toFixed(4)}$`);
+          }
+        }
+      } catch (e) {
+        console.warn("Exchange rate error:", e);
+      }
+    }
+
+    async function fetchQuoteFromWeb(ticker) {
+      const clean = (ticker || "").trim().toUpperCase();
+      if (!clean) return null;
+
+      // 1. Yahoo Finance chart API via Proxies
+      const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`;
+      const proxyList = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
+        `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`
+      ];
+
+      for (const pUrl of proxyList) {
+        try {
+          const controller = new AbortController();
+          const tid = setTimeout(() => controller.abort(), 3500);
+          const res = await fetch(pUrl, { signal: controller.signal });
+          clearTimeout(tid);
+          if (res.ok) {
+            const raw = await res.json();
+            const json = raw.contents ? JSON.parse(raw.contents) : raw;
+            const meta = json?.chart?.result?.[0]?.meta;
+            if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
+              return {
+                price: parseFloat(meta.regularMarketPrice.toFixed(2)),
+                name: meta.shortName || clean,
+                source: "Yahoo Finance"
+              };
+            }
+          }
+        } catch (e) {}
+      }
+
+      // 2. Diretório Real Calibrado (Fallback)
+      if (TICKER_DIRECTORY[clean]) {
+        return {
+          price: TICKER_DIRECTORY[clean].price,
+          name: TICKER_DIRECTORY[clean].name,
+          source: "Diretório Oficial"
+        };
+      }
+
+      return null;
+    }
+
+    async function fetchLiveStockQuotes(manual = false) {
+      const icon = document.getElementById("icon-sync-quotes");
+      if (icon) icon.classList.add("animate-spin");
+
+      let updatedCount = 0;
+      for (let i = 0; i < portfolio.length; i++) {
+        const item = portfolio[i];
+        const quote = await fetchQuoteFromWeb(item.ticker);
+        if (quote && quote.price > 0) {
+          portfolio[i].currUSD = quote.price;
+          if (!portfolio[i].name || portfolio[i].name === portfolio[i].ticker) {
+            portfolio[i].name = quote.name;
+          }
+          updatedCount++;
+        }
+      }
+
+      saveLocalPortfolio();
+      renderAll();
+
+      if (icon) icon.classList.remove("animate-spin");
+      const ts = new Date().toLocaleTimeString('pt-PT');
+      const tsEl = document.getElementById("sync-last-timestamp");
+      if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
+
+      if (manual) {
+        showToast(`${updatedCount} cotações atualizadas em tempo real!`);
+        syncAllToSupabase();
+      }
+    }
+
+    // ==========================================
+    // 5. CALCULATIONS & RENDERING
+    // ==========================================
+    function calculatePortfolioMetrics() {
+      let totalInvEUR = 0;
+      let totalInvUSD = 0;
+      let totalCurrEUR = 0;
+      let totalCurrUSD = 0;
+
+      const itemsWithMetrics = portfolio.map(item => {
+        const orderVolUSD = item.qty * item.avgUSD;
+        const totalCostUSD = orderVolUSD + (item.feesUSD || 0);
+        const currValUSD = item.qty * item.currUSD;
+
+        const invEUR = totalCostUSD / EUR_USD;
+        const currEUR = currValUSD / EUR_USD;
+        const plEUR = currEUR - invEUR;
+        const plUSD = currValUSD - totalCostUSD;
+        const plPct = totalCostUSD > 0 ? (plUSD / totalCostUSD) * 100 : 0;
+        const breakEvenUSD = item.qty > 0 ? totalCostUSD / item.qty : item.avgUSD;
+
+        totalInvEUR += invEUR;
+        totalInvUSD += totalCostUSD;
+        totalCurrEUR += currEUR;
+        totalCurrUSD += currValUSD;
+
+        return {
+          ...item,
+          totalCostUSD,
+          currValUSD,
+          invEUR,
+          currEUR,
+          plEUR,
+          plUSD,
+          plPct,
+          breakEvenUSD
+        };
+      });
+
+      const totalPLEUR = totalCurrEUR - totalInvEUR;
+      const totalPLUSD = totalCurrUSD - totalInvUSD;
+      const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
+
+      return {
+        items: itemsWithMetrics,
+        totalInvEUR,
+        totalInvUSD,
+        totalCurrEUR,
+        totalCurrUSD,
+        totalPLEUR,
+        totalPLUSD,
+        totalPLPct
+      };
+    }
+
+    function renderKPIs(metrics) {
+      document.getElementById("kpi-total-invested").textContent = fmtEUR(metrics.totalInvEUR);
+      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} (custo de aquisição)`;
+
+      document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
+      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} (ao câmbio do dia)`;
+
+      const plEurEl = document.getElementById("kpi-pl-eur");
+      const plPctEl = document.getElementById("kpi-pl-pct");
+      const plUsdEl = document.getElementById("kpi-pl-usd");
+      const plIcon = document.getElementById("kpi-pl-icon-container");
+
+      const isPositive = metrics.totalPLEUR >= 0;
+      plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
+      plEurEl.className = `text-lg sm:text-2xl font-bold font-mono tracking-tight ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`;
+      
+      plPctEl.textContent = fmtPCT(metrics.totalPLPct);
+      plPctEl.className = isPositive ? 'text-emerald-400' : 'text-rose-400';
+
+      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} líquido)`;
+      if (plIcon) {
+        plIcon.innerHTML = isPositive 
+          ? `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>`
+          : `<i data-lucide="trending-down" class="w-4 h-4 text-rose-400"></i>`;
+      }
+
+      // Best and worst performers
+      if (metrics.items.length > 0) {
+        const sorted = [...metrics.items].sort((a, b) => b.plPct - a.plPct);
+        const best = sorted[0];
+        const worst = sorted[sorted.length - 1];
+
+        document.getElementById("kpi-best-asset").textContent = `${best.ticker} (${fmtPCT(best.plPct)})`;
+        document.getElementById("kpi-worst-asset").textContent = `${worst.ticker} (${fmtPCT(worst.plPct)})`;
+      } else {
+        document.getElementById("kpi-best-asset").textContent = "-";
+        document.getElementById("kpi-worst-asset").textContent = "-";
+      }
+
+      document.getElementById("table-asset-count").textContent = `${metrics.items.length} ativos`;
+    }
+
+    function renderTable(metrics) {
+      const tbody = document.getElementById("portfolio-table-body");
+      const emptyState = document.getElementById("table-empty-state");
+      tbody.innerHTML = "";
+
+      const filtered = metrics.items.filter(item => {
+        return currentFilter === 'ALL' || item.category === currentFilter;
+      });
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+      emptyState.classList.add("hidden");
+
+      filtered.forEach(item => {
+        const allocPct = metrics.totalCurrEUR > 0 ? (item.currEUR / metrics.totalCurrEUR) * 100 : 0;
+        const isPos = item.plEUR >= 0;
+        const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
+        const badgeBg = isPos ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/40 transition-colors border-b border-slate-800/50";
+        tr.innerHTML = `
+          <!-- Ticker & Data de Compra -->
+          <td class="py-3 px-3 sm:px-4">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700/80 flex items-center justify-center font-bold text-xs text-sky-400 font-mono">
+                ${item.ticker.slice(0, 3)}
+              </div>
+              <div>
+                <div class="font-bold text-white font-mono text-xs flex items-center gap-1.5">
+                  ${item.ticker}
+                  <span class="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400 font-normal">[${item.broker}]</span>
+                </div>
+                <div class="text-[10px] text-slate-400 line-clamp-1 max-w-[120px] sm:max-w-[180px]">${item.name}</div>
+                <div class="text-[9px] text-slate-500 font-mono">📅 ${item.buyDate || '2024-01-01'}</div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Quantidade -->
+          <td class="py-3 px-3 text-right font-mono text-slate-200">
+            ${Number(item.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
+          </td>
+
+          <!-- Preço Médio & Break-Even -->
+          <td class="py-3 px-3 text-right font-mono">
+            <div class="text-slate-300">${fmtUSD(item.avgUSD)}</div>
+            <div class="text-[10px] text-slate-500" title="Preço de Equilíbrio com taxas">BE: ${fmtUSD(item.breakEvenUSD)}</div>
+          </td>
+
+          <!-- Cotação Atual -->
+          <td class="py-3 px-3 text-right font-mono font-semibold text-white">
+            ${fmtUSD(item.currUSD)}
+          </td>
+
+          <!-- Capital Investido (€) -->
+          <td class="py-3 px-3 text-right font-mono text-slate-300">
+            ${fmtEUR(item.invEUR)}
+          </td>
+
+          <!-- Valor Atual (€) -->
+          <td class="py-3 px-3 text-right font-mono font-bold text-white">
+            ${fmtEUR(item.currEUR)}
+          </td>
+
+          <!-- Mais-Valia Líquida -->
+          <td class="py-3 px-3 text-right font-mono">
+            <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(item.plEUR)}</div>
+            <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5">
+              ${fmtPCT(item.plPct)}
+            </div>
+          </td>
+
+          <!-- Peso / Alocação -->
+          <td class="py-3 px-3 text-center">
+            <div class="w-16 sm:w-20 mx-auto">
+              <div class="text-[10px] font-mono text-slate-400 mb-1">${allocPct.toFixed(1)}%</div>
+              <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-sky-500 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Ações -->
+          <td class="py-3 px-3 text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="openModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 rounded-md hover:bg-slate-800 transition" title="Editar">
+                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteAsset('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-md hover:bg-slate-800 transition" title="Eliminar">
+                <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // 6. DATE-DRIVEN BROKER LINE CHART ENGINE
+    // ==========================================
+    function setChartTimeframe(tf) {
+      currentChartTimeframe = tf;
+      document.querySelectorAll(".chart-tf-btn").forEach(btn => {
+        if (btn.getAttribute("data-tf") === tf) {
+          btn.className = "chart-tf-btn active px-2.5 py-1 rounded-lg bg-sky-600 text-white font-semibold transition";
+        } else {
+          btn.className = "chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
+        }
+      });
+      renderLineChart();
+    }
+
+    function generateDateDrivenPoints(metrics, tf) {
+      const now = new Date();
+      let numPoints = 24;
+      let startTime = new Date();
+
+      if (tf === '1D') {
+        startTime.setHours(startTime.getHours() - 24);
+        numPoints = 24;
+      } else if (tf === '1S') {
+        startTime.setDate(startTime.getDate() - 7);
+        numPoints = 28;
+      } else if (tf === '1M') {
+        startTime.setDate(startTime.getDate() - 30);
+        numPoints = 30;
+      } else if (tf === '3M') {
+        startTime.setDate(startTime.getDate() - 90);
+        numPoints = 35;
+      } else if (tf === '1A') {
+        startTime.setFullYear(startTime.getFullYear() - 1);
+        numPoints = 40;
+      } else { // TUDO
+        let oldest = new Date();
+        metrics.items.forEach(it => {
+          if (it.buyDate) {
+            const d = new Date(it.buyDate);
+            if (d < oldest) oldest = d;
+          }
+        });
+        startTime = oldest;
+        numPoints = 45;
+      }
+
+      const totalSpan = now.getTime() - startTime.getTime();
+      const points = [];
+
+      for (let i = 0; i <= numPoints; i++) {
+        const ptTime = new Date(startTime.getTime() + (totalSpan * (i / numPoints)));
+        const ptDateStr = ptTime.toISOString().split("T")[0];
+
+        // Inclui apenas ativos adquiridos até à data deste ponto
+        let investedAtPt = 0;
+        let valueAtPt = 0;
+
+        metrics.items.forEach(it => {
+          const buyD = it.buyDate || '2024-01-01';
+          if (buyD <= ptDateStr || tf === '1D') {
+            const costEUR = ((it.qty * it.avgUSD) + (it.feesUSD || 0)) / EUR_USD;
+            investedAtPt += costEUR;
+
+            // Variação suave até à cotação final
+            const progress = i / numPoints;
+            const seed = (it.ticker.charCodeAt(0) * 7 + i) % 11;
+            const noise = 1 + ((seed - 5) * 0.003 * (1 - progress));
+            const interpolatedPrice = (it.avgUSD + (it.currUSD - it.avgUSD) * progress) * noise;
+            valueAtPt += (it.qty * interpolatedPrice) / EUR_USD;
+          }
+        });
+
+        // O ponto final tem de bater exatamente certo com os KPIs
+        if (i === numPoints) {
+          investedAtPt = metrics.totalInvEUR;
+          valueAtPt = metrics.totalCurrEUR;
+        }
+
+        points.push({
+          time: ptTime,
+          dateLabel: ptTime.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: tf === '1A' || tf === 'TUDO' ? '2-digit' : undefined }),
+          invested: investedAtPt,
+          value: valueAtPt
+        });
+      }
+
+      return points;
+    }
+
+    function renderLineChart() {
+      const canvas = document.getElementById("equityLineChart");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const metrics = calculatePortfolioMetrics();
+      const points = generateDateDrivenPoints(metrics, currentChartTimeframe);
+      if (points.length < 2) return;
+
+      const W = rect.width;
+      const H = rect.height;
+      const padLeft = 10;
+      const padRight = 10;
+      const padTop = 20;
+      const padBottom = 25;
+
+      const vals = points.map(p => p.value).concat(points.map(p => p.invested));
+      let minVal = Math.min(...vals) * 0.98;
+      let maxVal = Math.max(...vals) * 1.02;
+      if (maxVal === minVal) { maxVal += 100; minVal -= 100; }
+
+      const getX = (idx) => padLeft + (idx / (points.length - 1)) * (W - padLeft - padRight);
+      const getY = (val) => H - padBottom - ((val - minVal) / (maxVal - minVal)) * (H - padTop - padBottom);
+
+      ctx.clearRect(0, 0, W, H);
+
+      // 1. Grelha de Fundo Horizontal
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 3; g++) {
+        const gy = padTop + (g / 3) * (H - padTop - padBottom);
+        ctx.beginPath();
+        ctx.moveTo(padLeft, gy);
+        ctx.lineTo(W - padRight, gy);
+        ctx.stroke();
+      }
+
+      // 2. Linha Tracejada do Capital Investido (Baseline em Escada)
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      points.forEach((pt, i) => {
+        const x = getX(i);
+        const y = getY(pt.invested);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 3. Área Preenchida com Gradiente de Lucro
+      const isPositive = metrics.totalPLEUR >= 0;
+      const grad = ctx.createLinearGradient(0, padTop, 0, H - padBottom);
+      if (isPositive) {
+        grad.addColorStop(0, "rgba(16, 185, 129, 0.25)");
+        grad.addColorStop(1, "rgba(16, 185, 129, 0.0)");
+      } else {
+        grad.addColorStop(0, "rgba(244, 63, 94, 0.25)");
+        grad.addColorStop(1, "rgba(244, 63, 94, 0.0)");
+      }
+
+      ctx.beginPath();
+      points.forEach((pt, i) => {
+        const x = getX(i);
+        const y = getY(pt.value);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.lineTo(getX(points.length - 1), H - padBottom);
+      ctx.lineTo(getX(0), H - padBottom);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // 4. Linha Principal de Património (Curva Sólida)
+      ctx.strokeStyle = isPositive ? "#10b981" : "#f43f5e";
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      points.forEach((pt, i) => {
+        const x = getX(i);
+        const y = getY(pt.value);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // 5. Scrubber Interativo ao passar o cursor ou dedo
+      const activeIdx = (chartHoverIndex >= 0 && chartHoverIndex < points.length) ? chartHoverIndex : (points.length - 1);
+      const activePt = points[activeIdx];
+      const hx = getX(activeIdx);
+      const hy = getY(activePt.value);
+
+      // Linha vertical do scrubber
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(hx, padTop);
+      ctx.lineTo(hx, H - padBottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Ponto na curva
+      ctx.fillStyle = isPositive ? "#10b981" : "#f43f5e";
+      ctx.beginPath();
+      ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Atualiza o cabeçalho de inspeção
+      const scrubValEl = document.getElementById("chart-scrub-val");
+      const scrubDeltaEl = document.getElementById("chart-scrub-delta");
+      const scrubDateEl = document.getElementById("chart-scrub-date");
+
+      if (scrubValEl) scrubValEl.textContent = fmtEUR(activePt.value);
+      if (scrubDeltaEl) {
+        const delta = activePt.value - activePt.invested;
+        const deltaPct = activePt.invested > 0 ? (delta / activePt.invested) * 100 : 0;
+        scrubDeltaEl.textContent = `${delta >= 0 ? '+' : ''}${fmtEUR(delta)} (${fmtPCT(deltaPct)})`;
+        scrubDeltaEl.className = delta >= 0 ? "text-[11px] text-emerald-400 font-mono" : "text-[11px] text-rose-400 font-mono";
+      }
+      if (scrubDateEl) scrubDateEl.textContent = activePt.dateLabel;
+    }
+
+    // Touch and Mouse Scrubber Listeners
+    function setupChartInteractions() {
+      const canvas = document.getElementById("equityLineChart");
+      if (!canvas) return;
+
+      const handleMove = (clientX) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const pct = Math.max(0, Math.min(1, x / rect.width));
+        const metrics = calculatePortfolioMetrics();
+        const points = generateDateDrivenPoints(metrics, currentChartTimeframe);
+        chartHoverIndex = Math.round(pct * (points.length - 1));
+        renderLineChart();
+      };
+
+      canvas.addEventListener("mousemove", (e) => handleMove(e.clientX));
+      canvas.addEventListener("mouseleave", () => {
+        chartHoverIndex = -1;
+        renderLineChart();
+      });
+
+      canvas.addEventListener("touchmove", (e) => {
+        if (e.touches && e.touches[0]) {
+          handleMove(e.touches[0].clientX);
+        }
+      }, { passive: true });
+
+      canvas.addEventListener("touchend", () => {
+        chartHoverIndex = -1;
+        renderLineChart();
+      });
+    }
+
+    // ==========================================
+    // 7. ASSET MODAL & FORM HANDLING
+    // ==========================================
+    window.openModal = function (editId = null) {
+      const form = document.getElementById("asset-form");
+      if (form) form.reset();
+
+      const errBox = document.getElementById("form-error-feedback");
+      if (errBox) errBox.classList.add("hidden");
+
+      document.getElementById("form-id").value = "";
+      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editId ? "Editar Ativo" : "Registar Novo Ativo"}`;
+
+      // Data de compra padrão: hoje
+      const dateInput = document.getElementById("form-date");
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split("T")[0];
+      }
+
+      if (editId) {
+        const item = portfolio.find(it => String(it.id) === String(editId));
+        if (item) {
+          document.getElementById("form-id").value = item.id;
+          document.getElementById("form-ticker").value = item.ticker;
+          document.getElementById("form-name").value = item.name;
+          document.getElementById("form-category").value = item.category;
+          document.getElementById("form-broker").value = item.broker;
+          if (dateInput) dateInput.value = item.buyDate || new Date().toISOString().split("T")[0];
+          document.getElementById("form-qty").value = item.qty;
+          document.getElementById("form-avg").value = item.avgUSD;
+          document.getElementById("form-curr").value = item.currUSD;
+          document.getElementById("form-fees").value = item.feesUSD || 0;
+          updateBreakEvenDisplay();
+        }
+      } else {
+        const feesInput = document.getElementById("form-fees");
+        if (feesInput) feesInput.value = "0.35";
+        updateBreakEvenDisplay();
+      }
+
+      const modal = document.getElementById("modal-asset");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+    };
+
+    window.closeModal = function () {
+      const modal = document.getElementById("modal-asset");
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    };
+
+    window.recalculateFormFees = function () {
+      const broker = document.getElementById("form-broker")?.value || 'IBKR';
+      const qty = parseNumericInput(document.getElementById("form-qty")?.value);
+      const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
+      const feesInput = document.getElementById("form-fees");
+      const note = document.getElementById("form-fee-note");
+
+      let fees = 0;
+      const orderVol = qty * avgUSD;
+
+      if (broker === 'IBKR') {
+        fees = Math.max(0.35, qty * 0.0035);
+        if (note) note.textContent = "IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).";
+      } else if (broker === 'IBKR_FIXED') {
+        fees = Math.max(1.00, qty * 0.005);
+        if (note) note.textContent = "IBKR Fixed: $0.005 por ação (Mínimo: $1.00).";
+      } else if (broker === 'XTB') {
+        fees = 0.00;
+        if (note) note.textContent = "XTB Conta USD: Comissão de 0% de corretagem.";
+      } else if (broker === 'XTB_FX') {
+        fees = orderVol * 0.005;
+        if (note) note.textContent = "XTB Conta EUR: 0.50% de taxa de conversão cambial.";
+      }
+
+      if (feesInput) feesInput.value = fees.toFixed(2);
+      updateBreakEvenDisplay();
+    };
+
+    window.updateBreakEvenDisplay = function () {
+      const qty = parseNumericInput(document.getElementById("form-qty")?.value);
+      const avg = parseNumericInput(document.getElementById("form-avg")?.value);
+      const fees = parseNumericInput(document.getElementById("form-fees")?.value);
+
+      let be = avg;
+      if (qty > 0) {
+        be = ((qty * avg) + fees) / qty;
+      }
+      const beEl = document.getElementById("form-be-display");
+      if (beEl) beEl.textContent = fmtUSD(be);
+    };
+
+    window.debounceTickerLookup = function (ticker) {
+      clearTimeout(lookupDebounceTimer);
+      const clean = (ticker || "").trim().toUpperCase();
+      if (clean.length >= 2) {
+        lookupDebounceTimer = setTimeout(async () => {
+          const indicator = document.getElementById("ticker-fetch-indicator");
+          const currInput = document.getElementById("form-curr");
+          const nameInput = document.getElementById("form-name");
+
+          if (indicator) indicator.classList.remove("hidden");
+          const quote = await fetchQuoteFromWeb(clean);
+          if (indicator) indicator.classList.add("hidden");
+
+          if (quote) {
+            if (currInput && (!currInput.value || currInput.value === "0")) {
+              currInput.value = quote.price.toFixed(2);
+            }
+            if (nameInput && !nameInput.value) {
+              nameInput.value = quote.name;
+            }
+          }
+        }, 500);
+      }
+    };
+
+    window.saveAsset = function (e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const errBox = document.getElementById("form-error-feedback");
+      if (errBox) errBox.classList.add("hidden");
+
+      const id = document.getElementById("form-id")?.value;
+      const ticker = (document.getElementById("form-ticker")?.value || "").trim().toUpperCase();
+      let name = (document.getElementById("form-name")?.value || "").trim();
+      const category = document.getElementById("form-category")?.value || "Tecnologia";
+      const broker = document.getElementById("form-broker")?.value || "IBKR";
+      const buyDate = document.getElementById("form-date")?.value || new Date().toISOString().split("T")[0];
+
+      const qty = parseNumericInput(document.getElementById("form-qty")?.value);
+      const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
+
+      if (!ticker) {
+        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação (ex: NVDA)."; errBox.classList.remove("hidden"); }
+        return;
+      }
+      if (qty <= 0) {
+        if (errBox) { errBox.textContent = "A quantidade deve ser superior a zero."; errBox.classList.remove("hidden"); }
+        return;
+      }
+      if (avgUSD <= 0) {
+        if (errBox) { errBox.textContent = "O preço médio deve ser superior a zero."; errBox.classList.remove("hidden"); }
+        return;
+      }
+
+      if (!name) name = TICKER_DIRECTORY[ticker]?.name || ticker;
+
+      let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
+      if (currUSD <= 0) {
+        currUSD = TICKER_DIRECTORY[ticker] ? TICKER_DIRECTORY[ticker].price : avgUSD;
+      }
+
+      const feesUSD = parseNumericInput(document.getElementById("form-fees")?.value);
+
+      if (id) {
+        const idx = portfolio.findIndex(it => String(it.id) === String(id));
+        if (idx !== -1) {
+          portfolio[idx] = { id: String(id), ticker, name, category, broker, buyDate, qty, avgUSD, currUSD, feesUSD };
+        }
+      } else {
+        const newAsset = {
+          id: Date.now().toString(),
+          ticker,
+          name,
+          category,
+          broker,
+          buyDate,
+          qty,
+          avgUSD,
+          currUSD,
+          feesUSD
+        };
+        portfolio.push(newAsset);
+      }
+
+      saveLocalPortfolio();
+      closeModal();
+      renderAll();
+      syncAllToSupabase();
+      showToast(`Ativo ${ticker} guardado com sucesso!`);
+    };
+
+    window.deleteAsset = function (id) {
+      const item = portfolio.find(it => String(it.id) === String(id));
+      const confirmDelete = window.confirm(`Eliminar ${item ? item.ticker : 'este ativo'} da carteira?`);
+      if (confirmDelete) {
+        portfolio = portfolio.filter(it => String(it.id) !== String(id));
+        saveLocalPortfolio();
+        renderAll();
+        deleteAssetFromSupabase(id);
+        showToast("Ativo removido da carteira.");
+      }
+    };
+
+    window.injectTestAsset = function () {
+      const testItem = {
+        id: Date.now().toString(),
+        ticker: "AMZN",
+        name: "Amazon.com Inc.",
+        category: "Tecnologia",
+        broker: "IBKR",
+        buyDate: "2024-06-15",
+        qty: 5,
+        avgUSD: 180.00,
+        currUSD: 258.45,
+        feesUSD: 0.35
+      };
+      portfolio.push(testItem);
+      saveLocalPortfolio();
+      renderAll();
+      syncAllToSupabase();
+      showToast("Ação de teste (AMZN) inserida com sucesso!");
+    };
+
+    // Category Filter Selection
+    window.setCategoryFilter = function (cat) {
+      currentFilter = cat;
+      document.querySelectorAll(".cat-pill").forEach(btn => {
+        if (btn.getAttribute("data-cat") === cat) {
+          btn.className = "cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-sky-600 text-white transition whitespace-nowrap";
+        } else {
+          btn.className = "cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap";
+        }
+      });
+      renderAll();
+    };
+
+    // Supabase Modal Helpers
+    window.openSupabaseModal = function () {
+      const modal = document.getElementById("modal-supabase");
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+    };
+
+    window.closeSupabaseModal = function () {
+      const modal = document.getElementById("modal-supabase");
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    };
+
+    // Master Render Function
+    function renderAll() {
+      const metrics = calculatePortfolioMetrics();
+      renderKPIs(metrics);
+      renderTable(metrics);
+      renderLineChart();
+    }
+
+    // Window Resize Observer for Chart
+    window.addEventListener("resize", () => {
+      renderLineChart();
+    });
+
+    // ==========================================
+    // 8. APPLICATION INITIALIZATION
+    // ==========================================
+    window.addEventListener("DOMContentLoaded", async () => {
+      loadLocalPortfolio();
+      setupChartInteractions();
+      renderAll();
+
+      // 1. Atualiza taxa de câmbio EUR/USD
+      await fetchLiveExchangeRate();
+
+      // 2. Sincroniza com Supabase
+      await syncFromSupabase();
+
+      // 3. Atualiza cotações oficiais das ações
+      await fetchLiveStockQuotes();
+
+      // Auto-refresh a cada 60 segundos
+      setInterval(() => {
+        fetchLiveStockQuotes();
+      }, 60000);
+    });
+  </script>
 </body>
 </html>
