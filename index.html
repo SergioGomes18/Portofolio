@@ -185,13 +185,13 @@
         <input type="text" id="inpProxy" placeholder="SXRV=QQQ" style="width:180px">
       </div>
       <div class="field">
-        <label for="inpProxyAnchor">Referência do proxy (ticker=preço@data, opcional)</label>
-        <input type="text" id="inpProxyAnchor" placeholder="SXRV=1103.16@2025-08-01" style="width:210px">
+        <label for="inpProxyAnchor">Referência do proxy (ticker=preço@data — data recente, últimos ~4 meses)</label>
+        <input type="text" id="inpProxyAnchor" placeholder="SXRV=1245.30@2026-09-15" style="width:230px">
       </div>
       <button class="btn" id="btnSaveSettings">Guardar definições</button>
       <button class="btn" id="btnExport">Descarregar cópia dos dados</button>
       <button class="btn" id="btnSignOut">Sair da conta</button>
-      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador e dá as cotações do dia a dia. A Finnhub bloqueou o histórico de preços no plano gratuito — por isso, só para descobrir o preço do proxy na data de referência (uma única vez, fica guardado para sempre), a app usa a Alpha Vantage, que continua a dar histórico de graça. Regista-te em alphavantage.co para uma chave gratuita. Ativos como o SXRV são seguidos por <b>proxy</b>: em vez de uma cotação direta, o preço é estimado a partir da variação de um ETF equivalente dos EUA (ex. QQQ para o Nasdaq-100), aplicada a um preço de referência real que tu indicas. Sem referência definida, uso o preço e a data da primeira compra desse ativo. Isto é uma estimativa, não uma cotação exata — o desvio tende a crescer devagar com o tempo, porque o QQQ paga dividendos e o SXRV reinveste-os.</div>
+      <div class="hint" style="width:100%">A chave Finnhub fica guardada apenas no teu navegador e dá as cotações do dia a dia. A Finnhub e a Alpha Vantage bloquearam o histórico de preços mais antigo nos planos gratuitos — por isso a <b>referência do proxy tem de ser uma data recente</b> (dentro dos últimos ~100 dias de negociação), nunca a data da primeira compra se essa já for antiga. Vai ao site do teu broker ou à justETF, vê o preço real do SXRV agora, e escreve-o aqui com a data de hoje. Ativos como o SXRV são seguidos por <b>proxy</b>: o preço é estimado a partir da variação de um ETF equivalente dos EUA (ex. QQQ para o Nasdaq-100), aplicada a esse preço de referência. Isto é uma estimativa, não uma cotação exata — o desvio tende a crescer devagar com o tempo, porque o QQQ paga dividendos e o SXRV reinveste-os. Atualiza a referência de vez em quando para manter a estimativa afinada.</div>
     </div>
   </div>
 
@@ -470,15 +470,16 @@ function proxyAnchorOverride(ticker){
 /* Preço de fecho do símbolo-proxy (ex. QQQ) numa data fixa, com cache permanente —
    pedido uma única vez por âncora, nunca refeito, para não gastar créditos à toa
    nem introduzir variação de dia para dia no ponto de partida.
-   A Finnhub bloqueou o histórico de preços no plano gratuito, por isso este
-   único pedido vai à Alpha Vantage, que ainda dá histórico diário de graça. */
+   A Finnhub bloqueou o histórico de preços no plano gratuito; a Alpha Vantage
+   também bloqueou o histórico completo — o plano gratuito só dá "compact"
+   (últimos ~100 dias de negociação). Por isso a âncora tem de ser recente. */
 async function proxyAnchorClose(proxySym, dateISO, avKey){
   const cacheKey = `proxy_anchor:${proxySym}:${dateISO}`;
   const cached = LS.get(cacheKey, null);
   if (cached) return cached;
   if (!avKey) return null;
   try{
-    const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(proxySym)}&outputsize=full&apikey=${encodeURIComponent(avKey)}`;
+    const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${encodeURIComponent(proxySym)}&outputsize=compact&apikey=${encodeURIComponent(avKey)}`;
     const r = await fetch(url);
     if (!r.ok) return null;
     const j = await r.json();
@@ -495,8 +496,16 @@ async function proxyAnchorClose(proxySym, dateISO, avKey){
       }
       d.setDate(d.getDate() + 1);
     }
-    return null;
+    return null; // a data pedida não está dentro dos ~100 dias que o plano gratuito cobre
   }catch(e){ return null; }
+}
+
+/* O plano gratuito da Alpha Vantage só cobre ~100 dias de negociação (compact).
+   Avisa cedo se a âncora escolhida estiver claramente fora desse alcance,
+   em vez de deixar o pedido falhar sem explicação. */
+function anchorTooOld(dateISO){
+  const days = (Date.now() - new Date(dateISO + 'T00:00:00Z').getTime()) / 86400000;
+  return days > 130; // ~100 dias úteis + folga para fins de semana/feriados
 }
 
 /* Câmbio EUR->moeda numa data. Devolve null se não souber — nunca inventa. */
@@ -629,10 +638,12 @@ async function refreshQuotes(){
 
   // 2) tickers seguidos por proxy: preço estimado = âncora × (proxy hoje ÷ proxy na data da âncora)
   let proxyMissingKey = false;
+  let proxyOldAnchor = false;
   for (const { tk, proxySym, anchor } of proxied){
     const entry = results[proxySym];
     if (!entry || entry.error){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
     if (!avKey){ proxyMissingKey = true; failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
+    if (anchorTooOld(anchor.date)){ proxyOldAnchor = true; failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
     const anchorClose = await proxyAnchorClose(proxySym, anchor.date, avKey);
     if (!anchorClose){ failed.push(tk); quotes[tk] = quotes[tk] || null; continue; }
 
@@ -648,7 +659,7 @@ async function refreshQuotes(){
 
   const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
   if (failed.length === 0 && ok > 0) status(`Cotações de ${hora}`, 'ok');
-  else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}${proxyMissingKey ? ' (falta a chave Alpha Vantage)' : ''}`, 'warn');
+  else if (ok > 0) status(`${hora} — sem cotação para ${failed.join(', ')}${proxyMissingKey ? ' (falta a chave Alpha Vantage)' : ''}${proxyOldAnchor ? ' (referência do proxy é antiga demais — usa uma data dos últimos ~4 meses em Definições)' : ''}`, 'warn');
   else status(`Nenhuma cotação obtida${firstError ? ': ' + firstError : ''}`, 'bad');
 
   if (ok > 0) await saveSnapshot();
