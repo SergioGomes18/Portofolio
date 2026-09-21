@@ -105,7 +105,7 @@ border-color: rgba(255, 255, 255, 0.12);
 <strong id="supabase-status-label" class="font-semibold text-emerald-400 num-mono text-[11px]">Supabase Ativo</strong>
 </button>
 ​<!-- Live EUR/USD Pill -->
-<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-terminal-900 border border-terminal-800 text-xs text-slate-300 shadow-sm" title="Taxa de câmbio em tempo real com o BCE">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-terminal-900 border border-terminal-800 text-xs text-slate-300 shadow-sm" title="Taxa de câmbio em tempo real">
 <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse-soft"></span>
 <span class="text-slate-400">1 € =</span>
 <strong id="fx-label" class="text-white num-mono font-semibold">1.0850</strong>
@@ -118,6 +118,11 @@ border-color: rgba(255, 255, 255, 0.12);
 <button onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 transition active:scale-95" title="Sincronizar cotações de mercado reais">
 <svg id="quotes-sync-icon" class="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 16h5v5"></path></svg>
 <span id="quotes-status-text" class="text-xs font-semibold num-mono hidden md:inline">Atualizar Cotações</span>
+</button>
+​<!-- Test Asset Simulation Button -->
+<button onclick="injectRandomTestAsset()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 font-semibold text-xs transition active:scale-95" title="Adicionar automaticamente uma ação aleatória para testar o sistema">
+<span>🧪</span>
+<span class="hidden sm:inline">Testar Ação Aleatória</span>
 </button>
 ​<!-- New Asset Button -->
 <button onclick="openModal()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 font-semibold text-xs text-white shadow-lg shadow-sky-600/25 transition-all hover:scale-[1.02] active:scale-95">
@@ -346,7 +351,7 @@ Registar Novo Ativo
 type="text" 
 id="form-ticker" 
 required 
-placeholder="ex: NVDA, AAPL, MSFT" 
+placeholder="ex: NVDA, AAPL, MSFT, AMZN" 
 class="w-full uppercase px-3 py-2 pr-8 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none"
 onblur="handleTickerLookup(this.value)"
 oninput="debounceTickerLookup(this.value)"
@@ -376,7 +381,7 @@ title="Procurar cotação em tempo real"
 </div>
 ​<div>
 <label class="block font-semibold text-slate-300 mb-1">Nome Completo da Empresa / Ativo *</label>
-<input type="text" id="form-name" required placeholder="ex: NVIDIA Corporation" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white focus:border-sky-500 focus:outline-none">
+<input type="text" id="form-name" required placeholder="ex: Amazon.com, Inc." class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white focus:border-sky-500 focus:outline-none">
 </div>
 ​<!-- Corretora e Data de Compra -->
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -824,9 +829,13 @@ const tr = document.createElement("tr");
 tr.className = "hover:bg-terminal-850/60 transition-colors";
 ​const brokerClass = it.broker.includes("IBKR") ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
 const brokerLabel = it.broker === "IBKR" ? "IBKR Tiered" : (it.broker === "IBKR_FIXED" ? "IBKR Fixed" : (it.broker === "XTB_FX" ? "XTB 0.5% FX" : "XTB 0%"));
-​const formattedDate = it.buyDate
-? new Date(it.buyDate + "T00:00:00").toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })
-: "-";
+​let formattedDate = "-";
+if (it.buyDate) {
+const parsedD = new Date(it.buyDate.includes("T") ? it.buyDate : it.buyDate + "T00:00:00");
+if (!isNaN(parsedD.getTime())) {
+formattedDate = parsedD.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+}
 ​tr.innerHTML = <td class="p-3.5 pl-5"> <div class="flex items-center gap-2.5"> <span class="px-2 py-1 rounded-lg bg-sky-500/10 text-sky-400 font-bold num-mono text-xs border border-sky-500/20">${it.ticker}</span> <div> <div class="font-bold text-white text-xs">${it.name}</div> <div class="flex items-center gap-1.5 mt-0.5"> <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border ${brokerClass}">${brokerLabel}</span> <span class="text-[10px] text-slate-400 num-mono bg-terminal-900 px-1 py-0.5 rounded border border-terminal-800" title="Data de Compra">📅 ${formattedDate}</span> </div> </div> </div> </td> <td class="p-3.5 text-slate-400">${it.category}</td> <td class="p-3.5 text-right num-mono font-bold text-slate-200">${it.qty}</td> <td class="p-3.5 text-right num-mono text-slate-400">${fmtUSD(it.avgUSD)}</td> <td class="p-3.5 text-right num-mono text-amber-400">${fmtUSD(it.fees)}</td> <td class="p-3.5 text-right num-mono text-sky-400 font-bold">${fmtUSD(it.breakEvenUSD)}</td> <td class="p-3.5 text-right num-mono text-white font-bold bg-terminal-900/40">${fmtUSD(it.currUSD)}</td> <td class="p-3.5 text-right num-mono text-slate-300 bg-terminal-900/30">${fmtEUR(it.invEUR)}</td> <td class="p-3.5 text-right num-mono text-white font-bold bg-terminal-900/30">${fmtEUR(it.curEUR)}</td> <td class="p-3.5 text-right num-mono font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}">${(isPos ? '+' : '') + fmtEUR(it.plEUR)}</td> <td class="p-3.5 text-right num-mono font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}"> <span class="px-1.5 py-0.5 rounded ${isPos ? 'bg-emerald-500/10' : 'bg-rose-500/10'}">${(isPos ? '+' : '') + it.plPct.toFixed(2)}%</span> </td> <td class="p-3.5 text-right num-mono"> <div class="flex items-center justify-end gap-2"> <span class="text-slate-300">${it.allocPct.toFixed(1)}%</span> <div class="w-12 bg-terminal-800 rounded-full h-1.5 overflow-hidden"> <div class="bg-sky-500 h-full rounded-full" style="width: ${Math.min(it.allocPct, 100)}%;"></div> </div> </div> </td> <td class="p-3.5 text-center pr-5"> <div class="flex items-center justify-center gap-1.5"> <button class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-terminal-800 transition" onclick="openModal('${it.id}')" title="Editar">&#9998;</button> <button class="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition" onclick="confirmDelete('${it.id}')" title="Eliminar">&#128465;</button> </div> </td>;
 tbody.appendChild(tr);
 });
@@ -941,8 +950,9 @@ let priceUSD = item.currUSD;
 const targetIdx = Math.min(Math.round((i / (numPoints - 1)) * (series.length - 1)), series.length - 1);
 priceUSD = series[targetIdx].close || item.currUSD;
 }
-​totalEurAtTime += (item.qty * priceUSD) / EUR_USD;
-investedEurAtTime += item.invEUR;
+​const itemInvUSD = (item.qty * item.avgUSD) + (item.feesUSD || 0);
+totalEurAtTime += (item.qty * priceUSD) / EUR_USD;
+investedEurAtTime += itemInvUSD / EUR_USD;
 }
 }
 ​// No último ponto do gráfico, garante o encerramento exato ao cêntimo com o presente
@@ -1010,8 +1020,9 @@ let activeAssets = 0;
 const buyTime = item.buyDate ? new Date(item.buyDate + "T00:00:00").getTime() : 0;
 if (timeMs >= buyTime) {
 activeAssets++;
-const itemInv = item.invEUR || ((item.qty * item.avgUSD) / EUR_USD);
-const itemCur = item.curEUR || ((item.qty * item.currUSD) / EUR_USD);
+const itemInvUSD = (item.qty * item.avgUSD) + (item.feesUSD || 0);
+const itemInv = itemInvUSD / EUR_USD;
+const itemCur = (item.qty * item.currUSD) / EUR_USD;
 ​// Progressão suave desde o preço de compra até à cotação atual com ligeira oscilação
 const progress = Math.min(1, Math.max(0, (timeMs - buyTime) / (now.getTime() - buyTime || 1)));
 const wave = Math.sin(progress * Math.PI * 4) * (itemCur * 0.015);
@@ -1381,6 +1392,41 @@ updateScrubDisplay(points[points.length - 1], points[0]);
 renderGeneralChart(computeMetrics().items);
 }
 }, 35);
+};
+​// ==============================================================
+// INJEÇÃO AUTOMÁTICA DE AÇÃO ALEATÓRIA PARA TESTE
+// ==============================================================
+window.injectRandomTestAsset = function () {
+const candidateStocks = [
+{ ticker: "AMZN", name: "Amazon.com, Inc.", category: "Consumo / Retalho", broker: "IBKR", qty: 5, avgUSD: 180.00, currUSD: 258.45, feesUSD: 0.35, buyDate: "2024-06-15" },
+{ ticker: "GOOGL", name: "Alphabet Inc.", category: "Tecnologia", broker: "XTB", qty: 4, avgUSD: 165.50, currUSD: 354.97, feesUSD: 0.00, buyDate: "2024-04-10" },
+{ ticker: "META", name: "Meta Platforms, Inc.", category: "Tecnologia", broker: "IBKR", qty: 2, avgUSD: 520.00, currUSD: 741.25, feesUSD: 0.35, buyDate: "2024-07-01" },
+{ ticker: "TSLA", name: "Tesla, Inc.", category: "Consumo / Retalho", broker: "IBKR", qty: 6, avgUSD: 210.00, currUSD: 375.30, feesUSD: 0.35, buyDate: "2024-09-15" }
+];
+​// Seleciona um que ainda não exista na carteira ou gera variação com ID único
+const available = candidateStocks.filter(c => !portfolio.some(p => p.ticker === c.ticker));
+const selected = available.length > 0 ? available[0] : candidateStocks[Math.floor(Math.random() * candidateStocks.length)];
+​const newId = Date.now().toString();
+const testAsset = {
+...selected,
+id: newId
+};
+​portfolio.push(testAsset);
+savePortfolio();
+renderAll();
+​const notifBanner = document.getElementById("sync-notification");
+const notifBox = document.getElementById("sync-notification-box");
+const notifText = document.getElementById("sync-notification-text");
+​if (notifBanner && notifBox && notifText) {
+notifBanner.classList.remove("hidden");
+notifBox.className = "p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 text-xs num-mono text-emerald-300 flex items-center justify-between shadow-sm";
+notifText.innerHTML = 🧪 <strong>Teste Concluído com Sucesso!</strong> Ativo <strong>${testAsset.ticker} (${testAsset.name})</strong> adicionado em <strong>${testAsset.buyDate}</strong> via <strong>${testAsset.broker}</strong>. Todos os cálculos de break-even, EUR/USD e gráfico foram recalculados!;
+setTimeout(() => notifBanner.classList.add("hidden"), 8000);
+}
+​// Executa atualização em background para buscar a cotação oficial mais recente
+setTimeout(() => {
+fetchLiveStockQuotes();
+}, 600);
 };
 ​window.recalculateFormFees = function () {
 const broker = document.getElementById("form-broker").value;
