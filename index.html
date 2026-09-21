@@ -579,8 +579,12 @@ async function refreshQuotes(){
   try{
     const url = `${QUOTE_PROVIDER}/quote?symbol=${encodeURIComponent(symbolList)}&apikey=${encodeURIComponent(key)}`;
     const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
+    const raw = await r.text();
+    let j;
+    try{ j = JSON.parse(raw); }catch(parseErr){ throw new Error(`Resposta não é JSON (HTTP ${r.status}): ${raw.slice(0,140)}`); }
+    if (!r.ok || j.status === 'error'){
+      throw new Error(j.message || `HTTP ${r.status}`);
+    }
     // resposta com 1 símbolo pedido vem "achatada" (um único objeto);
     // com vários símbolos vem indexada pelo símbolo pedido.
     bySymbol = wanted.length === 1 ? { [wanted[0].sym]: j } : j;
@@ -588,7 +592,7 @@ async function refreshQuotes(){
     console.warn('Twelve Data indisponível:', e.message);
     tickers.forEach(tk => failed.push(tk));
     render();
-    status('Nenhuma cotação obtida — confirma a chave', 'bad');
+    status(`Erro: ${e.message}`, 'bad');
     return;
   }
 
