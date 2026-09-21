@@ -485,7 +485,9 @@ async function proxyAnchorClose(proxySym, dateISO, avKey){
     const j = await r.json();
     const series = j && j['Time Series (Daily)'];
     if (!series) return null; // chave inválida, limite atingido, ou símbolo desconhecido
-    // procura a primeira data disponível a partir da âncora (avança até 10 dias por fins de semana/feriados)
+    // procura a sessão de bolsa mais próxima da âncora, indo para trás no tempo —
+    // se a âncora for hoje e a bolsa ainda não fechou, não há preço de hoje nem
+    // de dias futuros; o último fecho conhecido é sempre um dia anterior ou igual.
     let d = new Date(dateISO + 'T00:00:00Z');
     for (let i = 0; i < 10; i++){
       const iso = d.toISOString().slice(0,10);
@@ -494,7 +496,7 @@ async function proxyAnchorClose(proxySym, dateISO, avKey){
         const price = Number(day['4. close']);
         if (isFinite(price) && price > 0){ LS.set(cacheKey, price); return price; }
       }
-      d.setDate(d.getDate() + 1);
+      d.setDate(d.getDate() - 1);
     }
     return null; // a data pedida não está dentro dos ~100 dias que o plano gratuito cobre
   }catch(e){ return null; }
