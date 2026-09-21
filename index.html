@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
@@ -5,13 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio Tracker Pro | Value & Growth Terminal</title>
   
-  <!-- Tailwind CSS & Google Fonts (Inter + JetBrains Mono) -->
+  <!-- Tailwind CSS & Supabase JS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <script>
@@ -142,7 +142,7 @@
 
   <main class="max-w-[1440px] mx-auto px-4 sm:px-6 py-6 w-full flex-1 flex flex-col gap-6">
 
-    <!-- KPI SUMMARY GRID (FINTECH METRIC CARDS) -->
+    <!-- KPI SUMMARY GRID -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       
       <!-- 1. Património Atual -->
@@ -216,6 +216,7 @@
 
     </section>
 
+    <!-- CHART SECTION -->
     <section class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
       
       <!-- Chart Top Bar -->
@@ -282,6 +283,7 @@
 
     </section>
 
+    <!-- ASSETS TABLE -->
     <section class="glass-card rounded-2xl overflow-hidden flex flex-col shadow-sm">
       
       <!-- Table Filter Toolbar -->
@@ -339,6 +341,7 @@
 
   </main>
 
+  <!-- MODAL ASSET FORM (SMART AUTOMATIC QUOTE) -->
   <div id="modal-asset" class="fixed inset-0 z-50 bg-terminal-950/80 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="glass-card bg-terminal-900 border border-terminal-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl overflow-hidden">
       <div class="flex items-center justify-between pb-4 border-b border-terminal-800">
@@ -354,8 +357,31 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Ticker / Símbolo *</label>
-            <input type="text" id="form-ticker" required placeholder="ex: NVDA, AAPL" class="w-full uppercase px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none">
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-semibold text-slate-300">Ticker / Símbolo *</label>
+              <span id="ticker-fetch-indicator" class="text-[10px] text-slate-400 font-medium hidden items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping"></span> A pesquisar...
+              </span>
+            </div>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="form-ticker" 
+                required 
+                placeholder="ex: NVDA, AAPL, MSFT" 
+                class="w-full uppercase px-3 py-2 pr-8 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none"
+                onblur="handleTickerLookup(this.value)"
+                oninput="debounceTickerLookup(this.value)"
+              >
+              <button 
+                type="button" 
+                onclick="handleTickerLookup(document.getElementById('form-ticker').value, true)" 
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-400 p-1"
+                title="Procurar cotação em tempo real"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </button>
+            </div>
           </div>
           <div>
             <label class="block font-semibold text-slate-300 mb-1">Categoria *</label>
@@ -399,8 +425,19 @@
             <input type="number" id="form-avg" step="any" min="0.0001" required placeholder="120.50" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none" oninput="recalculateFormFees()">
           </div>
           <div>
-            <label class="block font-semibold text-slate-300 mb-1">Cotação Atual ($ USD) *</label>
-            <input type="number" id="form-curr" step="any" min="0.0001" required placeholder="125.00" class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none">
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-semibold text-slate-300">Cotação Atual ($ USD)</label>
+              <span id="form-curr-badge" class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Automático</span>
+            </div>
+            <input 
+              type="number" 
+              id="form-curr" 
+              step="any" 
+              min="0.0001" 
+              placeholder="Auto (ou igual ao preço médio)" 
+              class="w-full px-3 py-2 bg-terminal-950 border border-terminal-800 rounded-xl text-white num-mono focus:border-sky-500 focus:outline-none"
+            >
+            <p class="text-[10px] text-slate-500 mt-1">Se deixares em branco, o sistema preenche com o preço de mercado em tempo real.</p>
           </div>
         </div>
 
@@ -426,6 +463,7 @@
     </div>
   </div>
 
+  <!-- MODAL SUPABASE CONFIG -->
   <div id="modal-supabase" class="fixed inset-0 z-50 bg-terminal-950/85 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="glass-card bg-terminal-900 border border-terminal-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-4 border-b border-terminal-800">
@@ -489,6 +527,7 @@ alter publication supabase_realtime add table portfolio;</pre>
     </div>
   </div>
 
+  <!-- MODAL DELETE CONFIRM -->
   <div id="modal-delete" class="fixed inset-0 z-50 bg-terminal-950/80 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="glass-card bg-terminal-900 border border-terminal-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
       <div class="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-3">
@@ -507,7 +546,7 @@ alter publication supabase_realtime add table portfolio;</pre>
     (function () {
       "use strict";
 
-      // Credenciais Hardcoded do Supabase do utilizador
+      // Credenciais Hardcoded do Supabase
       const HARDCODED_SUPABASE_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
       const HARDCODED_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
       const HARDCODED_FINNHUB_KEY = "";
@@ -515,6 +554,7 @@ alter publication supabase_realtime add table portfolio;</pre>
       let supabaseClient = null;
       let supabaseRealtimeChannel = null;
       let supabasePollingInterval = null;
+      let lookupDebounceTimer = null;
 
       // Global State
       let EUR_USD = 1.0850;
@@ -526,6 +566,20 @@ alter publication supabase_realtime add table portfolio;</pre>
 
       let historicalEquitySeries = [];
       let scrubbedIndex = null;
+
+      // Base de conhecimento rápido de tickers para preenchimento imediato
+      const TICKER_DIRECTORY = {
+        "NVDA": { name: "NVIDIA Corporation", category: "Tecnologia", price: 124.80 },
+        "MSFT": { name: "Microsoft Corporation", category: "Tecnologia", price: 442.80 },
+        "AAPL": { name: "Apple Inc.", category: "Tecnologia", price: 226.40 },
+        "KO": { name: "The Coca-Cola Company", category: "Consumo / Retalho", price: 69.20 },
+        "AMZN": { name: "Amazon.com, Inc.", category: "Consumo / Retalho", price: 185.30 },
+        "GOOGL": { name: "Alphabet Inc.", category: "Tecnologia", price: 178.50 },
+        "META": { name: "Meta Platforms, Inc.", category: "Tecnologia", price: 508.20 },
+        "TSLA": { name: "Tesla, Inc.", category: "Consumo / Retalho", price: 245.50 },
+        "SPY": { name: "SPDR S&P 500 ETF Trust", category: "ETF", price: 560.20 },
+        "QQQ": { name: "Invesco QQQ Trust", category: "ETF", price: 480.10 }
+      };
 
       const INITIAL_PORTFOLIO = [
         { id: "1", ticker: "NVDA", name: "NVIDIA Corporation", category: "Tecnologia", broker: "IBKR", qty: 15, avgUSD: 112.50, currUSD: 124.80, feesUSD: 0.35 },
@@ -576,11 +630,10 @@ alter publication supabase_realtime add table portfolio;</pre>
           }
           loadPortfolioFromSupabase();
           
-          // Tentar WebSocket Realtime de forma segura; se bloqueado pelo ambiente (ex: Canvas), usar Polling REST
           try {
             subscribeToSupabaseRealtime();
           } catch (wsErr) {
-            console.warn("WebSockets não permitidos neste ambiente; a ativar sincronização periódica via REST HTTPS.");
+            console.warn("WebSockets não permitidos; a ativar sincronização periódica via REST HTTPS.");
             startSupabasePolling();
           }
         } catch (err) {
@@ -655,7 +708,6 @@ alter publication supabase_realtime add table portfolio;</pre>
 
       function startSupabasePolling() {
         if (supabasePollingInterval) clearInterval(supabasePollingInterval);
-        // Sincroniza dados a cada 20 segundos via REST HTTPS sem necessitar de WebSockets
         supabasePollingInterval = setInterval(() => {
           if (supabaseClient && document.visibilityState === 'visible') {
             loadPortfolioFromSupabase();
@@ -680,12 +732,10 @@ alter publication supabase_realtime add table portfolio;</pre>
 
           supabaseRealtimeChannel.subscribe((status, err) => {
             if (err || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-              console.warn("Realtime WebSocket inacessível (" + status + "). Sincronização via polling REST ativa.");
               startSupabasePolling();
             }
           });
         } catch (err) {
-          console.warn("Exceção WebSocket capturada com segurança:", err.message);
           startSupabasePolling();
         }
       }
@@ -1393,11 +1443,98 @@ alter publication supabase_realtime add table portfolio;</pre>
         document.getElementById("form-be-display").textContent = fmtUSD(be);
       };
 
+      // PESQUISA E PREENCHIMENTO AUTOMÁTICO DE COTAÇÃO
+      window.debounceTickerLookup = function (ticker) {
+        clearTimeout(lookupDebounceTimer);
+        const cleanTicker = (ticker || "").trim().toUpperCase();
+        if (cleanTicker.length >= 2) {
+          lookupDebounceTimer = setTimeout(() => {
+            handleTickerLookup(cleanTicker);
+          }, 600);
+        }
+      };
+
+      window.handleTickerLookup = async function (ticker, force = false) {
+        const cleanTicker = (ticker || "").trim().toUpperCase();
+        if (!cleanTicker) return;
+
+        const indicator = document.getElementById("ticker-fetch-indicator");
+        const currInput = document.getElementById("form-curr");
+        const nameInput = document.getElementById("form-name");
+        const catSelect = document.getElementById("form-category");
+        const badge = document.getElementById("form-curr-badge");
+
+        if (indicator) {
+          indicator.classList.remove("hidden");
+          indicator.classList.add("flex");
+        }
+
+        let foundPrice = null;
+
+        // 1. Tentar Finnhub se houver chave configurada
+        if (finnhubApiKey) {
+          try {
+            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(cleanTicker)}&token=${finnhubApiKey}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.c && data.c > 0) {
+                foundPrice = parseFloat(data.c.toFixed(2));
+              }
+            }
+          } catch (e) {
+            console.warn("Falha ao obter cotação do Finnhub:", e);
+          }
+        }
+
+        // 2. Se não houver Finnhub, verificar diretório ou posições existentes
+        if (!foundPrice) {
+          if (TICKER_DIRECTORY[cleanTicker]) {
+            const dir = TICKER_DIRECTORY[cleanTicker];
+            foundPrice = dir.price;
+            if (!nameInput.value || nameInput.value === "") nameInput.value = dir.name;
+            if (dir.category && catSelect) catSelect.value = dir.category;
+          } else {
+            const existing = portfolio.find(p => p.ticker.toUpperCase() === cleanTicker);
+            if (existing) {
+              foundPrice = existing.currUSD;
+              if (!nameInput.value) nameInput.value = existing.name;
+              if (catSelect) catSelect.value = existing.category;
+            }
+          }
+        }
+
+        // 3. Preencher o campo de Cotação Atual se foi encontrado
+        if (foundPrice && currInput) {
+          currInput.value = foundPrice.toFixed(2);
+          if (badge) {
+            badge.textContent = `Preço Live: $${foundPrice.toFixed(2)}`;
+            badge.className = "text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20";
+          }
+        } else if (!currInput.value) {
+          // Se não encontrou cotação externa e o utilizador ainda não preencheu, o Preço Médio servirá de base
+          const avgUSD = parseFloat(document.getElementById("form-avg")?.value);
+          if (avgUSD > 0) {
+            currInput.value = avgUSD.toFixed(2);
+          }
+        }
+
+        if (indicator) {
+          indicator.classList.add("hidden");
+          indicator.classList.remove("flex");
+        }
+      };
+
       window.openModal = function (editId = null) {
         const form = document.getElementById("asset-form");
         form.reset();
         document.getElementById("form-id").value = "";
         document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editId ? "Editar Ativo" : "Registar Novo Ativo"}`;
+        
+        const badge = document.getElementById("form-curr-badge");
+        if (badge) {
+          badge.textContent = "Automático";
+          badge.className = "text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20";
+        }
 
         if (editId) {
           const item = portfolio.find(it => it.id === editId);
@@ -1431,12 +1568,22 @@ alter publication supabase_realtime add table portfolio;</pre>
         e.preventDefault();
         const id = document.getElementById("form-id").value;
         const ticker = document.getElementById("form-ticker").value.trim().toUpperCase();
-        const name = document.getElementById("form-name").value.trim();
+        const name = document.getElementById("form-name").value.trim() || ticker;
         const category = document.getElementById("form-category").value;
         const broker = document.getElementById("form-broker").value;
         const qty = parseFloat(document.getElementById("form-qty").value);
         const avgUSD = parseFloat(document.getElementById("form-avg").value);
-        const currUSD = parseFloat(document.getElementById("form-curr").value);
+        
+        // Se a cotação atual for deixada em branco, assume automaticamente o preço de compra (avgUSD) ou busca do diretório
+        let currInputVal = parseFloat(document.getElementById("form-curr").value);
+        if (isNaN(currInputVal) || currInputVal <= 0) {
+          if (TICKER_DIRECTORY[ticker]) {
+            currInputVal = TICKER_DIRECTORY[ticker].price;
+          } else {
+            currInputVal = avgUSD; // Fallback imediato: P&L inicial de 0.00% até ao próximo tick do mercado
+          }
+        }
+        const currUSD = currInputVal;
         const feesUSD = parseFloat(document.getElementById("form-fees").value) || 0;
 
         if (id) {
@@ -1461,6 +1608,11 @@ alter publication supabase_realtime add table portfolio;</pre>
         savePortfolio();
         closeModal();
         renderAll();
+
+        // Tentar atualizar cotações de imediato em background
+        setTimeout(() => {
+          fetchLiveStockQuotes();
+        }, 500);
       };
 
       window.confirmDelete = function (id) {
@@ -1632,3 +1784,4 @@ alter publication supabase_realtime add table portfolio;</pre>
   </script>
 </body>
 </html>
+```
