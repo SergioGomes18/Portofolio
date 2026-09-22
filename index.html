@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
@@ -1383,27 +1382,74 @@
       renderLineChart();
     }
 
-    // Deterministic organic market fluctuations generator
-    function getAssetSyntheticWave(ticker, progress, spanDays) {
-      const charCodeSum = (ticker || 'GEN').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-      const phase1 = (charCodeSum % 17) * 0.37;
-      const phase2 = (charCodeSum % 13) * 0.49;
-      const phase3 = (charCodeSum % 19) * 0.61;
+    // ------------------------------------------------------------------
+    // Histórico real de preços (Yahoo Finance, mesma fonte da cotação atual)
+    // ------------------------------------------------------------------
+    let historicalDataCache = {};
 
-      // Realistic market frequencies: macro waves, quarterly cycles, and short-term oscillations
-      const macroCycles = spanDays > 300 ? 2.5 : 1.5;
-      const wave1 = Math.sin((progress * Math.PI * 2 * macroCycles) + phase1);
-      const wave2 = Math.sin((progress * Math.PI * 4 * macroCycles) + phase2) * 0.55;
-      const wave3 = Math.cos((progress * Math.PI * 12 * (spanDays > 60 ? 1 : 0.5)) + phase3) * 0.25;
-
-      const combined = (wave1 + wave2 + wave3) / 1.8;
-
-      // Bell envelope: strictly 0 at progress=0 (buyDate) and strictly 0 at progress=1 (today)
-      const envelope = Math.sin(Math.max(0, Math.min(1, progress)) * Math.PI);
-      return combined * envelope;
+    function timeframeToRangeInterval(tf) {
+      switch (tf) {
+        case '1D': return { range: '1d', interval: '5m' };
+        case '1S': return { range: '5d', interval: '30m' };
+        case '1M': return { range: '1mo', interval: '1d' };
+        case '3M': return { range: '3mo', interval: '1d' };
+        case '1A': return { range: '1y', interval: '1d' };
+        default:   return { range: '2y', interval: '1wk' }; // TUDO
+      }
     }
 
-    function generateDateDrivenPoints(metrics, tf) {
+    async function fetchHistoricalSeries(ticker, range, interval) {
+      const cacheKey = `${ticker}_${range}_${interval}`;
+      if (historicalDataCache[cacheKey]) return historicalDataCache[cacheKey];
+
+      const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`;
+      const proxyList = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
+        `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`
+      ];
+
+      for (const pUrl of proxyList) {
+        try {
+          const controller = new AbortController();
+          const tid = setTimeout(() => controller.abort(), 4500);
+          const res = await fetch(pUrl, { signal: controller.signal });
+          clearTimeout(tid);
+          if (res.ok) {
+            const raw = await res.json();
+            const json = raw.contents ? JSON.parse(raw.contents) : raw;
+            const result = json?.chart?.result?.[0];
+            const timestamps = result?.timestamp;
+            const closes = result?.indicators?.quote?.[0]?.close;
+            if (Array.isArray(timestamps) && Array.isArray(closes)) {
+              const series = timestamps
+                .map((t, i) => ({ time: new Date(t * 1000), close: closes[i] }))
+                .filter(p => typeof p.close === 'number' && !isNaN(p.close));
+              if (series.length > 1) {
+                historicalDataCache[cacheKey] = series;
+                return series;
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      // Sem histórico real disponível (proxy em baixo, ticker desconhecido, etc.)
+      return null;
+    }
+
+    // Preço mais próximo (sem ultrapassar) o instante pedido, dentro de uma série real
+    function getPriceAtTime(series, targetTime) {
+      let closest = series[0];
+      for (const p of series) {
+        if (p.time.getTime() <= targetTime.getTime()) {
+          closest = p;
+        } else {
+          break;
+        }
+      }
+      return closest.close;
+    }
+
+    async function generateDateDrivenPoints(metrics, tf) {
       const now = new Date();
       let numPoints = 60;
       let startTime = new Date();
@@ -1436,8 +1482,14 @@
       }
 
       const totalSpan = Math.max(1000 * 60 * 60, now.getTime() - startTime.getTime());
-      const spanDays = Math.max(1, totalSpan / (1000 * 60 * 60 * 24));
       const points = [];
+
+      // Vai buscar histórico real (uma vez por ticker, com cache) para este timeframe
+      const uniqueTickers = [...new Set(portfolio.map(l => l.ticker))];
+      const { range, interval } = timeframeToRangeInterval(tf);
+      const seriesList = await Promise.all(uniqueTickers.map(t => fetchHistoricalSeries(t, range, interval)));
+      const tickerSeriesMap = {};
+      uniqueTickers.forEach((t, i) => { tickerSeriesMap[t] = seriesList[i]; });
 
       for (let i = 0; i <= numPoints; i++) {
         const ptProgress = i / numPoints;
@@ -1468,18 +1520,19 @@
               }
             }
 
-            const assetCurrentUSD = lot.currUSD || lot.avgUSD;
-            const dirData = TICKER_DIRECTORY[lot.ticker] || {};
-            const volFactor = dirData.vol || 0.25;
+            const series = tickerSeriesMap[lot.ticker];
+            let dynamicPrice;
+            if (series && series.length > 1) {
+              // Cotação de fecho real mais próxima deste instante
+              dynamicPrice = getPriceAtTime(series, ptTime);
+            } else {
+              // Sem histórico real disponível: interpolação linear honesta
+              // entre o preço de compra e a cotação atual (sem inventar ruído de mercado)
+              const assetCurrentUSD = lot.currUSD || lot.avgUSD;
+              dynamicPrice = lot.avgUSD + ((assetCurrentUSD - lot.avgUSD) * assetProgress);
+            }
 
-            // Baseline linear trajectory from purchase price to current market price
-            const basePrice = lot.avgUSD + ((assetCurrentUSD - lot.avgUSD) * assetProgress);
-
-            // Realistic market wave oscillation that vanishes at endpoints
-            const marketWave = getAssetSyntheticWave(lot.ticker, assetProgress, spanDays);
-            const dynamicPrice = Math.max(0.1, basePrice * (1 + (marketWave * volFactor * 0.4)));
-
-            valueAtPt += (lot.qty * dynamicPrice) / EUR_USD;
+            valueAtPt += (lot.qty * Math.max(0.01, dynamicPrice)) / EUR_USD;
           }
         });
 
@@ -1516,7 +1569,9 @@
       return points;
     }
 
-    function renderLineChart() {
+    let chartRenderToken = 0;
+
+    async function renderLineChart() {
       const canvas = document.getElementById("equityLineChart");
       if (!canvas) return;
 
@@ -1524,16 +1579,24 @@
       const W = rect.width || canvas.parentElement?.clientWidth || 600;
       const H = rect.height || 260;
 
+      // Evita desenhar num canvas ainda sem layout (largura/altura 0 no arranque);
+      // o ResizeObserver volta a chamar assim que o contentor tiver tamanho real.
+      if (W < 20 || H < 20) return;
+
+      const myToken = ++chartRenderToken;
+      const metrics = calculatePortfolioMetrics();
+      const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
+
+      // Se entretanto o utilizador mudou de timeframe / os dados mudaram, descarta este render
+      if (myToken !== chartRenderToken) return;
+      if (points.length < 2) return;
+
       const ctx = canvas.getContext("2d");
       const dpr = window.devicePixelRatio || 1;
 
       canvas.width = W * dpr;
       canvas.height = H * dpr;
       ctx.scale(dpr, dpr);
-
-      const metrics = calculatePortfolioMetrics();
-      const points = generateDateDrivenPoints(metrics, currentChartTimeframe);
-      if (points.length < 2) return;
 
       const padLeft = 12;
       const padRight = 55;
@@ -1688,7 +1751,7 @@
       const canvas = document.getElementById("equityLineChart");
       if (!canvas) return;
 
-      const handleMove = (clientX) => {
+      const handleMove = async (clientX) => {
         const rect = canvas.getBoundingClientRect();
         const x = clientX - rect.left;
         const padLeft = 12;
@@ -1698,7 +1761,7 @@
 
         const pct = Math.max(0, Math.min(1, (x - padLeft) / widthUsable));
         const metrics = calculatePortfolioMetrics();
-        const points = generateDateDrivenPoints(metrics, currentChartTimeframe);
+        const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
         chartHoverIndex = Math.round(pct * (points.length - 1));
         renderLineChart();
       };
@@ -2047,12 +2110,22 @@
       renderLineChart();
     });
 
+    // Garante que o gráfico é desenhado assim que o contentor tiver o tamanho
+    // real (o canvas pode arrancar com 0px durante o primeiro layout).
+    function setupChartResizeObserver() {
+      const canvas = document.getElementById("equityLineChart");
+      if (!canvas || !canvas.parentElement || typeof ResizeObserver === 'undefined') return;
+      const ro = new ResizeObserver(() => renderLineChart());
+      ro.observe(canvas.parentElement);
+    }
+
     // ==========================================
     // 8. APPLICATION INITIALIZATION
     // ==========================================
     window.addEventListener("DOMContentLoaded", async () => {
       loadLocalPortfolio();
       setupChartInteractions();
+      setupChartResizeObserver();
       renderAll();
 
       await fetchLiveExchangeRate();
