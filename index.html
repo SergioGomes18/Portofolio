@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
@@ -358,8 +358,16 @@
         <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-400 mb-3">
           <i data-lucide="inbox" class="w-6 h-6"></i>
         </div>
-        <h3 class="text-sm font-semibold text-slate-200">Nenhum ativo registado</h3>
-        <p class="text-xs text-slate-500 mt-1">Clica no botão "+ Nova Compra" para adicionar a tua primeira posição.</p>
+        <h3 class="text-sm font-semibold text-slate-200">A tua carteira está vazia</h3>
+        <p class="text-xs text-slate-500 mt-1">Todas as posições foram removidas com sucesso.</p>
+        <div class="mt-4 flex items-center justify-center gap-3">
+          <button onclick="openModal()" class="px-4 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md transition">
+            + Registar Nova Compra
+          </button>
+          <button onclick="resetToDemoPortfolio()" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+            Repor Ativos de Demonstração
+          </button>
+        </div>
       </div>
 
       <!-- Table Footer Status -->
@@ -721,6 +729,7 @@
     let lookupDebounceTimer = null;
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
+    let deletedIdsSet = new Set();
 
     // ==========================================
     // 2. UTILITY & FORMATTING FUNCTIONS
@@ -777,33 +786,67 @@
     // ==========================================
     // 3. STORAGE & SUPABASE RESILIENT ENGINE
     // ==========================================
+    function loadDeletedIds() {
+      try {
+        const stored = localStorage.getItem("assetpulse_deleted_ids_v1");
+        if (stored) {
+          deletedIdsSet = new Set(JSON.parse(stored));
+        }
+      } catch (e) {
+        deletedIdsSet = new Set();
+      }
+    }
+
+    function saveDeletedIds() {
+      try {
+        localStorage.setItem("assetpulse_deleted_ids_v1", JSON.stringify(Array.from(deletedIdsSet)));
+      } catch (e) {}
+    }
+
     function loadLocalPortfolio() {
-      const stored = localStorage.getItem("assetpulse_portfolio_lots_v4");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            portfolio = parsed;
-            return;
+      loadDeletedIds();
+      const hasInitialized = localStorage.getItem("assetpulse_has_initialized_v5");
+
+      if (hasInitialized) {
+        const stored = localStorage.getItem("assetpulse_portfolio_lots_v4");
+        if (stored !== null) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              // Permite array vazio! Se o utilizador apagou tudo, fica vazio.
+              portfolio = parsed;
+              return;
+            }
+          } catch (e) {
+            console.warn("Parse error:", e);
           }
-        } catch (e) {
-          console.warn("Parse error, using defaults");
         }
       }
+
+      // Apenas na primeiríssima visita
       portfolio = [...INITIAL_PORTFOLIO];
+      localStorage.setItem("assetpulse_has_initialized_v5", "true");
       saveLocalPortfolio();
     }
 
     function saveLocalPortfolio() {
       try {
         localStorage.setItem("assetpulse_portfolio_lots_v4", JSON.stringify(portfolio));
-        if (portfolio.length > 0) {
-          localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
-        }
+        localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
       } catch (e) {
         console.warn("Local storage write error:", e);
       }
     }
+
+    window.resetToDemoPortfolio = function() {
+      deletedIdsSet.clear();
+      saveDeletedIds();
+      portfolio = [...INITIAL_PORTFOLIO];
+      saveLocalPortfolio();
+      renderAll();
+      showToast("Ativos de demonstração repostos com sucesso!");
+      syncAllToSupabase();
+    };
 
     window.restoreFromSafetyBackup = function() {
       const snap = localStorage.getItem("assetpulse_portfolio_safety_snapshot");
@@ -827,14 +870,23 @@
       try {
         const { data, error } = await supabaseClient.from('portfolio').select('*');
         if (!error && Array.isArray(data)) {
-          if (data.length === 0 && portfolio.length > 0) {
-            await syncAllToSupabase();
+          // Se a base de dados tem itens, filtra aqueles que o utilizador eliminou explicitamente
+          const remoteValidItems = data.filter(item => !deletedIdsSet.has(String(item.id)));
+
+          // Se a carteira local foi esvaziada de propósito pelo utilizador
+          if (portfolio.length === 0) {
+            // Se existem itens remotos que foram eliminados, remove-os também do Supabase
+            for (const item of data) {
+              if (deletedIdsSet.has(String(item.id))) {
+                await deleteAssetFromSupabase(item.id);
+              }
+            }
             return;
           }
 
-          if (data.length > 0) {
+          if (remoteValidItems.length > 0) {
             const remoteMap = new Map();
-            data.forEach(item => {
+            remoteValidItems.forEach(item => {
               remoteMap.set(String(item.id), {
                 id: String(item.id),
                 ticker: item.ticker,
@@ -853,13 +905,17 @@
             const merged = [];
             const processedIds = new Set();
 
+            // Mantém os itens locais que não foram eliminados
             portfolio.forEach(localItem => {
-              merged.push(localItem);
-              processedIds.add(String(localItem.id));
+              if (!deletedIdsSet.has(String(localItem.id))) {
+                merged.push(localItem);
+                processedIds.add(String(localItem.id));
+              }
             });
 
+            // Apenas adiciona da nuvem se for um ID desconhecido e NÃO tiver sido apagado
             remoteMap.forEach((remoteItem, id) => {
-              if (!processedIds.has(id)) {
+              if (!processedIds.has(id) && !deletedIdsSet.has(id)) {
                 merged.push(remoteItem);
                 processedIds.add(id);
               }
@@ -868,7 +924,6 @@
             portfolio = merged;
             saveLocalPortfolio();
             renderAll();
-            await syncAllToSupabase(false);
           }
         }
       } catch (err) {
@@ -877,8 +932,16 @@
     }
 
     async function syncAllToSupabase(showFeedback = true) {
-      if (!supabaseClient || portfolio.length === 0) return;
+      if (!supabaseClient) return;
       
+      if (portfolio.length === 0) {
+        // Se a carteira está vazia, limpa no Supabase os registos que pertenciam à demonstração
+        for (const deletedId of deletedIdsSet) {
+          await deleteAssetFromSupabase(deletedId);
+        }
+        return;
+      }
+
       const payloadWithDate = portfolio.map(item => ({
         id: String(item.id),
         ticker: item.ticker,
@@ -989,6 +1052,8 @@
     }
 
     async function fetchLiveStockQuotes(manual = false) {
+      if (portfolio.length === 0) return;
+
       const icon = document.getElementById("icon-sync-quotes");
       if (icon) icon.classList.add("animate-spin");
 
@@ -1050,7 +1115,7 @@
         // Percentagens individuais do lote
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
         const lotStockPctUSD = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
-        const lotFxPct = lotPLPct - lotStockPctUSD; // Contributo cambial
+        const lotFxPct = lotPLPct - lotStockPctUSD;
         const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
 
         totalInvEUR += lotInvEUR;
@@ -1203,7 +1268,6 @@
     }
 
     function renderPerformanceDashboard(metrics) {
-      // Decomposição cambial vs ações
       const elStockPct = document.getElementById("perf-asset-usd-pct");
       const elFxPct = document.getElementById("perf-fx-impact-pct");
       const elTotalPct = document.getElementById("perf-total-eur-pct");
@@ -1221,7 +1285,6 @@
       elTotalPct.textContent = fmtPCT(metrics.totalPLPct);
       elTotalPct.className = `text-base font-extrabold font-mono ${totalPos ? 'text-emerald-400' : 'text-rose-400'}`;
 
-      // Barras de progresso proporcionais
       const barStock = document.getElementById("bar-perf-asset");
       const barFx = document.getElementById("bar-perf-fx");
       if (barStock) {
@@ -1235,7 +1298,6 @@
         barFx.className = `h-full rounded-full transition-all ${fxPos ? 'bg-sky-400' : 'bg-amber-400'}`;
       }
 
-      // Ranking de Rentabilidade Visual
       const container = document.getElementById("ranking-bars-container");
       if (!container) return;
       container.innerHTML = "";
@@ -1303,7 +1365,6 @@
         const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
         const isPos = asset.plEUR >= 0;
         const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
-        const badgeBg = isPos ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
         const isExpanded = expandedTickers.has(asset.ticker);
 
         const parentTr = document.createElement("tr");
@@ -1391,7 +1452,6 @@
           asset.lots.forEach((lot, idx) => {
             const lotIsPos = lot.plEUR >= 0;
             const lotColor = lotIsPos ? 'text-emerald-400' : 'text-rose-400';
-            const lotBadgeBg = lotIsPos ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
 
             lotsRowsHtml += `
               <tr class="border-b border-slate-900/80 hover:bg-slate-900/60 transition text-[11px] font-mono">
@@ -1701,8 +1761,13 @@
         }
         showToast(`Lote de ${ticker} atualizado com sucesso!`);
       } else {
+        const newId = Date.now().toString();
+        // Remove dos eliminados caso o utilizador volte a adicionar
+        deletedIdsSet.delete(newId);
+        saveDeletedIds();
+
         const newLot = {
-          id: Date.now().toString(),
+          id: newId,
           ticker,
           name,
           category,
@@ -1733,11 +1798,15 @@
         "Eliminar Lote de Compra",
         `Tens a certeza de que desejas remover permanentemente esta compra de ${label}?`,
         () => {
+          // Marca o ID como permanentemente excluído para evitar re-download do Supabase
+          deletedIdsSet.add(String(id));
+          saveDeletedIds();
+
           portfolio = portfolio.filter(it => String(it.id) !== String(id));
           saveLocalPortfolio();
           renderAll();
           deleteAssetFromSupabase(id);
-          showToast("Lote de compra removido.");
+          showToast("Lote de compra removido permanentemente.");
         }
       );
     };
@@ -1754,6 +1823,12 @@
         `Eliminar Ativo ${ticker}`,
         msg,
         () => {
+          // Marca todos os IDs dos lotes deste ticker como eliminados
+          lots.forEach(lot => {
+            deletedIdsSet.add(String(lot.id));
+          });
+          saveDeletedIds();
+
           portfolio = portfolio.filter(it => it.ticker !== ticker);
           expandedTickers.delete(ticker);
           saveLocalPortfolio();
@@ -1765,8 +1840,12 @@
     };
 
     window.injectTestAsset = function () {
+      const newId = Date.now().toString();
+      deletedIdsSet.delete(newId);
+      saveDeletedIds();
+
       const testItem = {
-        id: Date.now().toString(),
+        id: newId,
         ticker: "NVDA",
         name: "NVIDIA Corporation",
         category: "Tecnologia",
@@ -1784,7 +1863,7 @@
       saveLocalPortfolio();
       renderAll();
       syncAllToSupabase(false);
-      showToast("Nova compra de teste (#3 para NVDA) adicionada com sucesso!");
+      showToast("Nova compra de teste adicionada com sucesso!");
     };
 
     window.setCategoryFilter = function (cat) {
@@ -1840,4 +1919,3 @@
   </script>
 </body>
 </html>
-```
