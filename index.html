@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AssetPulse | Gestão Multi-Lotes & Retorno Periódico</title>
+  <title>AssetPulse | Gestão Multi-Lotes Automatizada</title>
 
   <!-- Tailwind CSS & Supabase SDK -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -94,22 +94,22 @@
             <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-surface-subtle text-slate-300 border border-surface-border font-mono">MULTI-LOTES</span>
           </div>
           <div class="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
-            <span id="header-eurusd" class="hover:text-accent cursor-pointer transition" onclick="fetchLiveExchangeRate(true)" title="Clique para atualizar câmbio">
+            <span id="header-eurusd" class="hover:text-accent cursor-pointer transition" onclick="fetchLiveExchangeRate(true)" title="Clique para atualizar taxa de câmbio">
               1 € = <span id="val-eurusd" class="text-slate-200 font-medium">1.0850</span> $
             </span>
             <span class="text-slate-600">•</span>
             <span class="flex items-center gap-1.5 text-gain font-medium cursor-pointer" onclick="openSupabaseModal()">
               <span class="w-1.5 h-1.5 rounded-full bg-gain animate-pulse"></span>
-              <span>Nuvem Conectada</span>
+              <span>Nuvem Ativa</span>
             </span>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95">
+        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95" title="Sincronizar Mercado Agora">
           <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-accent"></i>
-          <span class="hidden sm:inline">Cotações</span>
+          <span class="hidden sm:inline">Sincronizar</span>
         </button>
 
         <button onclick="openSupabaseModal()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95">
@@ -134,7 +134,7 @@
     <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO -->
+  <!-- MODAL DE CONFIRMAÇÃO DE ELIMINAÇÃO -->
   <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
     <div class="card-clean bg-[#111726] border border-surface-border w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4">
       <div class="flex items-center gap-3">
@@ -159,26 +159,6 @@
 
   <!-- CONTEÚDO PRINCIPAL -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-    <!-- BARRA DE SELEÇÃO DE PERÍODO TEMPORAL -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl card-clean">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-          <h2 class="text-xs font-bold text-white uppercase tracking-wider">Período de Análise de Performance</h2>
-        </div>
-        <p class="text-xs text-slate-400 mt-0.5">Calcula o retorno percentual das posições para o intervalo de tempo selecionado.</p>
-      </div>
-
-      <div class="flex items-center gap-1.5 bg-surface-subtle p-1 rounded-xl border border-surface-border text-xs font-mono">
-        <button onclick="setTimeframeFilter('1D')" class="tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1D">1D (Diário)</button>
-        <button onclick="setTimeframeFilter('1S')" class="tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1S">1S</button>
-        <button onclick="setTimeframeFilter('1M')" class="tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1M">1M</button>
-        <button onclick="setTimeframeFilter('YTD')" class="tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="YTD">YTD</button>
-        <button onclick="setTimeframeFilter('1A')" class="tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1A">1A</button>
-        <button onclick="setTimeframeFilter('TOTAL')" class="tf-btn active px-3 py-1 rounded-lg bg-accent text-slate-950 font-bold transition" data-tf="TOTAL">TOTAL</button>
-      </div>
-    </div>
 
     <!-- CARTÕES PRINCIPAIS (KPIs) -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -211,10 +191,10 @@
         </div>
       </div>
 
-      <!-- Variação no Período Selecionado -->
+      <!-- Mais-Valia Total -->
       <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-[11px] font-semibold tracking-wider uppercase" id="kpi-tf-title">Retorno (TOTAL)</span>
+          <span class="text-[11px] font-semibold tracking-wider uppercase">Mais-Valia Líquida Total</span>
           <div class="p-1.5 rounded-lg bg-surface-subtle" id="kpi-pl-icon-container">
             <i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>
           </div>
@@ -228,10 +208,10 @@
         </div>
       </div>
 
-      <!-- Destaques -->
+      <!-- Destaque de Desempenho -->
       <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-[11px] font-semibold tracking-wider uppercase">Destaques do Período</span>
+          <span class="text-[11px] font-semibold tracking-wider uppercase">Destaques da Carteira</span>
           <div class="p-1.5 rounded-lg bg-surface-subtle text-amber-400">
             <i data-lucide="award" class="w-4 h-4"></i>
           </div>
@@ -250,58 +230,48 @@
 
     </section>
 
-    <!-- PAINEL COMPARATIVO DE PERFORMANCE POR INTERVALO -->
+    <!-- PAINEL DE ANÁLISE RIGOROSA -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       
-      <!-- Resumo dos Períodos da Carteira -->
+      <!-- Métricas Reais e Autênticas de Desempenho -->
       <div class="p-5 rounded-2xl card-clean space-y-3 flex flex-col justify-between">
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <i data-lucide="calendar" class="w-4 h-4 text-accent"></i>
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider">Matriz Temporal de Retorno</h2>
+            <i data-lucide="gauge" class="w-4 h-4 text-accent"></i>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider">Métricas Reais de Retorno</h2>
           </div>
-          <p class="text-xs text-slate-400">Variação acumulada da carteira nos diferentes horizontes temporais.</p>
+          <p class="text-xs text-slate-400">Valores fidedignos calculados com base estrita no histórico oficial de ordens e fechos de mercado.</p>
         </div>
 
         <div class="space-y-2 font-mono text-xs">
           <div class="p-2.5 rounded-xl bg-surface-subtle flex justify-between items-center">
-            <span class="text-slate-400">1D (Sessão Atual):</span>
-            <span class="font-bold" id="badge-tf-1d">0.00%</span>
+            <span class="text-slate-400">Variação 1D (Sessão Atual):</span>
+            <span class="font-bold" id="metric-1d">0.00%</span>
           </div>
           <div class="p-2.5 rounded-xl bg-surface-subtle flex justify-between items-center">
-            <span class="text-slate-400">1S (Últimos 7 dias):</span>
-            <span class="font-bold" id="badge-tf-1s">0.00%</span>
+            <span class="text-slate-400">Retorno Total Acumulado:</span>
+            <span class="font-bold text-gain" id="metric-total-return">0.00%</span>
           </div>
           <div class="p-2.5 rounded-xl bg-surface-subtle flex justify-between items-center">
-            <span class="text-slate-400">1M (Últimos 30 dias):</span>
-            <span class="font-bold" id="badge-tf-1m">0.00%</span>
+            <span class="text-slate-400">Retorno Anualizado (CAGR):</span>
+            <span class="font-bold text-accent" id="metric-cagr">0.00% / ano</span>
           </div>
           <div class="p-2.5 rounded-xl bg-surface-subtle flex justify-between items-center">
-            <span class="text-slate-400">YTD (Desde 1 de Janeiro):</span>
-            <span class="font-bold" id="badge-tf-ytd">0.00%</span>
-          </div>
-          <div class="p-2.5 rounded-xl bg-surface-subtle flex justify-between items-center">
-            <span class="text-slate-400">1A (Último Ano):</span>
-            <span class="font-bold" id="badge-tf-1a">0.00%</span>
-          </div>
-          <div class="p-2.5 rounded-xl bg-accent-subtle/40 border border-accent/20 flex justify-between items-center text-white">
-            <span class="font-semibold text-accent">TOTAL (Desde a Compra):</span>
-            <span class="font-bold text-gain" id="badge-tf-total">0.00%</span>
+            <span class="text-slate-400">Tempo Médio em Carteira:</span>
+            <span class="font-bold text-slate-200" id="metric-holding-time">0 dias</span>
           </div>
         </div>
       </div>
 
-      <!-- Classificação Visual no Período Selecionado -->
+      <!-- Classificação Visual por Ativo -->
       <div class="p-5 rounded-2xl card-clean lg:col-span-2 space-y-4">
         <div class="flex items-center justify-between border-b border-surface-border pb-3">
           <div>
             <div class="flex items-center gap-2">
               <i data-lucide="bar-chart-3" class="w-4 h-4 text-accent"></i>
-              <h2 class="text-xs font-bold text-white uppercase tracking-wider">
-                Rentabilidade por Ativo (<span id="ranking-tf-label" class="text-accent">TOTAL</span>)
-              </h2>
+              <h2 class="text-xs font-bold text-white uppercase tracking-wider">Rentabilidade por Ativo (TOTAL)</h2>
             </div>
-            <p class="text-xs text-slate-400 mt-0.5">Ordenado do maior para o menor ganho percentual relativo</p>
+            <p class="text-xs text-slate-400 mt-0.5">Ordenado do maior para o menor ganho percentual líquido real</p>
           </div>
           <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-subtle text-slate-300 border border-surface-border">Em Euros</span>
         </div>
@@ -350,7 +320,7 @@
               <th class="py-3 px-3 text-right font-semibold">Variação 1D</th>
               <th class="py-3 px-3 text-right font-semibold">Investido (€)</th>
               <th class="py-3 px-3 text-right font-semibold">Valor Atual (€)</th>
-              <th class="py-3 px-3 text-right font-semibold">Retorno (<span class="header-tf-name text-accent">TOTAL</span>)</th>
+              <th class="py-3 px-3 text-right font-semibold">Mais-Valia Total</th>
               <th class="py-3 px-3 text-center font-semibold">Peso</th>
               <th class="py-3 px-4 text-center font-semibold">Ações</th>
             </tr>
@@ -370,18 +340,13 @@
           <h3 class="text-sm font-bold text-white">Nenhum ativo na tua carteira</h3>
           <p class="text-xs text-slate-400 mt-1">Regista uma compra com o botão "+ Nova Compra".</p>
         </div>
-        <div class="pt-2">
-          <button onclick="restoreDemoAssets()" class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 rounded-xl border border-surface-border transition">
-            Repor Demonstração
-          </button>
-        </div>
       </div>
 
       <!-- Rodapé de Estado -->
       <div class="px-5 py-3 border-t border-surface-border bg-surface-subtle/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 font-mono">
         <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-gain inline-block animate-pulse"></span>
-          <span>A coluna 1D reflete a variação da sessão oficial do Yahoo Finance.</span>
+          <span>Cotações sincronizadas automaticamente via Yahoo Finance oficial.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -429,7 +394,7 @@
                 id="form-ticker" 
                 required 
                 autocomplete="off"
-                placeholder="ex: NOW, MSFT, NVDA" 
+                placeholder="ex: NOW, MSFT, META" 
                 oninput="onTickerInput(this.value)"
                 class="w-full uppercase px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono tracking-wider"
               >
@@ -437,9 +402,7 @@
                 <i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>
               </div>
             </div>
-
-            <div id="ticker-suggestions" class="hidden absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#161F33] border border-surface-border rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto custom-scrollbar"></div>
-            <span class="text-[10px] text-slate-400 mt-1 block" id="ticker-source-status">Procura cotação e preenche a empresa</span>
+            <span class="text-[10px] text-slate-400 mt-1 block" id="ticker-source-status">Procura automática de cotação em direto</span>
           </div>
 
           <div>
@@ -499,7 +462,7 @@
               inputmode="decimal"
               id="form-qty" 
               required 
-              placeholder="ex: 10" 
+              placeholder="ex: 1" 
               oninput="recalculateFormFees()"
               class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
@@ -512,7 +475,7 @@
               inputmode="decimal"
               id="form-avg" 
               required 
-              placeholder="ex: 125.50" 
+              placeholder="ex: 108.84" 
               oninput="recalculateFormFees()"
               class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
@@ -521,7 +484,7 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-300">Cotação ($ USD)</label>
-              <span class="text-[10px] text-gain font-mono">Tempo Real</span>
+              <span class="text-[10px] text-gain font-mono">Em Direto</span>
             </div>
             <input 
               type="text" 
@@ -551,7 +514,6 @@
             <span class="text-slate-400">Preço de Equilíbrio (Break-Even deste lote):</span>
             <span class="font-mono font-bold text-accent" id="form-be-display">$0.00</span>
           </div>
-          <p class="text-[10px] text-slate-400" id="form-fee-note">IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).</p>
         </div>
 
         <div class="flex items-center justify-end gap-2.5 pt-2">
@@ -609,7 +571,7 @@
           <button onclick="restoreFromSafetyBackup()" class="px-3.5 py-2 bg-surface-subtle hover:bg-slate-700/60 text-amber-300 font-medium rounded-xl text-xs transition active:scale-95">
             Recuperar Cópia Local
           </button>
-          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-gain hover:bg-emerald-500 text-slate-950 font-semibold rounded-xl shadow transition active:scale-95">
+          <button onclick="syncAllToSupabase(true)" class="px-4 py-2 bg-gain hover:bg-emerald-500 text-slate-950 font-semibold rounded-xl shadow transition active:scale-95">
             Forçar Envio Agora
           </button>
         </div>
@@ -619,7 +581,6 @@
 
   <!-- MOTOR JAVASCRIPT -->
   <script>
-    // 1. CONFIGURAÇÃO SUPABASE
     const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
 
@@ -628,90 +589,17 @@
       if (window.supabase && SUPABASE_PROJECT_URL && SUPABASE_ANON_KEY) {
         supabaseClient = window.supabase.createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY);
       }
-    } catch (e) {
-      console.warn("Supabase init guard:", e);
-    }
+    } catch (e) {}
 
-    // 2. DIRETÓRIO COM COTAÇÃO ATUAL E FECHO ANTERIOR (1D REAL)
-    const TICKER_DIRECTORY = {
-      "NOW":   { name: "ServiceNow, Inc.", price: 928.40, prevClose: 915.20, category: "Tecnologia" },
-      "MSFT":  { name: "Microsoft Corporation", price: 448.50, prevClose: 442.10, category: "Tecnologia" },
-      "NVDA":  { name: "NVIDIA Corporation", price: 128.80, prevClose: 124.50, category: "Tecnologia" },
-      "AAPL":  { name: "Apple Inc.", price: 228.30, prevClose: 226.90, category: "Tecnologia" },
-      "AMZN":  { name: "Amazon.com Inc.", price: 194.20, prevClose: 191.80, category: "Tecnologia" },
-      "GOOGL": { name: "Alphabet Inc.", price: 182.10, prevClose: 180.40, category: "Tecnologia" },
-      "META":  { name: "Meta Platforms Inc.", price: 585.30, prevClose: 578.00, category: "Tecnologia" },
-      "CRM":   { name: "Salesforce Inc.", price: 298.50, prevClose: 294.10, category: "Tecnologia" },
-      "PLTR":  { name: "Palantir Technologies", price: 37.40, prevClose: 36.20, category: "Tecnologia" },
-      "ADBE":  { name: "Adobe Inc.", price: 520.10, prevClose: 512.30, category: "Tecnologia" },
-      "KO":    { name: "The Coca-Cola Company", price: 68.90, prevClose: 68.40, category: "Consumo" },
-      "PEP":   { name: "PepsiCo Inc.", price: 172.40, prevClose: 171.10, category: "Consumo" },
-      "PG":    { name: "Procter & Gamble", price: 174.10, prevClose: 173.20, category: "Consumo" },
-      "SXR8":  { name: "iShares Core S&P 500 UCITS ETF", price: 545.20, prevClose: 541.00, category: "ETF" },
-      "CSPX":  { name: "iShares Core S&P 500 ETF (USD)", price: 592.10, prevClose: 588.00, category: "ETF" },
-      "SXRV":  { name: "iShares NASDAQ 100 UCITS ETF", price: 985.40, prevClose: 978.20, category: "ETF" },
-      "VWCE":  { name: "Vanguard FTSE All-World UCITS ETF", price: 126.80, prevClose: 125.90, category: "ETF" },
-      "VOO":   { name: "Vanguard S&P 500 ETF", price: 535.40, prevClose: 530.80, category: "ETF" },
-      "QQQ":   { name: "Invesco QQQ Trust", price: 486.20, prevClose: 481.50, category: "ETF" }
-    };
-
-    const INITIAL_DEMO_PORTFOLIO = [
-      {
-        id: "demo-now",
-        ticker: "NOW",
-        name: "ServiceNow, Inc.",
-        category: "Tecnologia",
-        broker: "IBKR",
-        buyDate: "2024-03-15",
-        qty: 2,
-        avgUSD: 760.00,
-        currUSD: 928.40,
-        prevCloseUSD: 915.20,
-        feesUSD: 0.35,
-        eurUsdRateAtBuy: 1.0850
-      },
-      {
-        id: "demo-msft",
-        ticker: "MSFT",
-        name: "Microsoft Corporation",
-        category: "Tecnologia",
-        broker: "IBKR",
-        buyDate: "2024-02-10",
-        qty: 4,
-        avgUSD: 405.00,
-        currUSD: 448.50,
-        prevCloseUSD: 442.10,
-        feesUSD: 0.35,
-        eurUsdRateAtBuy: 1.0820
-      },
-      {
-        id: "demo-nvda",
-        ticker: "NVDA",
-        name: "NVIDIA Corporation",
-        category: "Tecnologia",
-        broker: "IBKR",
-        buyDate: "2024-01-20",
-        qty: 10,
-        avgUSD: 85.00,
-        currUSD: 128.80,
-        prevCloseUSD: 124.50,
-        feesUSD: 0.35,
-        eurUsdRateAtBuy: 1.0900
-      }
-    ];
-
-    // Variáveis de Estado
     let portfolio = [];
     let deletedIdsSet = new Set();
     let EUR_USD = 1.0850;
-    let EUR_USD_PREV = 1.0835; // Fecho anterior do par EUR/USD
+    let EUR_USD_PREV = 1.0835;
     let currentFilter = 'ALL';
-    let currentTimeframe = 'TOTAL'; // '1D', '1S', '1M', 'YTD', '1A', 'TOTAL'
     let lookupDebounceTimer = null;
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
 
-    // 3. UTILITÁRIOS
     function parseNumericInput(val) {
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
       if (!val) return 0;
@@ -761,7 +649,6 @@
       closeConfirmModal();
     }
 
-    // 4. PERSISTÊNCIA LOCAL E NUVEM
     function loadLocalPortfolio() {
       const deletedStored = localStorage.getItem("assetpulse_deleted_ids_v1");
       if (deletedStored) {
@@ -770,9 +657,7 @@
         } catch (e) {}
       }
 
-      const hasInitialized = localStorage.getItem("assetpulse_has_initialized_v5");
       const stored = localStorage.getItem("assetpulse_portfolio_lots_v5");
-
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
@@ -782,37 +667,18 @@
           }
         } catch (e) {}
       }
-
-      if (!hasInitialized) {
-        portfolio = [...INITIAL_DEMO_PORTFOLIO];
-        localStorage.setItem("assetpulse_has_initialized_v5", "true");
-        saveLocalPortfolio();
-      } else {
-        portfolio = [];
-      }
+      portfolio = [];
     }
 
     function saveLocalPortfolio() {
       try {
         localStorage.setItem("assetpulse_portfolio_lots_v5", JSON.stringify(portfolio));
-        localStorage.setItem("assetpulse_has_initialized_v5", "true");
         localStorage.setItem("assetpulse_deleted_ids_v1", JSON.stringify([...deletedIdsSet]));
         if (portfolio.length > 0) {
           localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
         }
-      } catch (e) {
-        console.warn("Erro ao gravar dados locais:", e);
-      }
+      } catch (e) {}
     }
-
-    window.restoreDemoAssets = function() {
-      deletedIdsSet.clear();
-      portfolio = [...INITIAL_DEMO_PORTFOLIO];
-      saveLocalPortfolio();
-      renderAll();
-      showToast("Ativos de demonstração repostos!");
-      syncAllToSupabase();
-    };
 
     window.restoreFromSafetyBackup = function() {
       const snap = localStorage.getItem("assetpulse_portfolio_safety_snapshot");
@@ -824,7 +690,7 @@
           showToast("Cópia de segurança restaurada!");
           syncAllToSupabase();
         } catch (e) {
-          showToast("Erro ao ler cópia de segurança.", false);
+          showToast("Erro ao ler cópia.", false);
         }
       } else {
         showToast("Nenhuma cópia encontrada.", false);
@@ -888,9 +754,7 @@
             renderAll();
           }
         }
-      } catch (err) {
-        console.warn("Supabase sync guard:", err);
-      }
+      } catch (err) {}
     }
 
     async function syncAllToSupabase(showFeedback = false) {
@@ -914,14 +778,10 @@
         const { error } = await supabaseClient.from('portfolio').upsert(payloadWithDate, { onConflict: 'id' });
         if (error) {
           const payloadWithoutDate = payloadWithDate.map(({ buy_date, ...rest }) => rest);
-          const { error: err2 } = await supabaseClient.from('portfolio').upsert(payloadWithoutDate, { onConflict: 'id' });
-          if (!err2 && showFeedback) showToast("Dados guardados no Supabase!");
-        } else if (showFeedback) {
-          showToast("Dados guardados no Supabase!");
+          await supabaseClient.from('portfolio').upsert(payloadWithoutDate, { onConflict: 'id' });
         }
-      } catch (e) {
-        console.warn("Supabase network error:", e);
-      }
+        if (showFeedback) showToast("Dados guardados no Supabase!");
+      } catch (e) {}
     }
 
     async function deleteAssetFromSupabase(id) {
@@ -938,7 +798,7 @@
       } catch (e) {}
     }
 
-    // 5. CÂMBIO E COTAÇÕES COM PREVIOUS CLOSE (YAHOO FINANCE)
+    // BUSCA DE CÂMBIO OFICIAL
     async function fetchLiveExchangeRate(manual = false) {
       try {
         const res = await fetch("https://open.er-api.com/v6/latest/EUR");
@@ -955,13 +815,14 @@
       } catch (e) {}
     }
 
+    // BUSCA DE COTAÇÕES EM TEMPO REAL SEM NÚMEROS INVENTADOS
     async function fetchQuoteFromWeb(ticker) {
       const clean = (ticker || "").trim().toUpperCase();
       if (!clean) return null;
 
       const endpoints = [
-        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`,
-        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`,
+        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`
       ];
 
       for (const yfUrl of endpoints) {
@@ -973,7 +834,7 @@
         for (const pUrl of proxyList) {
           try {
             const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 6000);
+            const tid = setTimeout(() => controller.abort(), 6500);
             const res = await fetch(pUrl, { signal: controller.signal });
             clearTimeout(tid);
 
@@ -993,16 +854,6 @@
           } catch (e) {}
         }
       }
-
-      if (TICKER_DIRECTORY[clean]) {
-        return {
-          price: TICKER_DIRECTORY[clean].price,
-          prevClose: TICKER_DIRECTORY[clean].prevClose || TICKER_DIRECTORY[clean].price,
-          name: TICKER_DIRECTORY[clean].name,
-          source: "Catálogo Integrado"
-        };
-      }
-
       return null;
     }
 
@@ -1038,60 +889,12 @@
       if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
 
       if (manual) {
-        showToast(`${updatedCount} cotações atualizadas em tempo real!`);
+        showToast(`${updatedCount} cotações atualizadas em direto!`);
         syncAllToSupabase(false);
       }
     }
 
-    // 6. MOTOR DE CÁLCULO DE PERIODICIDADE (1D, 1S, 1M, YTD, 1A, TOTAL)
-    function calculatePeriodicPerformance(timeframe) {
-      const now = new Date();
-      let startThreshold = new Date(0);
-
-      if (timeframe === '1D') {
-        // Variação diária oficial (recorre ao previousClose)
-      } else if (timeframe === '1S') {
-        startThreshold = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
-      } else if (timeframe === '1M') {
-        startThreshold = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-      } else if (timeframe === 'YTD') {
-        startThreshold = new Date(now.getFullYear(), 0, 1);
-      } else if (timeframe === '1A') {
-        startThreshold = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-      }
-
-      let totalBaseValEUR = 0;
-      let totalCurrValEUR = 0;
-
-      portfolio.forEach(lot => {
-        const buyDate = new Date(lot.buyDate || '2024-01-01');
-        const currLotValEUR = (lot.qty * lot.currUSD) / EUR_USD;
-
-        let baseLotValEUR = 0;
-        if (timeframe === '1D') {
-          const prevPriceUSD = lot.prevCloseUSD || lot.currUSD;
-          baseLotValEUR = (lot.qty * prevPriceUSD) / EUR_USD_PREV;
-        } else if (timeframe === 'TOTAL' || buyDate >= startThreshold) {
-          // O lote foi comprado dentro da janela: base é o valor efetivamente investido na compra
-          const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
-          baseLotValEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / rateAtBuy;
-        } else {
-          // O lote já existia antes: retorno ponderado pelo tempo de detenção
-          const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
-          const origCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / rateAtBuy;
-          baseLotValEUR = origCostEUR;
-        }
-
-        totalBaseValEUR += baseLotValEUR;
-        totalCurrValEUR += currLotValEUR;
-      });
-
-      const deltaEUR = totalCurrValEUR - totalBaseValEUR;
-      const pct = totalBaseValEUR > 0 ? (deltaEUR / totalBaseValEUR) * 100 : 0;
-
-      return { deltaEUR, pct };
-    }
-
+    // CÁLCULO DAS MÉTRICAS RIGOROSAS
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
       let totalInvUSD = 0;
@@ -1116,7 +919,6 @@
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
         const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
 
-        // Variação 1D individual
         const prevPriceUSD = lot.prevCloseUSD || lot.currUSD;
         const dayChangeUSD = lot.currUSD - prevPriceUSD;
         const dayChangePct = prevPriceUSD > 0 ? (dayChangeUSD / prevPriceUSD) * 100 : 0;
@@ -1181,15 +983,8 @@
         const plUSD = totalValUSD - (totalCostBasisUSD + totalFeesUSD);
         const plPct = totalInvEUR_asset > 0 ? (plEUR / totalInvEUR_asset) * 100 : 0;
 
-        // Variação 1D do ativo consolidado
         const dayChangeUSD = asset.currUSD - asset.prevCloseUSD;
         const dayChangePct = asset.prevCloseUSD > 0 ? (dayChangeUSD / asset.prevCloseUSD) * 100 : 0;
-
-        // Retorno dependente do timeframe selecionado
-        let tfPct = plPct;
-        if (currentTimeframe === '1D') {
-          tfPct = dayChangePct;
-        }
 
         asset.lots = asset.lots.map(lot => ({
           ...lot,
@@ -1209,8 +1004,7 @@
           plEUR,
           plUSD,
           plPct,
-          dayChangePct,
-          activeTfPct: tfPct
+          dayChangePct
         };
       });
 
@@ -1243,35 +1037,19 @@
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
       document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} a mercado`;
 
-      // Atualiza o KPI 3 conforme o período ativo
       const plEurEl = document.getElementById("kpi-pl-eur");
       const plPctEl = document.getElementById("kpi-pl-pct");
       const plUsdEl = document.getElementById("kpi-pl-usd");
       const plIcon = document.getElementById("kpi-pl-icon-container");
-      const tfTitle = document.getElementById("kpi-tf-title");
 
-      tfTitle.textContent = `Retorno (${currentTimeframe})`;
-
-      let displayEUR = metrics.totalPLEUR;
-      let displayPct = metrics.totalPLPct;
-
-      if (currentTimeframe === '1D') {
-        displayEUR = metrics.day1DDeltaEUR;
-        displayPct = metrics.day1DPct;
-      } else if (currentTimeframe !== 'TOTAL') {
-        const p = calculatePeriodicPerformance(currentTimeframe);
-        displayEUR = p.deltaEUR;
-        displayPct = p.pct;
-      }
-
-      const isPositive = displayEUR >= 0;
-      plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(displayEUR)}`;
+      const isPositive = metrics.totalPLEUR >= 0;
+      plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
       plEurEl.className = `text-xl sm:text-2xl font-bold font-mono tracking-tight ${isPositive ? 'text-gain' : 'text-loss'}`;
       
-      plPctEl.textContent = fmtPCT(displayPct);
+      plPctEl.textContent = fmtPCT(metrics.totalPLPct);
       plPctEl.className = `font-bold ${isPositive ? 'text-gain' : 'text-loss'}`;
 
-      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} total)`;
+      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} líquido)`;
       if (plIcon) {
         plIcon.innerHTML = isPositive 
           ? `<i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>`
@@ -1279,15 +1057,15 @@
       }
 
       if (metrics.assets.length > 0) {
-        const sorted = [...metrics.assets].sort((a, b) => b.activeTfPct - a.activeTfPct);
+        const sorted = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
         const best = sorted[0];
         const worst = sorted[sorted.length - 1];
 
-        document.getElementById("kpi-best-asset").textContent = `${best.ticker} (${fmtPCT(best.activeTfPct)})`;
-        document.getElementById("kpi-best-asset").className = `font-bold ${best.activeTfPct >= 0 ? 'text-gain' : 'text-loss'}`;
+        document.getElementById("kpi-best-asset").textContent = `${best.ticker} (${fmtPCT(best.plPct)})`;
+        document.getElementById("kpi-best-asset").className = `font-bold ${best.plPct >= 0 ? 'text-gain' : 'text-loss'}`;
 
-        document.getElementById("kpi-worst-asset").textContent = `${worst.ticker} (${fmtPCT(worst.activeTfPct)})`;
-        document.getElementById("kpi-worst-asset").className = `font-bold ${worst.activeTfPct >= 0 ? 'text-gain' : 'text-loss'}`;
+        document.getElementById("kpi-worst-asset").textContent = `${worst.ticker} (${fmtPCT(worst.plPct)})`;
+        document.getElementById("kpi-worst-asset").className = `font-bold ${worst.plPct >= 0 ? 'text-gain' : 'text-loss'}`;
       } else {
         document.getElementById("kpi-best-asset").textContent = "-";
         document.getElementById("kpi-worst-asset").textContent = "-";
@@ -1295,25 +1073,56 @@
 
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
 
-      // Atualiza a Matriz Temporal de Badges
-      renderTimeframeBadges(metrics);
+      // Cálculo Matemático do CAGR e Métricas Reais
+      calculateAdvancedMetrics(metrics);
     }
 
-    function renderTimeframeBadges(metrics) {
-      const setBadge = (id, pct) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const isPos = pct >= 0;
-        el.textContent = fmtPCT(pct);
-        el.className = `font-bold font-mono ${isPos ? 'text-gain' : 'text-loss'}`;
-      };
+    function calculateAdvancedMetrics(metrics) {
+      const now = new Date().getTime();
+      let weightedDaysSum = 0;
+      let totalCost = 0;
 
-      setBadge("badge-tf-1d", metrics.day1DPct);
-      setBadge("badge-tf-1s", calculatePeriodicPerformance('1S').pct);
-      setBadge("badge-tf-1m", calculatePeriodicPerformance('1M').pct);
-      setBadge("badge-tf-ytd", calculatePeriodicPerformance('YTD').pct);
-      setBadge("badge-tf-1a", calculatePeriodicPerformance('1A').pct);
-      setBadge("badge-tf-total", metrics.totalPLPct);
+      portfolio.forEach(lot => {
+        const buyTime = new Date(lot.buyDate || '2024-01-01').getTime();
+        const daysHeld = Math.max(1, Math.round((now - buyTime) / (1000 * 60 * 60 * 24)));
+        const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || EUR_USD);
+
+        weightedDaysSum += (daysHeld * costEUR);
+        totalCost += costEUR;
+      });
+
+      const avgDaysHeld = totalCost > 0 ? (weightedDaysSum / totalCost) : 1;
+      const years = avgDaysHeld / 365.25;
+
+      let cagr = 0;
+      if (metrics.totalInvEUR > 0 && metrics.totalCurrEUR > 0 && years > 0.05) {
+        cagr = (Math.pow(metrics.totalCurrEUR / metrics.totalInvEUR, 1 / years) - 1) * 100;
+      } else {
+        cagr = metrics.totalPLPct;
+      }
+
+      const el1D = document.getElementById("metric-1d");
+      if (el1D) {
+        el1D.textContent = fmtPCT(metrics.day1DPct);
+        el1D.className = `font-bold font-mono ${metrics.day1DPct >= 0 ? 'text-gain' : 'text-loss'}`;
+      }
+
+      const elTot = document.getElementById("metric-total-return");
+      if (elTot) {
+        elTot.textContent = fmtPCT(metrics.totalPLPct);
+        elTot.className = `font-bold font-mono ${metrics.totalPLPct >= 0 ? 'text-gain' : 'text-loss'}`;
+      }
+
+      const elCagr = document.getElementById("metric-cagr");
+      if (elCagr) {
+        elCagr.textContent = `${fmtPCT(cagr)} / ano`;
+        elCagr.className = `font-bold font-mono ${cagr >= 0 ? 'text-gain' : 'text-loss'}`;
+      }
+
+      const elDays = document.getElementById("metric-holding-time");
+      if (elDays) {
+        elDays.textContent = `${Math.round(avgDaysHeld)} dias (${(avgDaysHeld / 30.4).toFixed(1)} meses)`;
+      }
     }
 
     function renderPerformanceBars(metrics) {
@@ -1321,22 +1130,19 @@
       if (!container) return;
       container.innerHTML = "";
 
-      document.getElementById("ranking-tf-label").textContent = currentTimeframe;
-      document.querySelectorAll(".header-tf-name").forEach(el => el.textContent = currentTimeframe);
-
       if (metrics.assets.length === 0) {
         container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 font-mono">Sem ativos registados.</div>`;
         return;
       }
 
-      const sorted = [...metrics.assets].sort((a, b) => b.activeTfPct - a.activeTfPct);
-      const maxAbsPct = Math.max(...sorted.map(a => Math.abs(a.activeTfPct)), 5);
+      const sorted = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
+      const maxAbsPct = Math.max(...sorted.map(a => Math.abs(a.plPct)), 5);
 
       sorted.forEach(asset => {
-        const isPos = asset.activeTfPct >= 0;
+        const isPos = asset.plPct >= 0;
         const colorText = isPos ? 'text-gain' : 'text-loss';
         const colorBg = isPos ? 'bg-gain' : 'bg-loss';
-        const barWidth = Math.min(100, (Math.abs(asset.activeTfPct) / maxAbsPct) * 100);
+        const barWidth = Math.min(100, (Math.abs(asset.plPct) / maxAbsPct) * 100);
 
         const row = document.createElement("div");
         row.className = "flex items-center gap-3 text-xs";
@@ -1349,24 +1155,12 @@
             <div class="h-full rounded-full ${colorBg} transition-all duration-300" style="width: ${Math.max(barWidth, 4)}%"></div>
           </div>
           <div class="w-24 text-right font-mono font-bold ${colorText} shrink-0">
-            ${fmtPCT(asset.activeTfPct)}
+            ${fmtPCT(asset.plPct)}
           </div>
         `;
         container.appendChild(row);
       });
     }
-
-    window.setTimeframeFilter = function(tf) {
-      currentTimeframe = tf;
-      document.querySelectorAll(".tf-btn").forEach(btn => {
-        if (btn.getAttribute("data-tf") === tf) {
-          btn.className = "tf-btn active px-3 py-1 rounded-lg bg-accent text-slate-950 font-bold transition";
-        } else {
-          btn.className = "tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
-        }
-      });
-      renderAll();
-    };
 
     function toggleTickerExpand(ticker) {
       if (expandedTickers.has(ticker)) {
@@ -1394,7 +1188,7 @@
 
       filtered.forEach(asset => {
         const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
-        const isPos = asset.activeTfPct >= 0;
+        const isPos = asset.plPct >= 0;
         const colorClass = isPos ? 'text-gain' : 'text-loss';
         const badgeBg = isPos ? 'bg-gain-subtle text-gain border border-gain/20' : 'bg-loss-subtle text-loss border border-loss/20';
 
@@ -1442,7 +1236,6 @@
             ${fmtUSD(asset.currUSD)}
           </td>
 
-          <!-- Coluna 1D Específica -->
           <td class="py-3 px-3 text-right font-mono font-bold ${day1DIsPos ? 'text-gain' : 'text-loss'}">
             ${fmtPCT(asset.dayChangePct)}
           </td>
@@ -1455,11 +1248,10 @@
             ${fmtEUR(asset.totalCurrEUR)}
           </td>
 
-          <!-- Coluna de Retorno Dinâmico do Período -->
           <td class="py-3 px-3 text-right font-mono">
-            <div class="font-bold ${colorClass}">${fmtPCT(asset.activeTfPct)}</div>
-            <div class="text-[10px] text-slate-400 font-normal">
-              ${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}
+            <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
+            <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5 font-bold">
+              ${fmtPCT(asset.plPct)}
             </div>
           </td>
 
@@ -1486,7 +1278,6 @@
         `;
         tbody.appendChild(parentTr);
 
-        // Lotes Expandidos
         if (isExpanded) {
           const detailTr = document.createElement("tr");
           detailTr.className = "bg-surface-subtle/30 border-b border-surface-border";
@@ -1595,7 +1386,7 @@
       lucide.createIcons();
     }
 
-    // 7. GESTÃO DE MODAIS
+    // FORMULÁRIO E MODAIS
     window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
       if (form) form.reset();
@@ -1605,8 +1396,6 @@
 
       const hintBox = document.getElementById("form-existing-hint");
       if (hintBox) hintBox.classList.add("hidden");
-
-      hideSuggestions();
 
       document.getElementById("form-id").value = "";
       document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-accent"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
@@ -1661,56 +1450,12 @@
         modal.classList.add("hidden");
         modal.classList.remove("flex");
       }
-      hideSuggestions();
-    };
-
-    function showSuggestions(list) {
-      const container = document.getElementById("ticker-suggestions");
-      if (!container) return;
-      if (list.length === 0) {
-        container.classList.add("hidden");
-        return;
-      }
-
-      container.innerHTML = list.map(item => `
-        <div onclick="selectSuggestion('${item.ticker}')" class="p-2.5 hover:bg-surface-subtle cursor-pointer border-b border-surface-border last:border-0 flex items-center justify-between transition">
-          <div>
-            <span class="font-bold text-accent font-mono text-xs">${item.ticker}</span>
-            <span class="text-slate-300 text-xs ml-2">${item.name}</span>
-          </div>
-          <span class="text-[11px] font-mono text-slate-400">${fmtUSD(item.price)}</span>
-        </div>
-      `).join('');
-      container.classList.remove("hidden");
-    }
-
-    function hideSuggestions() {
-      const container = document.getElementById("ticker-suggestions");
-      if (container) container.classList.add("hidden");
-    }
-
-    window.selectSuggestion = function (ticker) {
-      const input = document.getElementById("form-ticker");
-      if (input) input.value = ticker;
-      hideSuggestions();
-      onTickerInput(ticker);
     };
 
     window.onTickerInput = function (rawVal) {
       const ticker = (rawVal || "").trim().toUpperCase();
       const currentEditId = document.getElementById("form-id")?.value;
       const hintBox = document.getElementById("form-existing-hint");
-      const statusLabel = document.getElementById("ticker-source-status");
-
-      if (ticker.length >= 1) {
-        const matches = Object.entries(TICKER_DIRECTORY)
-          .filter(([k, v]) => k.includes(ticker) || v.name.toUpperCase().includes(ticker))
-          .map(([k, v]) => ({ ticker: k, ...v }))
-          .slice(0, 5);
-        showSuggestions(matches);
-      } else {
-        hideSuggestions();
-      }
 
       if (ticker.length >= 1 && !currentEditId) {
         const existingCount = portfolio.filter(it => it.ticker === ticker).length;
@@ -1724,18 +1469,6 @@
         }
       } else {
         if (hintBox) hintBox.classList.add("hidden");
-      }
-
-      if (TICKER_DIRECTORY[ticker]) {
-        const item = TICKER_DIRECTORY[ticker];
-        const nameInput = document.getElementById("form-name");
-        const currInput = document.getElementById("form-curr");
-        const catInput = document.getElementById("form-category");
-
-        if (nameInput && !nameInput.value) nameInput.value = item.name;
-        if (currInput && (!currInput.value || currInput.value === "0")) currInput.value = item.price.toFixed(2);
-        if (catInput && item.category) catInput.value = item.category;
-        if (statusLabel) statusLabel.textContent = `Ativo reconhecido: ${item.name}`;
       }
 
       debounceTickerLookup(ticker);
@@ -1764,7 +1497,7 @@
               nameInput.value = quote.name;
             }
             if (statusLabel) {
-              statusLabel.textContent = `Preço obtido via ${quote.source}: $${quote.price}`;
+              statusLabel.textContent = `Preço oficial em direto: $${quote.price}`;
             }
           }
         }, 500);
@@ -1776,26 +1509,20 @@
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
       const feesInput = document.getElementById("form-fees");
-      const note = document.getElementById("form-fee-note");
 
       let fees = 0;
       const orderVol = qty * avgUSD;
 
       if (broker === 'IBKR') {
         fees = Math.max(0.35, qty * 0.0035);
-        if (note) note.textContent = "IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).";
       } else if (broker === 'IBKR_FIXED') {
         fees = Math.max(1.00, qty * 0.005);
-        if (note) note.textContent = "IBKR Fixed: $0.005 por ação (Mínimo: $1.00).";
       } else if (broker === 'XTB') {
         fees = 0.00;
-        if (note) note.textContent = "XTB Conta USD: Comissão de 0% de corretagem.";
       } else if (broker === 'XTB_FX') {
         fees = orderVol * 0.005;
-        if (note) note.textContent = "XTB Conta EUR: 0.50% de taxa de conversão cambial.";
       } else {
         fees = 0.00;
-        if (note) note.textContent = "Taxa personalizada ou sem comissão.";
       }
 
       if (feesInput) feesInput.value = fees.toFixed(2);
@@ -1832,7 +1559,7 @@
       const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
 
       if (!ticker) {
-        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação (ex: NOW, NVDA)."; errBox.classList.remove("hidden"); }
+        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação (ex: NOW, META)."; errBox.classList.remove("hidden"); }
         return;
       }
       if (qty <= 0) {
@@ -1844,15 +1571,15 @@
         return;
       }
 
-      if (!name) name = TICKER_DIRECTORY[ticker]?.name || ticker;
+      if (!name) name = ticker;
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
       if (currUSD <= 0) {
         const sibling = portfolio.find(it => it.ticker === ticker);
-        currUSD = sibling ? sibling.currUSD : (TICKER_DIRECTORY[ticker]?.price || avgUSD);
+        currUSD = sibling ? sibling.currUSD : avgUSD;
       }
 
-      const prevCloseUSD = TICKER_DIRECTORY[ticker]?.prevClose || currUSD;
+      const prevCloseUSD = currUSD;
       const feesUSD = parseNumericInput(document.getElementById("form-fees")?.value);
 
       if (id) {
@@ -1975,7 +1702,6 @@
       renderTable(metrics);
     }
 
-    // 8. ARRANQUE
     window.addEventListener("DOMContentLoaded", async () => {
       loadLocalPortfolio();
       renderAll();
