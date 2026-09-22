@@ -417,16 +417,17 @@
           <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono font-bold" id="form-hint-ticker">NVDA</span>
         </div>
 
-        <!-- Ticker & Category -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
+        <!-- Ticker & Category with Autocomplete Dropdown -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
+          <div class="relative">
             <label class="block text-xs font-semibold text-slate-300 mb-1">Ticker / Símbolo *</label>
             <div class="relative">
               <input 
                 type="text" 
                 id="form-ticker" 
                 required 
-                placeholder="ex: NVDA, MSFT, AAPL" 
+                autocomplete="off"
+                placeholder="ex: NOW, NVDA, AAPL" 
                 oninput="onTickerInput(this.value)"
                 class="w-full uppercase px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono tracking-wider"
               >
@@ -434,7 +435,16 @@
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i>
               </div>
             </div>
-            <span class="text-[10px] text-slate-500 mt-1 block">Procura cotação e preenche a empresa</span>
+
+            <!-- Instant Autocomplete Dropdown List -->
+            <div id="ticker-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 z-50 bg-slate-950/95 border border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar backdrop-blur-md">
+              <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- Real-time fetch status message badge -->
+            <span id="ticker-status-label" class="text-[10px] text-slate-400 mt-1 block flex items-center gap-1 font-mono">
+              <i data-lucide="search" class="w-3 h-3 text-slate-500"></i> Procura cotação e preenche a empresa
+            </span>
           </div>
 
           <div>
@@ -507,7 +517,7 @@
               inputmode="decimal"
               id="form-avg" 
               required 
-              placeholder="ex: 125.50" 
+              placeholder="ex: 137.50" 
               oninput="recalculateFormFees()"
               class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
             >
@@ -708,18 +718,74 @@
       }
     ];
 
+    // Comprehensive Directory including ServiceNow (NOW), Cloud, AI, and Popular ETFs
     const TICKER_DIRECTORY = {
+      // User requested stock: ServiceNow
+      "NOW":  { name: "ServiceNow, Inc.", price: 137.50, category: "Tecnologia" },
+
+      // Big Tech & Cloud / SaaS
       "NVDA": { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
       "MSFT": { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
       "AAPL": { name: "Apple Inc.", price: 338.98, category: "Tecnologia" },
-      "KO":   { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
       "AMZN": { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia" },
       "GOOGL":{ name: "Alphabet Inc.", price: 354.97, category: "Tecnologia" },
+      "GOOG": { name: "Alphabet Inc. (Class C)", price: 355.20, category: "Tecnologia" },
       "META": { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia" },
       "TSLA": { name: "Tesla Inc.", price: 375.30, category: "Tecnologia" },
+      "CRM":  { name: "Salesforce, Inc.", price: 238.50, category: "Tecnologia" },
+      "ADBE": { name: "Adobe Inc.", price: 249.20, category: "Tecnologia" },
+      "ORCL": { name: "Oracle Corporation", price: 148.00, category: "Tecnologia" },
+      "PLTR": { name: "Palantir Technologies Inc.", price: 62.40, category: "Tecnologia" },
+      "SNOW": { name: "Snowflake Inc.", price: 331.00, category: "Tecnologia" },
+      "AMD":  { name: "Advanced Micro Devices", price: 156.80, category: "Tecnologia" },
+      "INTC": { name: "Intel Corporation", price: 28.50, category: "Tecnologia" },
+      "AVGO": { name: "Broadcom Inc.", price: 172.50, category: "Tecnologia" },
+      "QCOM": { name: "Qualcomm Inc.", price: 168.30, category: "Tecnologia" },
+      "CRWD": { name: "CrowdStrike Holdings", price: 237.50, category: "Tecnologia" },
+      "PANW": { name: "Palo Alto Networks", price: 363.00, category: "Tecnologia" },
+      "DDOG": { name: "Datadog, Inc.", price: 229.50, category: "Tecnologia" },
+      "NET":  { name: "Cloudflare, Inc.", price: 98.20, category: "Tecnologia" },
+      "MDB":  { name: "MongoDB, Inc.", price: 285.00, category: "Tecnologia" },
+      "UBER": { name: "Uber Technologies, Inc.", price: 78.40, category: "Tecnologia" },
+      "ABNB": { name: "Airbnb, Inc.", price: 134.50, category: "Tecnologia" },
+      "NFLX": { name: "Netflix, Inc.", price: 692.00, category: "Tecnologia" },
+      "DIS":  { name: "The Walt Disney Company", price: 95.80, category: "Consumo" },
+      "SPOT": { name: "Spotify Technology S.A.", price: 335.20, category: "Tecnologia" },
+
+      // Consumer & Staples
+      "KO":   { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
+      "PEP":  { name: "PepsiCo, Inc.", price: 174.50, category: "Consumo" },
+      "MCD":  { name: "McDonald's Corporation", price: 295.40, category: "Consumo" },
+      "SBUX": { name: "Starbucks Corporation", price: 94.20, category: "Consumo" },
+      "NKE":  { name: "Nike, Inc.", price: 82.50, category: "Consumo" },
+      "COST": { name: "Costco Wholesale Corporation", price: 885.00, category: "Consumo" },
+      "WMT":  { name: "Walmart Inc.", price: 79.50, category: "Consumo" },
+      "PG":   { name: "Procter & Gamble Company", price: 168.20, category: "Consumo" },
+
+      // Financials
+      "JPM":  { name: "JPMorgan Chase & Co.", price: 215.40, category: "Financeiro" },
+      "V":    { name: "Visa Inc.", price: 278.30, category: "Financeiro" },
+      "MA":   { name: "Mastercard Incorporated", price: 482.10, category: "Financeiro" },
+      "BAC":  { name: "Bank of America Corporation", price: 39.80, category: "Financeiro" },
+      "BRK.B":{ name: "Berkshire Hathaway Inc. B", price: 448.00, category: "Financeiro" },
+
+      // Healthcare
+      "LLY":  { name: "Eli Lilly and Company", price: 915.00, category: "Saúde" },
+      "NVO":  { name: "Novo Nordisk A/S", price: 128.50, category: "Saúde" },
+      "JNJ":  { name: "Johnson & Johnson", price: 162.30, category: "Saúde" },
+      "ABBV": { name: "AbbVie Inc.", price: 192.40, category: "Saúde" },
+
+      // Popular Indices & UCITS ETFs
       "VOO":  { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF" },
       "SPY":  { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF" },
-      "QQQ":  { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" }
+      "QQQ":  { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" },
+      "VTI":  { name: "Vanguard Total Stock Market", price: 274.50, category: "ETF" },
+      "VWCE": { name: "Vanguard FTSE All-World UCITS", price: 122.40, category: "ETF" },
+      "IWDA": { name: "iShares Core MSCI World UCITS", price: 96.80, category: "ETF" },
+      "VUAA": { name: "Vanguard S&P 500 UCITS ETF", price: 104.20, category: "ETF" },
+      "QDVE": { name: "iShares S&P 500 Info Tech ETF", price: 28.50, category: "ETF" },
+      "SMH":  { name: "VanEck Semiconductor ETF", price: 252.00, category: "ETF" },
+      "SCHD": { name: "Schwab U.S. Dividend Equity ETF", price: 81.30, category: "ETF" }
     };
 
     // State Variables
@@ -813,7 +879,6 @@
           try {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
-              // Permite array vazio! Se o utilizador apagou tudo, fica vazio.
               portfolio = parsed;
               return;
             }
@@ -823,7 +888,7 @@
         }
       }
 
-      // Apenas na primeiríssima visita
+      // Initial visit demo load
       portfolio = [...INITIAL_PORTFOLIO];
       localStorage.setItem("assetpulse_has_initialized_v5", "true");
       saveLocalPortfolio();
@@ -870,12 +935,9 @@
       try {
         const { data, error } = await supabaseClient.from('portfolio').select('*');
         if (!error && Array.isArray(data)) {
-          // Se a base de dados tem itens, filtra aqueles que o utilizador eliminou explicitamente
           const remoteValidItems = data.filter(item => !deletedIdsSet.has(String(item.id)));
 
-          // Se a carteira local foi esvaziada de propósito pelo utilizador
           if (portfolio.length === 0) {
-            // Se existem itens remotos que foram eliminados, remove-os também do Supabase
             for (const item of data) {
               if (deletedIdsSet.has(String(item.id))) {
                 await deleteAssetFromSupabase(item.id);
@@ -905,7 +967,6 @@
             const merged = [];
             const processedIds = new Set();
 
-            // Mantém os itens locais que não foram eliminados
             portfolio.forEach(localItem => {
               if (!deletedIdsSet.has(String(localItem.id))) {
                 merged.push(localItem);
@@ -913,7 +974,6 @@
               }
             });
 
-            // Apenas adiciona da nuvem se for um ID desconhecido e NÃO tiver sido apagado
             remoteMap.forEach((remoteItem, id) => {
               if (!processedIds.has(id) && !deletedIdsSet.has(id)) {
                 merged.push(remoteItem);
@@ -935,7 +995,6 @@
       if (!supabaseClient) return;
       
       if (portfolio.length === 0) {
-        // Se a carteira está vazia, limpa no Supabase os registos que pertenciam à demonstração
         for (const deletedId of deletedIdsSet) {
           await deleteAssetFromSupabase(deletedId);
         }
@@ -1011,40 +1070,52 @@
       }
     }
 
+    // High availability multi-proxy ticker search with Yahoo Finance query2
     async function fetchQuoteFromWeb(ticker) {
       const clean = (ticker || "").trim().toUpperCase();
       if (!clean) return null;
 
-      const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`;
-      const proxyList = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
-        `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`
+      // 1. Direct hit on local comprehensive directory first
+      const dirEntry = TICKER_DIRECTORY[clean];
+
+      // Endpoints to check
+      const yfUrlChart = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`;
+      const yfUrlSearch = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(clean)}`;
+
+      const proxyAttempts = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrlChart)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrlChart)}`,
+        `https://cors.lol/?url=${encodeURIComponent(yfUrlChart)}`
       ];
 
-      for (const pUrl of proxyList) {
+      for (const pUrl of proxyAttempts) {
         try {
           const controller = new AbortController();
-          const tid = setTimeout(() => controller.abort(), 3500);
+          const tid = setTimeout(() => controller.abort(), 6500);
           const res = await fetch(pUrl, { signal: controller.signal });
           clearTimeout(tid);
+
           if (res.ok) {
             const raw = await res.json();
             const json = raw.contents ? JSON.parse(raw.contents) : raw;
             const meta = json?.chart?.result?.[0]?.meta;
             if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
-              return {
-                price: parseFloat(meta.regularMarketPrice.toFixed(2)),
-                name: meta.shortName || clean
-              };
+              const price = parseFloat(meta.regularMarketPrice.toFixed(2));
+              const name = meta.shortName || meta.longName || (dirEntry ? dirEntry.name : clean);
+              const category = dirEntry ? dirEntry.category : "Tecnologia";
+              return { price, name, category, source: "Yahoo Finance (Tempo Real)" };
             }
           }
         } catch (e) {}
       }
 
-      if (TICKER_DIRECTORY[clean]) {
+      // If online proxies fail, safely fallback to the built-in directory
+      if (dirEntry) {
         return {
-          price: TICKER_DIRECTORY[clean].price,
-          name: TICKER_DIRECTORY[clean].name
+          price: dirEntry.price,
+          name: dirEntry.name,
+          category: dirEntry.category,
+          source: "Catálogo Integrado"
         };
       }
 
@@ -1105,14 +1176,12 @@
         const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
         const lotCurrValUSD = lot.qty * lot.currUSD;
 
-        // Câmbio histórico do dia de compra para preservar o valor real em Euros
         const buyRate = lot.eurUsdRateAtBuy || EUR_USD;
         const lotInvEUR = lotCostUSD / buyRate;
         const lotCurrEUR = lotCurrValUSD / EUR_USD;
         const lotPLEUR = lotCurrEUR - lotInvEUR;
         const lotPLUSD = lotCurrValUSD - lotCostUSD;
 
-        // Percentagens individuais do lote
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
         const lotStockPctUSD = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
         const lotFxPct = lotPLPct - lotStockPctUSD;
@@ -1381,7 +1450,7 @@
                 <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4"></i>
               </div>
               <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700/80 flex items-center justify-center font-bold text-xs text-sky-400 font-mono">
-                ${asset.ticker.slice(0, 3)}
+                ${asset.ticker.slice(0, 4)}
               </div>
               <div>
                 <div class="font-bold text-white font-mono text-xs flex items-center gap-1.5">
@@ -1552,7 +1621,7 @@
     }
 
     // ==========================================
-    // 7. PURCHASE MODAL & LOT REGISTRATION
+    // 7. PURCHASE MODAL & AUTOCOMPLETE SUGGESTIONS
     // ==========================================
     window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
@@ -1563,6 +1632,14 @@
 
       const hintBox = document.getElementById("form-existing-hint");
       if (hintBox) hintBox.classList.add("hidden");
+
+      const suggestionsBox = document.getElementById("ticker-suggestions");
+      if (suggestionsBox) suggestionsBox.classList.add("hidden");
+
+      const statusLabel = document.getElementById("ticker-status-label");
+      if (statusLabel) {
+        statusLabel.innerHTML = `<i data-lucide="search" class="w-3 h-3 text-slate-500"></i> Procura cotação e preenche a empresa`;
+      }
 
       document.getElementById("form-id").value = "";
       document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
@@ -1599,6 +1676,7 @@
         modal.classList.remove("hidden");
         modal.classList.add("flex");
       }
+      lucide.createIcons();
     };
 
     window.openModalForTicker = function (ticker) {
@@ -1617,15 +1695,20 @@
         modal.classList.add("hidden");
         modal.classList.remove("flex");
       }
+      const suggestionsBox = document.getElementById("ticker-suggestions");
+      if (suggestionsBox) suggestionsBox.classList.add("hidden");
     };
 
+    // Real-time Autocomplete & Suggestion Filter
     window.onTickerInput = function (rawVal) {
-      const ticker = (rawVal || "").trim().toUpperCase();
+      const query = (rawVal || "").trim().toUpperCase();
       const currentEditId = document.getElementById("form-id")?.value;
       const hintBox = document.getElementById("form-existing-hint");
+      const suggestionsBox = document.getElementById("ticker-suggestions");
 
-      if (ticker.length >= 1 && !currentEditId) {
-        const existingCount = portfolio.filter(it => it.ticker === ticker).length;
+      // Check existing holdings
+      if (query.length >= 1 && !currentEditId) {
+        const existingCount = portfolio.filter(it => it.ticker === query).length;
         if (existingCount > 0) {
           if (hintBox) {
             document.getElementById("form-hint-ticker").textContent = `${existingCount} compras existentes`;
@@ -1638,8 +1721,99 @@
         if (hintBox) hintBox.classList.add("hidden");
       }
 
-      debounceTickerLookup(ticker);
+      // Autocomplete list matching
+      if (query.length >= 1 && suggestionsBox) {
+        const matches = Object.entries(TICKER_DIRECTORY).filter(([sym, data]) => {
+          return sym.startsWith(query) || (data.name && data.name.toUpperCase().includes(query));
+        }).slice(0, 5);
+
+        if (matches.length > 0) {
+          suggestionsBox.innerHTML = matches.map(([sym, data]) => `
+            <div 
+              onclick="selectTickerSuggestion('${sym}', '${data.name.replace(/'/g, "\\'")}', '${data.category}', ${data.price})"
+              class="px-3 py-2 hover:bg-sky-500/20 cursor-pointer border-b border-slate-800/60 last:border-none flex items-center justify-between transition"
+            >
+              <div>
+                <span class="font-bold text-sky-400 font-mono text-xs">${sym}</span>
+                <span class="text-[11px] text-slate-300 ml-1.5">${data.name}</span>
+              </div>
+              <span class="text-[10px] font-mono text-slate-400 font-semibold">$${data.price.toFixed(2)}</span>
+            </div>
+          `).join('');
+          suggestionsBox.classList.remove("hidden");
+        } else {
+          suggestionsBox.classList.add("hidden");
+        }
+      } else if (suggestionsBox) {
+        suggestionsBox.classList.add("hidden");
+      }
+
+      debounceTickerLookup(query);
       updateBreakEvenDisplay();
+    };
+
+    window.selectTickerSuggestion = function(sym, name, category, price) {
+      document.getElementById("form-ticker").value = sym;
+      document.getElementById("form-name").value = name;
+      if (category) document.getElementById("form-category").value = category;
+
+      const currInput = document.getElementById("form-curr");
+      if (currInput && (!currInput.value || currInput.value === "0")) {
+        currInput.value = price.toFixed(2);
+      }
+
+      const statusLabel = document.getElementById("ticker-status-label");
+      if (statusLabel) {
+        statusLabel.innerHTML = `<span class="text-emerald-400 flex items-center gap-1 font-semibold">✓ ${name} selecionada ($${price.toFixed(2)})</span>`;
+      }
+
+      const suggestionsBox = document.getElementById("ticker-suggestions");
+      if (suggestionsBox) suggestionsBox.classList.add("hidden");
+
+      updateBreakEvenDisplay();
+    };
+
+    window.debounceTickerLookup = function (ticker) {
+      clearTimeout(lookupDebounceTimer);
+      const clean = (ticker || "").trim().toUpperCase();
+      const statusLabel = document.getElementById("ticker-status-label");
+
+      if (clean.length >= 2) {
+        if (statusLabel) {
+          statusLabel.innerHTML = `<span class="text-sky-400 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> A pesquisar ${clean}...</span>`;
+          lucide.createIcons();
+        }
+
+        lookupDebounceTimer = setTimeout(async () => {
+          const indicator = document.getElementById("ticker-fetch-indicator");
+          const currInput = document.getElementById("form-curr");
+          const nameInput = document.getElementById("form-name");
+          const catInput = document.getElementById("form-category");
+
+          if (indicator) indicator.classList.remove("hidden");
+          const quote = await fetchQuoteFromWeb(clean);
+          if (indicator) indicator.classList.add("hidden");
+
+          if (quote) {
+            if (currInput && (!currInput.value || currInput.value === "0" || currInput.value === "0.00")) {
+              currInput.value = quote.price.toFixed(2);
+            }
+            if (nameInput && (!nameInput.value || nameInput.value === clean)) {
+              nameInput.value = quote.name;
+            }
+            if (catInput && quote.category) {
+              catInput.value = quote.category;
+            }
+            if (statusLabel) {
+              statusLabel.innerHTML = `<span class="text-emerald-400 flex items-center gap-1 font-semibold">✓ ${quote.name} encontrada ($${quote.price.toFixed(2)}) [${quote.source}]</span>`;
+            }
+          } else {
+            if (statusLabel) {
+              statusLabel.innerHTML = `<span class="text-amber-400 flex items-center gap-1 font-medium">Ativo não listado. Podes introduzir o nome e cotação manualmente.</span>`;
+            }
+          }
+        }, 500);
+      }
     };
 
     window.recalculateFormFees = function () {
@@ -1683,31 +1857,6 @@
       if (beEl) beEl.textContent = fmtUSD(be);
     };
 
-    window.debounceTickerLookup = function (ticker) {
-      clearTimeout(lookupDebounceTimer);
-      const clean = (ticker || "").trim().toUpperCase();
-      if (clean.length >= 2) {
-        lookupDebounceTimer = setTimeout(async () => {
-          const indicator = document.getElementById("ticker-fetch-indicator");
-          const currInput = document.getElementById("form-curr");
-          const nameInput = document.getElementById("form-name");
-
-          if (indicator) indicator.classList.remove("hidden");
-          const quote = await fetchQuoteFromWeb(clean);
-          if (indicator) indicator.classList.add("hidden");
-
-          if (quote) {
-            if (currInput && (!currInput.value || currInput.value === "0")) {
-              currInput.value = quote.price.toFixed(2);
-            }
-            if (nameInput && !nameInput.value) {
-              nameInput.value = quote.name;
-            }
-          }
-        }, 500);
-      }
-    };
-
     window.saveAsset = function (e) {
       if (e && e.preventDefault) e.preventDefault();
 
@@ -1725,7 +1874,7 @@
       const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
 
       if (!ticker) {
-        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação (ex: NVDA)."; errBox.classList.remove("hidden"); }
+        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação (ex: NOW, NVDA)."; errBox.classList.remove("hidden"); }
         return;
       }
       if (qty <= 0) {
@@ -1762,7 +1911,6 @@
         showToast(`Lote de ${ticker} atualizado com sucesso!`);
       } else {
         const newId = Date.now().toString();
-        // Remove dos eliminados caso o utilizador volte a adicionar
         deletedIdsSet.delete(newId);
         saveDeletedIds();
 
@@ -1798,7 +1946,6 @@
         "Eliminar Lote de Compra",
         `Tens a certeza de que desejas remover permanentemente esta compra de ${label}?`,
         () => {
-          // Marca o ID como permanentemente excluído para evitar re-download do Supabase
           deletedIdsSet.add(String(id));
           saveDeletedIds();
 
@@ -1823,7 +1970,6 @@
         `Eliminar Ativo ${ticker}`,
         msg,
         () => {
-          // Marca todos os IDs dos lotes deste ticker como eliminados
           lots.forEach(lot => {
             deletedIdsSet.add(String(lot.id));
           });
@@ -1846,24 +1992,24 @@
 
       const testItem = {
         id: newId,
-        ticker: "NVDA",
-        name: "NVIDIA Corporation",
+        ticker: "NOW",
+        name: "ServiceNow, Inc.",
         category: "Tecnologia",
         broker: "IBKR",
         buyDate: "2024-07-20",
-        qty: 4,
-        avgUSD: 142.00,
-        currUSD: 227.38,
+        qty: 3,
+        avgUSD: 130.00,
+        currUSD: 137.50,
         feesUSD: 0.35,
         eurUsdRateAtBuy: EUR_USD
       };
 
       portfolio.push(testItem);
-      expandedTickers.add("NVDA");
+      expandedTickers.add("NOW");
       saveLocalPortfolio();
       renderAll();
       syncAllToSupabase(false);
-      showToast("Nova compra de teste adicionada com sucesso!");
+      showToast("Compra de teste da ServiceNow (NOW) adicionada com sucesso!");
     };
 
     window.setCategoryFilter = function (cat) {
