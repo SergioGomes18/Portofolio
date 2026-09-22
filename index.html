@@ -984,7 +984,7 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-    // OBTENÇÃO E RENDERIZAÇÃO REAL DO HISTÓRICO NO GRÁFICO
+    // OBTENÇÃO E RENDERIZAÇÃO REAL DO HISTÓRICO NO GRÁFICO (COM ALINHAMENTO FORWARD-FILL)
     async function fetchChartHistory(days = null) {
       if (!days) {
         const daysMap = { '1M': 30, 'YTD': 180, '1A': 365, 'ALL': 730 };
@@ -1009,6 +1009,7 @@
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
 
+      // 1. Recolhe todas as datas de fecho disponíveis e ordena cronologicamente
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') {
@@ -1023,26 +1024,40 @@
       const marketCurve = [];
       const investedCurve = [];
 
+      // Memória de fecho anterior por ativo para evitar picos em feriados
+      const lastKnownPrice = {};
+      let lastKnownFx = EUR_USD;
+
       sortedDates.forEach(dateStr => {
         const pointDate = new Date(dateStr);
         let totalInvested = 0;
         let totalMarketUSD = 0;
-        const fxRate = history["EURUSD"] && history["EURUSD"][dateStr] ? history["EURUSD"][dateStr] : EUR_USD;
+
+        if (history["EURUSD"] && history["EURUSD"][dateStr]) {
+          lastKnownFx = history["EURUSD"][dateStr];
+        }
+        const fxRate = lastKnownFx || EUR_USD;
+
+        let hasActiveLots = false;
 
         portfolio.forEach(lot => {
           const lotDate = new Date(lot.buyDate || '2024-01-01');
           if (lotDate <= pointDate) {
+            hasActiveLots = true;
+
             const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || fxRate);
             totalInvested += costEUR;
 
-            const closeUSD = history[lot.ticker] && history[lot.ticker][dateStr] 
-              ? history[lot.ticker][dateStr] 
-              : lot.currUSD;
+            if (history[lot.ticker] && history[lot.ticker][dateStr]) {
+              lastKnownPrice[lot.ticker] = history[lot.ticker][dateStr];
+            }
+
+            const closeUSD = lastKnownPrice[lot.ticker] || lot.currUSD;
             totalMarketUSD += (lot.qty * closeUSD);
           }
         });
 
-        if (totalInvested > 0) {
+        if (hasActiveLots && totalInvested > 0 && totalMarketUSD > 0) {
           labels.push(dateStr.slice(5)); // MM-DD
           investedCurve.push(Number(totalInvested.toFixed(2)));
           marketCurve.push(Number((totalMarketUSD / fxRate).toFixed(2)));
@@ -1055,7 +1070,9 @@
         investedCurve[investedCurve.length - 1] = Number(metrics.totalInvEUR.toFixed(2));
       }
 
-      if (portfolioChartInstance) portfolioChartInstance.destroy();
+      if (portfolioChartInstance) {
+        portfolioChartInstance.destroy();
+      }
 
       const gradient = ctx.createLinearGradient(0, 0, 0, 240);
       gradient.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
@@ -1073,7 +1090,7 @@
               borderWidth: 2,
               fill: true,
               backgroundColor: gradient,
-              tension: 0.25,
+              tension: 0.2,
               pointRadius: 0,
               pointHoverRadius: 5,
               pointHoverBackgroundColor: '#38BDF8',
@@ -1087,6 +1104,7 @@
               borderWidth: 1.5,
               borderDash: [4, 4],
               fill: false,
+              tension: 0,
               pointRadius: 0
             }
           ]
@@ -1108,6 +1126,7 @@
               bodyColor: '#E2E8F0',
               borderColor: '#1F2C47',
               borderWidth: 1,
+              padding: 8,
               callbacks: {
                 label: (c) => ` ${c.dataset.label}: ${fmtEUR(c.parsed.y)}`
               }
@@ -1116,7 +1135,7 @@
           scales: {
             x: { 
               grid: { color: 'rgba(31, 44, 71, 0.3)' }, 
-              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 } } 
+              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, maxTicksLimit: 8 } 
             },
             y: { 
               grid: { color: 'rgba(31, 44, 71, 0.3)' }, 
