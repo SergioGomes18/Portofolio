@@ -533,7 +533,7 @@
 
   <!-- MOTOR JAVASCRIPT CONSOLIDADO -->
   <script>
-    // ENDPOINT ATUALIZADO DO GOOGLE APPS SCRIPT
+    // ENDPOINT DO GOOGLE APPS SCRIPT
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec";
 
     // SUPABASE CONFIG
@@ -988,17 +988,26 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-    // CONSTRUÇÃO DO GRÁFICO RESPEITANDO A DATA DA PRIMEIRA COMPRA
+    // CONSTRUÇÃO DO GRÁFICO (RESTRINGIDO ESTRITAMENTE À PRIMEIRA COMPRA)
     function buildRealHistoryChart(history) {
       const canvas = document.getElementById("portfolioChart");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
 
-      // 1. Identifica a data da primeira compra registada em carteira
-      const sortedLots = [...portfolio].sort((a, b) => (a.buyDate || '').localeCompare(b.buyDate || ''));
-      const firstBuyDateStr = sortedLots.length > 0 ? (sortedLots[0].buyDate || '2024-06-01') : '2024-06-01';
+      if (!portfolio || portfolio.length === 0) {
+        if (portfolioChartInstance) portfolioChartInstance.destroy();
+        return;
+      }
 
-      // 2. Recolhe todas as datas disponíveis
+      // 1. Encontra a data real mais antiga entre os lotes existentes
+      const validBuyDates = portfolio
+        .map(p => (p.buyDate || '').trim())
+        .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        .sort();
+
+      const earliestBuyDate = validBuyDates.length > 0 ? validBuyDates[0] : '2024-06-01';
+
+      // 2. Recolhe e ordena todas as datas devolvidas pelo histórico
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') {
@@ -1008,7 +1017,7 @@
       const allDates = Array.from(dateSet).sort();
       if (allDates.length === 0) return;
 
-      // 3. Determina a data de corte conforme o período escolhido
+      // 3. Determina a data de corte inicial conforme o botão selecionado
       const now = new Date();
       let targetCutoff = new Date();
 
@@ -1019,15 +1028,18 @@
       } else if (currentChartRange === 'YTD') {
         targetCutoff = new Date(now.getFullYear(), 0, 1);
       } else {
-        targetCutoff = new Date(firstBuyDateStr);
+        // TUDO: começa estritamente na data da primeira compra
+        targetCutoff = new Date(earliestBuyDate);
       }
 
-      // Trava dinâmica: NUNCA permite datas anteriores à primeira compra
       const targetCutoffStr = targetCutoff.toISOString().split("T")[0];
-      const effectiveCutoffStr = targetCutoffStr < firstBuyDateStr ? firstBuyDateStr : targetCutoffStr;
 
-      const sortedDates = allDates.filter(d => d >= effectiveCutoffStr);
-      if (sortedDates.length === 0) return;
+      // A data de início NUNCA pode ser anterior à primeira compra real
+      const finalStartStr = targetCutoffStr < earliestBuyDate ? earliestBuyDate : targetCutoffStr;
+
+      // Filtra estritamente as datas a partir da data de corte final
+      const filteredDates = allDates.filter(d => d >= finalStartStr);
+      if (filteredDates.length === 0) return;
 
       const labels = [];
       const marketCurve = [];
@@ -1036,9 +1048,9 @@
       const lastKnownPrice = {};
       let lastKnownFx = EUR_USD;
 
-      // Popula o último fecho conhecido até à data de corte para evitar saltos
+      // Pré-alimenta o fecho anterior até ao ponto de corte para não haver saltos
       allDates.forEach(dateStr => {
-        if (dateStr <= effectiveCutoffStr) {
+        if (dateStr <= finalStartStr) {
           if (history["EURUSD"] && history["EURUSD"][dateStr]) {
             lastKnownFx = history["EURUSD"][dateStr];
           }
@@ -1050,43 +1062,41 @@
         }
       });
 
-      // 4. Constrói a curva real do património
-      sortedDates.forEach(dateStr => {
-        const pointDate = new Date(dateStr);
-        let totalInvested = 0;
-        let totalMarketUSD = 0;
+      // 4. Constrói os pontos dia a dia
+      filteredDates.forEach(dateStr => {
+        let dayInvestedEUR = 0;
+        let dayMarketUSD = 0;
 
         if (history["EURUSD"] && history["EURUSD"][dateStr]) {
           lastKnownFx = history["EURUSD"][dateStr];
         }
         const fxRate = lastKnownFx || EUR_USD;
 
-        let hasActiveLots = false;
+        let hasBought = false;
 
         portfolio.forEach(lot => {
-          const lotDate = new Date(lot.buyDate || '2024-06-01');
-          if (lotDate <= pointDate) {
-            hasActiveLots = true;
-            const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || fxRate);
-            totalInvested += costEUR;
+          const lotDateStr = (lot.buyDate || '2024-06-01').trim();
+          if (lotDateStr <= dateStr) {
+            hasBought = true;
+            const lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || fxRate);
+            dayInvestedEUR += lotCostEUR;
 
             if (history[lot.ticker] && history[lot.ticker][dateStr]) {
               lastKnownPrice[lot.ticker] = history[lot.ticker][dateStr];
             }
-
-            const closeUSD = lastKnownPrice[lot.ticker] || lot.currUSD;
-            totalMarketUSD += (lot.qty * closeUSD);
+            const pUSD = lastKnownPrice[lot.ticker] || lot.currUSD;
+            dayMarketUSD += (lot.qty * pUSD);
           }
         });
 
-        if (hasActiveLots && totalInvested > 0 && totalMarketUSD > 0) {
-          labels.push(dateStr.slice(5)); // Formato MM-DD
-          investedCurve.push(Number(totalInvested.toFixed(2)));
-          marketCurve.push(Number((totalMarketUSD / fxRate).toFixed(2)));
+        if (hasBought && dayInvestedEUR > 0) {
+          labels.push(dateStr.slice(5)); // MM-DD
+          investedCurve.push(Number(dayInvestedEUR.toFixed(2)));
+          marketCurve.push(Number((dayMarketUSD / fxRate).toFixed(2)));
         }
       });
 
-      // Alinha o último ponto com os dados em tempo real da sessão
+      // Alinha o último ponto do gráfico com os valores a mercado atuais
       const metrics = calculatePortfolioMetrics();
       if (marketCurve.length > 0) {
         marketCurve[marketCurve.length - 1] = Number(metrics.totalCurrEUR.toFixed(2));
@@ -1137,11 +1147,11 @@
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { 
-              display: true, 
-              position: 'top', 
-              align: 'end', 
-              labels: { color: '#94A3B8', boxWidth: 12, font: { family: '"JetBrains Mono"', size: 10 } } 
+            legend: {
+              display: true,
+              position: 'top',
+              align: 'end',
+              labels: { color: '#94A3B8', boxWidth: 12, font: { family: '"JetBrains Mono"', size: 10 } }
             },
             tooltip: {
               backgroundColor: '#101726',
@@ -1156,13 +1166,13 @@
             }
           },
           scales: {
-            x: { 
-              grid: { color: 'rgba(31, 44, 71, 0.3)' }, 
-              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, maxTicksLimit: 8 } 
+            x: {
+              grid: { color: 'rgba(31, 44, 71, 0.3)' },
+              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, maxTicksLimit: 8 }
             },
-            y: { 
-              grid: { color: 'rgba(31, 44, 71, 0.3)' }, 
-              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, callback: v => v.toLocaleString('pt-PT') + ' €' } 
+            y: {
+              grid: { color: 'rgba(31, 44, 71, 0.3)' },
+              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, callback: v => v.toLocaleString('pt-PT') + ' €' }
             }
           }
         }
