@@ -92,9 +92,9 @@
               1€ = <span id="val-eurusd">1.0850</span>$
             </span>
             <span class="text-slate-600">•</span>
-            <span class="flex items-center gap-1 text-emerald-400 font-medium" id="header-cloud-status">
+            <span class="flex items-center gap-1 text-emerald-400 font-medium cursor-pointer" id="header-cloud-status" onclick="openSupabaseModal()" title="Estado da Sincronização">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Supabase Nuvem</span>
+              <span id="cloud-status-text">Nuvem Conectada</span>
             </span>
           </div>
         </div>
@@ -133,7 +133,7 @@
 
   <!-- Live Feedback Notification Banner -->
   <div id="status-toast" class="hidden fixed bottom-5 right-5 z-50 p-4 rounded-xl glass-panel border border-slate-700 shadow-2xl flex items-center gap-3 transition-all max-w-sm">
-    <div id="toast-icon" class="text-sky-400">
+    <div id="toast-icon" class="text-sky-400 shrink-0">
       <i data-lucide="info" class="w-5 h-5"></i>
     </div>
     <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
@@ -532,26 +532,35 @@
       <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
         <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2">
           <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-          <span>Todas as tuas compras e lotes estão sincronizados na nuvem Supabase.</span>
+          <span>A sincronização em nuvem e a proteção de dados locais estão ativas.</span>
         </div>
 
         <div>
           <label class="block font-semibold text-slate-300 mb-1">Project URL</label>
           <input 
             type="text" 
-            id="supabase-url" 
             value="https://efdnhtlixevwnakrfjuq.supabase.co" 
             class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-[11px]" 
             readonly
           >
         </div>
 
-        <div class="flex items-center justify-between pt-2">
-          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow transition active:scale-95">
-            Forçar Upload para Nuvem
+        <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+          <div class="font-semibold text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>Garantir suporte à coluna de Data no Supabase (Opcional):</span>
+          </div>
+          <p class="text-[11px] text-slate-400">No SQL Editor do teu Supabase, podes correr este comando simples se quiseres guardar a data exata de cada lote na nuvem:</p>
+          <code class="block bg-slate-900 p-2 rounded text-[10px] text-sky-300 font-mono select-all">alter table portfolio add column if not exists buy_date text;</code>
+        </div>
+
+        <!-- Safety Backup Recovery Button -->
+        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+          <button onclick="restoreFromSafetyBackup()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-medium rounded-lg text-xs transition active:scale-95" title="Recupera a última cópia antes da sincronização">
+            Recuperar Cópia de Segurança
           </button>
-          <button onclick="closeSupabaseModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition">
-            Fechar
+          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow transition active:scale-95">
+            Forçar Upload Agora
           </button>
         </div>
       </div>
@@ -575,7 +584,7 @@
       console.warn("Supabase init guard:", e);
     }
 
-    // Default portfolio illustrating multiple purchases for the same asset (e.g., NVDA has 2 lots)
+    // Default portfolio illustrating multiple purchases for the same asset
     const INITIAL_PORTFOLIO = [
       {
         id: "1",
@@ -660,7 +669,7 @@
     let currentChartTimeframe = 'TUDO';
     let lookupDebounceTimer = null;
     let chartHoverIndex = -1;
-    let expandedTickers = new Set(); // Tracks which tickers are expanded in the UI
+    let expandedTickers = new Set();
 
     // ==========================================
     // 2. UTILITY & FORMATTING FUNCTIONS
@@ -690,77 +699,158 @@
       lucide.createIcons();
 
       toast.classList.remove("hidden");
-      setTimeout(() => toast.classList.add("hidden"), 3500);
+      setTimeout(() => toast.classList.add("hidden"), 3800);
     }
 
     // ==========================================
-    // 3. STORAGE & SUPABASE SYNC ENGINE
+    // 3. STORAGE & SUPABASE RESILIENT ENGINE
     // ==========================================
     function loadLocalPortfolio() {
       const stored = localStorage.getItem("assetpulse_portfolio_lots_v3");
       if (stored) {
         try {
-          portfolio = JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            portfolio = parsed;
+            return;
+          }
         } catch (e) {
-          portfolio = [...INITIAL_PORTFOLIO];
+          console.warn("Parse error, using defaults");
         }
-      } else {
-        portfolio = [...INITIAL_PORTFOLIO];
-        saveLocalPortfolio();
       }
+      portfolio = [...INITIAL_PORTFOLIO];
+      saveLocalPortfolio();
     }
 
     function saveLocalPortfolio() {
-      localStorage.setItem("assetpulse_portfolio_lots_v3", JSON.stringify(portfolio));
+      try {
+        localStorage.setItem("assetpulse_portfolio_lots_v3", JSON.stringify(portfolio));
+        // Always maintain a safety backup snapshot to prevent any accidental wipe
+        if (portfolio.length > 0) {
+          localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
+        }
+      } catch (e) {
+        console.warn("Local storage write error:", e);
+      }
     }
 
+    window.restoreFromSafetyBackup = function() {
+      const snap = localStorage.getItem("assetpulse_portfolio_safety_snapshot");
+      if (snap) {
+        try {
+          portfolio = JSON.parse(snap);
+          saveLocalPortfolio();
+          renderAll();
+          showToast("Cópia de segurança restaurada com sucesso!");
+          syncAllToSupabase();
+        } catch (e) {
+          showToast("Erro ao ler cópia de segurança.", false);
+        }
+      } else {
+        showToast("Nenhuma cópia de segurança encontrada.", false);
+      }
+    };
+
+    /**
+     * Resilient Two-Way Merge:
+     * Never blindly wipe local items with an older Supabase snapshot.
+     */
     async function syncFromSupabase() {
       if (!supabaseClient) return;
       try {
         const { data, error } = await supabaseClient.from('portfolio').select('*');
-        if (!error && data && data.length > 0) {
-          portfolio = data.map(item => ({
-            id: String(item.id),
-            ticker: item.ticker,
-            name: item.name,
-            category: item.category,
-            broker: item.broker,
-            buyDate: item.buy_date || item.buyDate || '2024-01-01',
-            qty: parseFloat(item.qty),
-            avgUSD: parseFloat(item.avgUSD),
-            currUSD: parseFloat(item.currUSD),
-            feesUSD: parseFloat(item.feesUSD || 0)
-          }));
-          saveLocalPortfolio();
-          renderAll();
-        } else if (!error && (!data || data.length === 0)) {
-          syncAllToSupabase();
+        if (!error && Array.isArray(data)) {
+          if (data.length === 0 && portfolio.length > 0) {
+            // Remote is empty, push local portfolio to Supabase
+            await syncAllToSupabase();
+            return;
+          }
+
+          if (data.length > 0) {
+            // Map remote data
+            const remoteMap = new Map();
+            data.forEach(item => {
+              remoteMap.set(String(item.id), {
+                id: String(item.id),
+                ticker: item.ticker,
+                name: item.name,
+                category: item.category,
+                broker: item.broker,
+                buyDate: item.buy_date || item.buyDate || '2024-01-01',
+                qty: parseFloat(item.qty),
+                avgUSD: parseFloat(item.avgUSD),
+                currUSD: parseFloat(item.currUSD),
+                feesUSD: parseFloat(item.feesUSD || 0)
+              });
+            });
+
+            // Merge local and remote:
+            // 1. Keep all items that exist locally (so new purchases aren't wiped)
+            // 2. Add any items from remote that might not be in local
+            const merged = [];
+            const processedIds = new Set();
+
+            // Prioritize local items (which have the latest user actions)
+            portfolio.forEach(localItem => {
+              merged.push(localItem);
+              processedIds.add(String(localItem.id));
+            });
+
+            // Add any remote items that don't exist locally
+            remoteMap.forEach((remoteItem, id) => {
+              if (!processedIds.has(id)) {
+                merged.push(remoteItem);
+                processedIds.add(id);
+              }
+            });
+
+            portfolio = merged;
+            saveLocalPortfolio();
+            renderAll();
+
+            // Push any newly merged items back up to Supabase to ensure parity
+            await syncAllToSupabase(false);
+          }
         }
       } catch (err) {
-        console.warn("Supabase fetch fallback:", err);
+        console.warn("Supabase fetch guard:", err);
       }
     }
 
-    async function syncAllToSupabase() {
+    async function syncAllToSupabase(showFeedback = true) {
       if (!supabaseClient || portfolio.length === 0) return;
+      
+      // Attempt 1: Full payload including buy_date
+      const payloadWithDate = portfolio.map(item => ({
+        id: String(item.id),
+        ticker: item.ticker,
+        name: item.name,
+        category: item.category,
+        broker: item.broker,
+        buy_date: item.buyDate || '2024-01-01',
+        qty: item.qty,
+        avgUSD: item.avgUSD,
+        currUSD: item.currUSD,
+        feesUSD: item.feesUSD || 0,
+        updated_at: new Date().toISOString()
+      }));
+
       try {
-        const payload = portfolio.map(item => ({
-          id: String(item.id),
-          ticker: item.ticker,
-          name: item.name,
-          category: item.category,
-          broker: item.broker,
-          buy_date: item.buyDate || '2024-01-01',
-          qty: item.qty,
-          avgUSD: item.avgUSD,
-          currUSD: item.currUSD,
-          feesUSD: item.feesUSD || 0,
-          updated_at: new Date().toISOString()
-        }));
-        await supabaseClient.from('portfolio').upsert(payload, { onConflict: 'id' });
-        showToast("Carteira sincronizada com a nuvem Supabase!");
+        const { error } = await supabaseClient.from('portfolio').upsert(payloadWithDate, { onConflict: 'id' });
+        if (error) {
+          // If error is due to missing 'buy_date' column, fallback without buy_date so it never fails!
+          const payloadWithoutDate = payloadWithDate.map(({ buy_date, ...rest }) => rest);
+          const { error: err2 } = await supabaseClient.from('portfolio').upsert(payloadWithoutDate, { onConflict: 'id' });
+          if (err2) {
+            console.warn("Supabase fallback upsert error:", err2);
+          } else if (showFeedback) {
+            showToast("Dados guardados na nuvem Supabase!");
+          }
+        } else if (showFeedback) {
+          showToast("Dados guardados na nuvem Supabase!");
+        }
       } catch (e) {
-        console.warn("Supabase upsert error:", e);
+        console.warn("Supabase network error:", e);
       }
     }
 
@@ -846,7 +936,6 @@
       for (const ticker of uniqueTickers) {
         const quote = await fetchQuoteFromWeb(ticker);
         if (quote && quote.price > 0) {
-          // Update all buy lots for this ticker with the latest market price
           portfolio.forEach(item => {
             if (item.ticker === ticker) {
               item.currUSD = quote.price;
@@ -869,7 +958,7 @@
 
       if (manual) {
         showToast(`${updatedCount} cotações atualizadas em tempo real!`);
-        syncAllToSupabase();
+        syncAllToSupabase(false);
       }
     }
 
@@ -882,7 +971,6 @@
       let totalCurrEUR = 0;
       let totalCurrUSD = 0;
 
-      // Group individual purchase lots by Ticker
       const groupedMap = new Map();
 
       portfolio.forEach(lot => {
@@ -926,7 +1014,6 @@
         groupedMap.get(lot.ticker).lots.push(calculatedLot);
       });
 
-      // Compute consolidated statistics for each asset group
       const consolidatedAssets = Array.from(groupedMap.values()).map(asset => {
         let totalQty = 0;
         let totalCostBasisUSD = 0;
@@ -935,7 +1022,6 @@
         let totalInvEUR_asset = 0;
         let totalCurrEUR_asset = 0;
 
-        // Sort lots by purchase date
         asset.lots.sort((a, b) => (a.buyDate || '').localeCompare(b.buyDate || ''));
 
         asset.lots.forEach(lot => {
@@ -953,7 +1039,6 @@
         const plUSD = totalValUSD - (totalCostBasisUSD + totalFeesUSD);
         const plPct = totalInvEUR_asset > 0 ? (plEUR / totalInvEUR_asset) * 100 : 0;
 
-        // Annotate each lot with its weight inside this position
         asset.lots = asset.lots.map(lot => ({
           ...lot,
           lotPositionWeight: totalQty > 0 ? (lot.qty / totalQty) * 100 : 0
@@ -1065,17 +1150,15 @@
         const badgeBg = isPos ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
         const isExpanded = expandedTickers.has(asset.ticker);
 
-        // PARENT CONSOLIDATED ROW
+        // Parent Consolidated Row
         const parentTr = document.createElement("tr");
         parentTr.className = `cursor-pointer transition-colors border-b border-slate-800/60 ${isExpanded ? 'bg-slate-900/90' : 'hover:bg-slate-800/40 bg-slate-950/30'}`;
         parentTr.onclick = (e) => {
-          // If clicked on an action button, don't toggle
           if (e.target.closest('button')) return;
           toggleTickerExpand(asset.ticker);
         };
 
         parentTr.innerHTML = `
-          <!-- Ticker & Expander Chevron -->
           <td class="py-3 px-3 sm:px-4">
             <div class="flex items-center gap-2">
               <div class="p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-400 transition">
@@ -1096,33 +1179,27 @@
             </div>
           </td>
 
-          <!-- Quantidade Total -->
           <td class="py-3 px-3 text-right font-mono font-medium text-slate-100">
             ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
           </td>
 
-          <!-- Preço Médio Ponderado (PMP) -->
           <td class="py-3 px-3 text-right font-mono">
             <div class="text-slate-200 font-bold">${fmtUSD(asset.pmpUSD)}</div>
             <div class="text-[10px] text-slate-500" title="Preço de Equilíbrio consolidado">BE: ${fmtUSD(asset.breakEvenUSD)}</div>
           </td>
 
-          <!-- Cotação Atual de Mercado -->
           <td class="py-3 px-3 text-right font-mono font-bold text-white">
             ${fmtUSD(asset.currUSD)}
           </td>
 
-          <!-- Capital Investido Total (€) -->
           <td class="py-3 px-3 text-right font-mono text-slate-300">
             ${fmtEUR(asset.totalInvEUR)}
           </td>
 
-          <!-- Valor Atual Total (€) -->
           <td class="py-3 px-3 text-right font-mono font-bold text-white">
             ${fmtEUR(asset.totalCurrEUR)}
           </td>
 
-          <!-- Mais-Valia Líquida Consolidada -->
           <td class="py-3 px-3 text-right font-mono">
             <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
             <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5 font-bold">
@@ -1130,7 +1207,6 @@
             </div>
           </td>
 
-          <!-- Peso / Alocação na Carteira -->
           <td class="py-3 px-3 text-center">
             <div class="w-16 sm:w-20 mx-auto">
               <div class="text-[10px] font-mono text-slate-400 mb-1">${allocPct.toFixed(1)}%</div>
@@ -1140,7 +1216,6 @@
             </div>
           </td>
 
-          <!-- Ações -->
           <td class="py-3 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
               <button onclick="openModalForTicker('${asset.ticker}')" class="px-2 py-1 text-[11px] font-semibold text-sky-400 hover:text-white bg-sky-500/10 hover:bg-sky-600 rounded-lg border border-sky-500/20 transition active:scale-95 flex items-center gap-1" title="Adicionar Compra a este Ativo">
@@ -1152,7 +1227,7 @@
         `;
         tbody.appendChild(parentTr);
 
-        // EXPANDED ACCORDION: DETAIL OF EVERY INDIVIDUAL PURCHASE LOT
+        // Expanded Purchases Accordion
         if (isExpanded) {
           const detailTr = document.createElement("tr");
           detailTr.className = "bg-slate-950/90 border-b border-slate-800/80";
@@ -1385,7 +1460,7 @@
         ctx.stroke();
       }
 
-      // Baseline
+      // Cost Baseline
       ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
@@ -1399,7 +1474,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Gradient
+      // Gradient Fill
       const isPositive = metrics.totalPLEUR >= 0;
       const grad = ctx.createLinearGradient(0, padTop, 0, H - padBottom);
       if (isPositive) {
@@ -1436,7 +1511,7 @@
       });
       ctx.stroke();
 
-      // Scrubber
+      // Scrubber Pin
       const activeIdx = (chartHoverIndex >= 0 && chartHoverIndex < points.length) ? chartHoverIndex : (points.length - 1);
       const activePt = points[activeIdx];
       const hx = getX(activeIdx);
@@ -1695,7 +1770,6 @@
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
       if (currUSD <= 0) {
-        // If there's already another lot of this ticker, inherit its latest market price
         const sibling = portfolio.find(it => it.ticker === ticker);
         currUSD = sibling ? sibling.currUSD : (TICKER_DIRECTORY[ticker]?.price || avgUSD);
       }
@@ -1724,14 +1798,17 @@
           feesUSD
         };
         portfolio.push(newLot);
-        expandedTickers.add(ticker); // Automatically open the accordion for this ticker so user sees the new lot
-        showToast(`Nova compra de ${ticker} adicionada como lote independente!`);
+        expandedTickers.add(ticker);
+        showToast(`Nova compra de ${ticker} adicionada e guardada!`);
       }
 
+      // Persist locally first immediately
       saveLocalPortfolio();
       closeModal();
       renderAll();
-      syncAllToSupabase();
+
+      // Persist to Supabase in the background
+      syncAllToSupabase(false);
     };
 
     window.deleteAsset = function (id) {
@@ -1764,7 +1841,7 @@
       expandedTickers.add("NVDA");
       saveLocalPortfolio();
       renderAll();
-      syncAllToSupabase();
+      syncAllToSupabase(false);
       showToast("Nova compra de teste (#3 para NVDA) adicionada com sucesso!");
     };
 
@@ -1811,14 +1888,21 @@
     // 8. APPLICATION INITIALIZATION
     // ==========================================
     window.addEventListener("DOMContentLoaded", async () => {
+      // 1. Instantly load local data so user sees their work right away
       loadLocalPortfolio();
       setupChartInteractions();
       renderAll();
 
+      // 2. Fetch exchange rate
       await fetchLiveExchangeRate();
+
+      // 3. Perform smart merge with Supabase without destroying local changes
       await syncFromSupabase();
+
+      // 4. Update live stock quotes
       await fetchLiveStockQuotes();
 
+      // Polling for quotes every 60 seconds
       setInterval(() => {
         fetchLiveStockQuotes();
       }, 60000);
