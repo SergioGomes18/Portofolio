@@ -4,16 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Portfolio Tracker Pro | Gestão Multi-Lotes</title>
+  <title>AssetPulse | Gestão de Carteira & Rentabilidade</title>
 
   <!-- Tailwind CSS & Supabase SDK -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <!-- Tipografia de Alta Legibilidade: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -24,17 +24,24 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            obsidian: {
-              950: '#030712',
-              900: '#0b0f19',
-              850: '#111827',
-              800: '#1f2937',
-              700: '#374151',
-            }
+            surface: {
+              base: '#0B0F17',     // Fundo principal suave e repousante
+              card: '#111726',     // Cartões de leitura confortável
+              elevated: '#172033', // Elementos destacados e modais
+              border: '#1F2B42',   // Linhas e separadores finos
+              subtle: '#283754'
+            },
+            accent: {
+              DEFAULT: '#3B82F6',
+              light: '#60A5FA',
+              glow: 'rgba(59, 130, 246, 0.15)'
+            },
+            profit: '#10B981',     // Verde esmeralda suave (não ofuscante)
+            loss: '#F43F5E'        // Rosa coral legível
           }
         }
       }
@@ -43,338 +50,327 @@
 
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #030712;
-      color: #f3f4f6;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background-color: #0B0F17;
+      color: #E2E8F0;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar {
-      height: 5px;
-      width: 5px;
+      height: 4px;
+      width: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(11, 15, 25, 0.7);
+      background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(75, 85, 99, 0.4);
+      background: #283754;
       border-radius: 9999px;
     }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: rgba(156, 163, 175, 0.6);
+    .app-card {
+      background: #111726;
+      border: 1px solid #1F2B42;
+      border-radius: 1rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .app-card:hover {
+      border-color: #283754;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
 
-  <!-- ==================== HEADER ==================== -->
-  <header class="sticky top-0 z-30 glass-panel border-b border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+  <!-- ==================== HEADER LIMPO & RESPONSIVO ==================== -->
+  <header class="sticky top-0 z-30 bg-[#0B0F17]/90 backdrop-blur-md border-b border-surface-border">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
       
-      <!-- Brand Logo & Live Status -->
-      <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
-        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
-          <i data-lucide="layers" class="w-5 h-5"></i>
+      <!-- Marca & Indicadores rápidos -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+          <i data-lucide="line-chart" class="w-4 h-4"></i>
         </div>
         <div>
-          <div class="flex items-center gap-1.5">
-            <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white font-mono">AssetPulse</h1>
-            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">MULTI-LOTES</span>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white tracking-tight text-sm sm:text-base font-sans">AssetPulse</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-surface-elevated text-slate-400 border border-surface-border font-mono">MULTI-LOTES</span>
           </div>
-          <div class="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
-            <span id="header-eurusd" class="hover:text-sky-300 transition cursor-pointer" onclick="fetchLiveExchangeRate(true)" title="Atualizar taxa de câmbio EUR/USD">
-              1€ = <span id="val-eurusd">1.0850</span>$
-            </span>
+          <div class="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
+            <button onclick="fetchLiveExchangeRate(true)" class="hover:text-white transition flex items-center gap-1" title="Atualizar câmbio EUR/USD">
+              <span>1€ = <strong id="val-eurusd" class="text-slate-200">1.0850</strong>$</span>
+            </button>
             <span class="text-slate-600">•</span>
-            <span class="flex items-center gap-1 text-emerald-400 font-medium cursor-pointer" id="header-cloud-status" onclick="openSupabaseModal()" title="Estado do Supabase">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span id="cloud-status-text">Nuvem Conectada</span>
+            <span class="inline-flex items-center gap-1.5 text-emerald-400 text-[10px] cursor-pointer" onclick="openSupabaseModal()" title="Sincronização Cloud">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="cloud-status-text">Cloud</span>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Action Buttons Bar -->
-      <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto custom-scrollbar py-1">
-        
-        <!-- Live Quotes Refresh -->
-        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Atualizar Cotações de Mercado">
-          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-sky-400"></i>
-          <span class="hidden md:inline">Cotações Reais</span>
+      <!-- Barra de Ações Rápidas -->
+      <div class="flex items-center gap-2">
+        <!-- Atualizar Cotações -->
+        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="p-2 sm:px-3 sm:py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-elevated border border-surface-border rounded-lg transition active:scale-95 flex items-center gap-1.5" title="Atualizar Cotações de Mercado">
+          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-blue-400"></i>
+          <span class="hidden sm:inline">Cotações</span>
         </button>
 
-        <!-- Test Random Purchase -->
-        <button onclick="injectTestAsset()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Inserir Compra de Teste">
-          <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
-          <span class="hidden lg:inline">Testar Compra</span>
+        <!-- Testar Compra (NOW) -->
+        <button onclick="injectTestAsset()" class="p-2 sm:px-3 sm:py-1.5 text-xs font-medium text-amber-300 hover:text-amber-200 bg-surface-card hover:bg-surface-elevated border border-surface-border rounded-lg transition active:scale-95 flex items-center gap-1.5" title="Adicionar Compra de Teste (NOW)">
+          <i data-lucide="flask-conical" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span class="hidden md:inline">Testar Compra</span>
         </button>
 
-        <!-- Supabase Cloud Modal -->
-        <button onclick="openSupabaseModal()" class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0">
+        <!-- Base de Dados / Nuvem -->
+        <button onclick="openSupabaseModal()" class="p-2 sm:px-3 sm:py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-elevated border border-surface-border rounded-lg transition active:scale-95 flex items-center gap-1.5" title="Opções da Base de Dados">
           <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
           <span class="hidden sm:inline">Nuvem</span>
         </button>
 
-        <!-- New Buy Order Button -->
-        <button onclick="openModal()" class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow-md shadow-sky-600/30 transition active:scale-95 shrink-0">
-          <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
-          <span>+ Nova Compra</span>
+        <!-- Botão Principal: Nova Compra -->
+        <button onclick="openModal()" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-sm transition active:scale-95 flex items-center gap-1.5 shrink-0">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Nova Compra</span>
         </button>
       </div>
 
     </div>
   </header>
 
-  <!-- Live Feedback Notification Banner -->
-  <div id="status-toast" class="hidden fixed bottom-5 right-5 z-50 p-4 rounded-xl glass-panel border border-slate-700 shadow-2xl flex items-center gap-3 transition-all max-w-sm">
-    <div id="toast-icon" class="text-sky-400 shrink-0">
-      <i data-lucide="info" class="w-5 h-5"></i>
+  <!-- Notificação Toast Flutuante -->
+  <div id="status-toast" class="hidden fixed bottom-5 right-5 z-50 p-3.5 rounded-xl bg-surface-elevated border border-surface-border shadow-xl flex items-center gap-3 transition-all max-w-sm">
+    <div id="toast-icon" class="text-blue-400 shrink-0">
+      <i data-lucide="info" class="w-4 h-4"></i>
     </div>
-    <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
+    <div class="text-xs text-slate-200 font-medium" id="toast-message">Notificação</div>
   </div>
 
-  <!-- Confirmation Modal -->
-  <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 hidden">
-    <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
-          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+  <!-- Modal de Confirmação Suave -->
+  <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden">
+    <div class="bg-surface-card border border-surface-border w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i>
         </div>
         <div>
           <h3 class="text-sm font-bold text-white" id="confirm-modal-title">Confirmar Eliminação</h3>
-          <p class="text-xs text-slate-400 mt-0.5" id="confirm-modal-message">Tens a certeza de que desejas avançar com esta ação?</p>
+          <p class="text-xs text-slate-400 mt-1 leading-relaxed" id="confirm-modal-message">Tens a certeza de que desejas avançar com esta ação?</p>
         </div>
       </div>
-      <div class="flex items-center justify-end gap-2.5 pt-2">
-        <button type="button" onclick="closeConfirmModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition">
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-border/60">
+        <button type="button" onclick="closeConfirmModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-elevated rounded-lg transition">
           Cancelar
         </button>
-        <button type="button" id="confirm-modal-action-btn" onclick="executeConfirmedAction()" class="px-4 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/30 transition active:scale-95">
+        <button type="button" id="confirm-modal-action-btn" onclick="executeConfirmedAction()" class="px-4 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition active:scale-95">
           Eliminar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== MAIN CONTENT ==================== -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 space-y-6">
+  <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-    <!-- KPI Summary Dashboard -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <!-- KPI PRINCIPAIS: Cartões Arejados e de Rápida Consulta -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
       
-      <!-- Total Invested -->
-      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden">
-        <div class="flex items-center justify-between text-slate-400 mb-1.5">
-          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Investimento Total</span>
-          <div class="p-1.5 rounded-lg bg-slate-800/80 text-sky-400">
-            <i data-lucide="wallet" class="w-4 h-4"></i>
-          </div>
+      <!-- Património Atual -->
+      <div class="app-card p-4 sm:p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Património Atual</span>
+          <i data-lucide="wallet" class="w-4 h-4 text-blue-400"></i>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
-        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-total-invested-usd">$0.00 (custo total)</div>
+        <div class="text-xl sm:text-2xl font-bold font-mono text-white tracking-tight" id="kpi-current-value">0,00 €</div>
+        <div class="text-[11px] text-slate-400 font-mono mt-1" id="kpi-current-value-usd">$0.00 em tempo real</div>
       </div>
 
-      <!-- Current Portfolio Value -->
-      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden">
-        <div class="flex items-center justify-between text-slate-400 mb-1.5">
-          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Património Atual</span>
-          <div class="p-1.5 rounded-lg bg-slate-800/80 text-indigo-400">
-            <i data-lucide="layers" class="w-4 h-4"></i>
-          </div>
+      <!-- Investimento Total -->
+      <div class="app-card p-4 sm:p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Capital Investido</span>
+          <i data-lucide="arrow-down-left" class="w-4 h-4 text-slate-400"></i>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
-        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 (em tempo real)</div>
+        <div class="text-xl sm:text-2xl font-bold font-mono text-slate-200 tracking-tight" id="kpi-total-invested">0,00 €</div>
+        <div class="text-[11px] text-slate-400 font-mono mt-1" id="kpi-total-invested-usd">$0.00 de custo base</div>
       </div>
 
-      <!-- Total Net Profit/Loss (%) -->
-      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden border border-emerald-500/20">
-        <div class="flex items-center justify-between text-slate-400 mb-1.5">
-          <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-300">Retorno Total (%)</span>
-          <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400" id="kpi-pl-icon-container">
+      <!-- Retorno Global (%) e Valor Líquido -->
+      <div class="app-card p-4 sm:p-5 flex flex-col justify-between border-profit/20 bg-gradient-to-b from-profit/[0.04] to-transparent">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Retorno Total</span>
+          <div id="kpi-pl-icon-container" class="text-profit">
             <i data-lucide="trending-up" class="w-4 h-4"></i>
           </div>
         </div>
-        <div class="text-xl sm:text-3xl font-extrabold font-mono tracking-tight text-emerald-400" id="kpi-pl-pct">+0.00%</div>
-        <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1 font-medium" id="kpi-pl-eur-container">
-          <span id="kpi-pl-eur" class="text-emerald-400">+0,00 €</span>
-          <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00)</span>
+        <div class="text-2xl sm:text-3xl font-extrabold font-mono text-profit tracking-tight" id="kpi-pl-pct">+0.00%</div>
+        <div class="flex items-center gap-1.5 text-xs font-mono font-medium mt-1">
+          <span id="kpi-pl-eur" class="text-profit">+0,00 €</span>
+          <span class="text-slate-400 font-normal" id="kpi-pl-usd">($0.00)</span>
         </div>
       </div>
 
-      <!-- Portfolio Best / Worst Performer -->
-      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden flex flex-col justify-between">
+      <!-- Melhores e Menores Ganhos -->
+      <div class="app-card p-4 sm:p-5 flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-1">
-          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Top Rentabilidades</span>
-          <div class="p-1.5 rounded-lg bg-slate-800/80 text-amber-400">
-            <i data-lucide="award" class="w-4 h-4"></i>
-          </div>
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Destaques</span>
+          <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
         </div>
-        <div class="space-y-1.5">
+        <div class="space-y-1.5 py-0.5">
           <div class="flex justify-between items-center text-xs font-mono">
-            <span class="text-slate-400">Maior ganho:</span>
-            <span class="font-bold text-emerald-400" id="kpi-best-asset">-</span>
+            <span class="text-slate-400">Topo:</span>
+            <span class="font-bold text-profit" id="kpi-best-asset">-</span>
           </div>
           <div class="flex justify-between items-center text-xs font-mono">
-            <span class="text-slate-400">Menor ganho:</span>
-            <span class="font-bold text-rose-400" id="kpi-worst-asset">-</span>
+            <span class="text-slate-400">Base:</span>
+            <span class="font-bold text-loss" id="kpi-worst-asset">-</span>
           </div>
         </div>
       </div>
 
     </section>
 
-    <!-- PERCENTAGE PERFORMANCE DASHBOARD (Decomposição Cambial & Heatmap) -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- PAINEL DE VALORIZAÇÃO LIMPO: Decomposição Cambial & Ranking -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-      <!-- FX vs Asset Return Breakdown -->
-      <div class="p-5 rounded-2xl glass-panel space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-          <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
-              <i data-lucide="scale" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Decomposição do Retorno</h3>
-              <p class="text-[10px] text-slate-400">Origem da tua valorização percentual</p>
-            </div>
-          </div>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">EUR vs USD</span>
+      <!-- Decomposição: Ação vs Moeda (EUR/USD) -->
+      <div class="app-card p-5 lg:col-span-5 space-y-4">
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <i data-lucide="sliders" class="w-3.5 h-3.5 text-blue-400"></i>
+            Origem da Rentabilidade
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Separação entre a valorização das ações e a variação do Dólar.</p>
         </div>
 
         <div class="space-y-3 font-mono">
-          <!-- Stock Real Appreciation in USD -->
-          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-400">Subida Real dos Ativos ($ USD):</span>
+          <!-- Subida em USD -->
+          <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="text-slate-300">Desempenho das Ações ($ USD)</span>
               <span class="font-bold text-white" id="perf-asset-usd-pct">+0.00%</span>
             </div>
-            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div id="bar-perf-asset" class="h-full bg-indigo-500 rounded-full transition-all" style="width: 50%"></div>
+            <div class="w-full h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+              <div id="bar-perf-asset" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 50%"></div>
             </div>
-            <span class="text-[10px] text-slate-500 block">Desempenho puro de Wall Street sem efeito da taxa de câmbio</span>
+            <span class="text-[10px] text-slate-400 mt-1 block">Subida ou descida pura de mercado em Wall Street</span>
           </div>
 
-          <!-- FX Currency Impact -->
-          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-400">Impacto Cambial EUR/USD:</span>
-              <span class="font-bold text-sky-400" id="perf-fx-impact-pct">+0.00%</span>
+          <!-- Impacto Cambial EUR/USD -->
+          <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="text-slate-300">Efeito Cambial EUR / USD</span>
+              <span class="font-bold text-blue-400" id="perf-fx-impact-pct">+0.00%</span>
             </div>
-            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div id="bar-perf-fx" class="h-full bg-sky-400 rounded-full transition-all" style="width: 50%"></div>
+            <div class="w-full h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+              <div id="bar-perf-fx" class="h-full bg-blue-400 rounded-full transition-all duration-500" style="width: 50%"></div>
             </div>
-            <span class="text-[10px] text-slate-500 block">Variação da moeda entre o dia da compra e a cotação atual</span>
+            <span class="text-[10px] text-slate-400 mt-1 block">Variação cambial desde as datas de aquisição até hoje</span>
           </div>
 
-          <!-- Total Real Return in EUR -->
-          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-            <span class="text-xs text-emerald-300 font-semibold">Rentabilidade Efetiva em Euros:</span>
-            <span class="text-base font-extrabold text-emerald-400 font-mono" id="perf-total-eur-pct">+0.00%</span>
+          <!-- Resultado Final Consolidado em Euros -->
+          <div class="p-3 rounded-xl bg-profit/10 border border-profit/20 flex items-center justify-between">
+            <span class="text-xs text-profit font-semibold">Rentabilidade Efetiva em Euros:</span>
+            <span class="text-base font-extrabold text-profit" id="perf-total-eur-pct">+0.00%</span>
           </div>
         </div>
       </div>
 
-      <!-- Relative Ranking Bar Heatmap -->
-      <div class="p-5 rounded-2xl glass-panel space-y-3 lg:col-span-2 flex flex-col justify-between">
-        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-          <div class="flex items-center gap-2">
-            <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
-              <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Ranking de Rentabilidade (%)</h3>
-              <p class="text-[10px] text-slate-400">Comparação percentual direta entre todas as tuas posições</p>
-            </div>
+      <!-- Ranking Visual por % de Retorno -->
+      <div class="app-card p-5 lg:col-span-7 flex flex-col justify-between space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-profit"></i>
+              Ranking de Rentabilidade (%)
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">Comparação percentual direta das posições da carteira.</p>
           </div>
-          <span class="text-[10px] font-mono text-slate-400">Ordenado por % de ganho</span>
+          <span class="text-[11px] font-mono text-slate-400 bg-surface-base px-2 py-0.5 rounded border border-surface-border">100% Real</span>
         </div>
 
-        <div id="ranking-bars-container" class="space-y-2.5 py-1">
-          <!-- Dynamic Ranking Bars -->
+        <div id="ranking-bars-container" class="space-y-3 my-auto py-1">
+          <!-- Preenchido dinamicamente via JS -->
         </div>
 
-        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-          <span>* Considera o Preço Médio Ponderado e todas as comissões pagas.</span>
-          <span class="text-sky-400">100% em Tempo Real</span>
+        <div class="text-[11px] text-slate-400 border-t border-surface-border/60 pt-2 flex items-center justify-between font-mono">
+          <span>* Inclui o preço médio ponderado e todas as comissões pagas.</span>
+          <span id="ranking-count-label">0 posições</span>
         </div>
       </div>
 
     </section>
 
-    <!-- Consolidated Assets Section -->
-    <section class="rounded-2xl glass-panel overflow-hidden flex flex-col">
+    <!-- LISTA CONSOLIDADA DE ATIVOS (Limpa, legível em telemóvel e computador) -->
+    <section class="app-card overflow-hidden">
       
-      <!-- Table Header & Filters -->
-      <div class="p-3.5 sm:p-4 border-b border-slate-800 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+      <!-- Cabeçalho da Tabela e Filtros por Categoria -->
+      <div class="p-4 sm:p-5 border-b border-surface-border flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="briefcase" class="w-4 h-4 text-sky-400"></i>
-              Ativos Consolidados & Posições
+            <h2 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+              <i data-lucide="briefcase" class="w-4 h-4 text-blue-400"></i>
+              Ativos & Posições Consolidadas
             </h2>
-            <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300" id="table-asset-count">0 ativos</span>
+            <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-surface-elevated text-slate-300 border border-surface-border" id="table-asset-count">0 ativos</span>
           </div>
-          <p class="text-[11px] text-slate-400 mt-0.5">Clica em qualquer linha para expandir e ver as percentagens individuais de cada compra.</p>
+          <p class="text-xs text-slate-400 mt-0.5">Toca ou clica em qualquer ativo para expandir e ver os lotes e o efeito cambial individual.</p>
         </div>
 
-        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
-          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-sky-600 text-white transition whitespace-nowrap" data-cat="ALL">Todos</button>
-          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
-          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
-          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap" data-cat="ETF">ETFs</button>
+        <!-- Filtros Rápidos -->
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
+          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-blue-600 text-white transition whitespace-nowrap" data-cat="ALL">Todos</button>
+          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
+          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
+          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap" data-cat="ETF">ETFs</button>
         </div>
       </div>
 
-      <!-- Responsive Table View -->
+      <!-- Tabela com Espaçamento Amplo e Confortável -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-slate-800/80 bg-slate-950/60 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-3 sm:px-4">Ativo</th>
-              <th class="py-3 px-3 text-right">Qtd Total</th>
-              <th class="py-3 px-3 text-right">PMP ($)</th>
+            <tr class="border-b border-surface-border text-slate-400 font-mono text-[11px] uppercase tracking-wider bg-surface-base/50">
+              <th class="py-3 px-4">Ativo</th>
+              <th class="py-3 px-3 text-right">Qtd</th>
+              <th class="py-3 px-3 text-right">Preço Médio ($)</th>
               <th class="py-3 px-3 text-right">Cotação ($)</th>
               <th class="py-3 px-3 text-right">Investido (€)</th>
               <th class="py-3 px-3 text-right">Valor Atual (€)</th>
-              <th class="py-3 px-3 text-right">Valorização (%)</th>
+              <th class="py-3 px-4 text-right">Rentabilidade (%)</th>
               <th class="py-3 px-3 text-center">Peso</th>
               <th class="py-3 px-3 text-center">Ações</th>
             </tr>
           </thead>
-          <tbody id="portfolio-table-body" class="divide-y divide-slate-800/50 font-sans">
-            <!-- Dynamic Rows -->
+          <tbody id="portfolio-table-body" class="divide-y divide-surface-border/60">
+            <!-- Linhas Inseridas Dinamicamente -->
           </tbody>
         </table>
       </div>
 
-      <!-- Empty State -->
-      <div id="table-empty-state" class="hidden p-12 text-center">
-        <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-400 mb-3">
+      <!-- Estado Vazio Amigável -->
+      <div id="table-empty-state" class="hidden p-12 text-center space-y-3">
+        <div class="w-12 h-12 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center mx-auto text-slate-400">
           <i data-lucide="inbox" class="w-6 h-6"></i>
         </div>
-        <h3 class="text-sm font-semibold text-slate-200">A tua carteira está vazia</h3>
-        <p class="text-xs text-slate-500 mt-1">Todas as posições foram removidas com sucesso.</p>
-        <div class="mt-4 flex items-center justify-center gap-3">
-          <button onclick="openModal()" class="px-4 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md transition">
+        <div>
+          <h3 class="text-sm font-semibold text-slate-200">A tua carteira está vazia</h3>
+          <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Regista a tua primeira compra para começares a acompanhar a tua rentabilidade em tempo real.</p>
+        </div>
+        <div class="pt-2 flex items-center justify-center gap-3">
+          <button onclick="openModal()" class="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow transition">
             + Registar Nova Compra
           </button>
-          <button onclick="resetToDemoPortfolio()" class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition">
-            Repor Ativos de Demonstração
+          <button onclick="resetToDemoPortfolio()" class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-elevated hover:bg-surface-border rounded-xl transition">
+            Repor Ativos de Teste
           </button>
         </div>
       </div>
 
-      <!-- Table Footer Status -->
-      <div class="px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1.5 font-mono">
-        <span class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-          <span>Clica num ativo para ver a valorização de cada compra e o impacto cambial.</span>
+      <!-- Rodapé da Tabela -->
+      <div class="px-4 py-3 border-t border-surface-border bg-surface-base/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-1.5 font-mono">
+        <span class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-profit inline-block animate-pulse"></span>
+          <span>Clica em qualquer ativo para expandir os lotes e o efeito cambial individual.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -383,41 +379,41 @@
 
   </main>
 
-  <!-- ==================== ASSET / PURCHASE MODAL (ADD / EDIT) ==================== -->
-  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 hidden">
-    <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  <!-- ==================== MODAL DE COMPRA / EDIÇÃO COM AUTOCOMPLETE ==================== -->
+  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
+    <div class="bg-surface-card border border-surface-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
-      <!-- Modal Header -->
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
+      <!-- Cabeçalho do Modal -->
+      <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between shrink-0">
         <div>
           <h3 class="text-sm font-bold text-white flex items-center gap-2" id="modal-title">
-            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
             Registar Nova Compra
           </h3>
-          <p class="text-[11px] text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como uma posição individual rastreável.</p>
+          <p class="text-xs text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como um lote independente rastreável.</p>
         </div>
-        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-elevated transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Modal Body -->
+      <!-- Formulário de Registo -->
       <form id="asset-form" onsubmit="saveAsset(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar">
         <input type="hidden" id="form-id" value="">
 
-        <!-- Error Feedback Banner -->
+        <!-- Mensagem de Erro -->
         <div id="form-error-feedback" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs"></div>
 
-        <!-- Existing Ticker Hint Badge -->
-        <div id="form-existing-hint" class="hidden p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-xs flex items-center justify-between">
-          <div class="flex items-center gap-2 text-sky-300">
-            <i data-lucide="info" class="w-4 h-4 text-sky-400 shrink-0"></i>
-            <span>Já possuis compras deste ativo. Esta compra será adicionada como um novo lote rastreável.</span>
+        <!-- Aviso de Lote Adicional (Reforço) -->
+        <div id="form-existing-hint" class="hidden p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2 text-blue-300">
+            <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0"></i>
+            <span>Já possuis compras deste ativo. Esta compra será adicionada como um novo lote.</span>
           </div>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono font-bold" id="form-hint-ticker">NVDA</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono font-bold" id="form-hint-ticker">NVDA</span>
         </div>
 
-        <!-- Ticker & Category with Autocomplete Dropdown -->
+        <!-- Ticker com Autocomplete Rápido & Categoria -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
           <div class="relative">
             <label class="block text-xs font-semibold text-slate-300 mb-1">Ticker / Símbolo *</label>
@@ -429,27 +425,26 @@
                 autocomplete="off"
                 placeholder="ex: NOW, NVDA, AAPL" 
                 oninput="onTickerInput(this.value)"
-                class="w-full uppercase px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono tracking-wider"
+                class="w-full uppercase px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono tracking-wider"
               >
-              <div id="ticker-fetch-indicator" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-sky-400">
+              <div id="ticker-fetch-indicator" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-400">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i>
               </div>
             </div>
 
-            <!-- Instant Autocomplete Dropdown List -->
-            <div id="ticker-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 z-50 bg-slate-950/95 border border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar backdrop-blur-md">
-              <!-- Populated dynamically via JS -->
+            <!-- Lista Suspensa de Sugestões (Autocomplete) -->
+            <div id="ticker-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 z-50 bg-surface-elevated border border-surface-border rounded-xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar backdrop-blur-md">
+              <!-- Sugestões injetadas dinamicamente -->
             </div>
 
-            <!-- Real-time fetch status message badge -->
-            <span id="ticker-status-label" class="text-[10px] text-slate-400 mt-1 block flex items-center gap-1 font-mono">
-              <i data-lucide="search" class="w-3 h-3 text-slate-500"></i> Procura cotação e preenche a empresa
+            <span id="ticker-status-label" class="text-[10px] text-slate-400 mt-1 block font-mono">
+              Pesquisa automática de cotação e empresa
             </span>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
-            <select id="form-category" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+            <select id="form-category" class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
               <option value="Tecnologia">Tecnologia</option>
               <option value="Consumo">Consumo Defensivo</option>
               <option value="Financeiro">Financeiro / Bancos</option>
@@ -461,22 +456,22 @@
           </div>
         </div>
 
-        <!-- Company Name (Auto-filled) -->
+        <!-- Nome da Empresa (Preenchimento Automático) -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa (Opcional)</label>
           <input 
             type="text" 
             id="form-name" 
-            placeholder="Preenchido automaticamente ao digitar o ticker" 
-            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+            placeholder="Preenchido automaticamente ao introduzir o ticker" 
+            class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
           >
         </div>
 
-        <!-- Broker & Purchase Date -->
+        <!-- Corretora & Data de Compra -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora desta Compra *</label>
-            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora *</label>
+            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
               <option value="IBKR">Interactive Brokers (Tiered $0.35)</option>
               <option value="IBKR_FIXED">Interactive Brokers (Fixed $1.00)</option>
               <option value="XTB">XTB (Conta USD - 0% Comissão)</option>
@@ -486,16 +481,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Data desta Compra *</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Data da Compra *</label>
             <input 
               type="date" 
               id="form-date" 
               required
-              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
             >
           </div>
         </div>
 
+        <!-- Quantidade, Preço Pago e Cotação Atual -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Quantidade *</label>
@@ -504,9 +500,9 @@
               inputmode="decimal"
               id="form-qty" 
               required 
-              placeholder="ex: 10" 
+              placeholder="ex: 5" 
               oninput="recalculateFormFees()"
-              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
             >
           </div>
 
@@ -519,27 +515,27 @@
               required 
               placeholder="ex: 137.50" 
               oninput="recalculateFormFees()"
-              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
             >
           </div>
 
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-300">Cotação ($ USD)</label>
-              <span id="form-curr-badge" class="text-[10px] text-emerald-400 font-mono">Automático</span>
+              <span id="form-curr-badge" class="text-[10px] text-profit font-mono">Auto</span>
             </div>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-curr" 
               placeholder="Auto / Vazio" 
-              class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
             >
           </div>
         </div>
 
-        <!-- Broker Fee & Break-Even Visualizer -->
-        <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+        <!-- Comissões & Preço de Equilíbrio (Break-Even) -->
+        <div class="p-3 rounded-xl bg-surface-base border border-surface-border space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs text-slate-300 font-medium">Comissão da Ordem ($ USD):</span>
             <div class="w-28">
@@ -549,30 +545,30 @@
                 id="form-fees" 
                 value="0.35" 
                 oninput="updateBreakEvenDisplay()"
-                class="w-full px-2.5 py-1 text-right bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-sky-500"
+                class="w-full px-2.5 py-1 text-right bg-surface-card border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-blue-500"
               >
             </div>
           </div>
-          <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/80">
+          <div class="flex items-center justify-between text-xs pt-1 border-t border-surface-border/60">
             <span class="text-slate-400">Preço de Equilíbrio (Break-Even deste lote):</span>
-            <span class="font-mono font-bold text-sky-400" id="form-be-display">$0.00</span>
+            <span class="font-mono font-bold text-blue-400" id="form-be-display">$0.00</span>
           </div>
-          <p class="text-[10px] text-slate-500" id="form-fee-note">IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).</p>
+          <p class="text-[10px] text-slate-400" id="form-fee-note">IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).</p>
         </div>
 
-        <!-- Modal Actions -->
+        <!-- Ações do Modal -->
         <div class="flex items-center justify-end gap-2.5 pt-2">
           <button 
             type="button" 
             onclick="closeModal()" 
-            class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition"
+            class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-elevated hover:bg-surface-border rounded-xl transition"
           >
             Cancelar
           </button>
           <button 
             type="submit" 
             id="form-submit-btn"
-            class="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg shadow-sky-600/30 transition active:scale-95"
+            class="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow transition active:scale-95"
           >
             Guardar Compra
           </button>
@@ -582,52 +578,52 @@
     </div>
   </div>
 
-  <!-- ==================== SUPABASE CLOUD SYNC MODAL ==================== -->
-  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 hidden">
-    <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  <!-- ==================== MODAL DE BASE DE DADOS (SUPABASE) ==================== -->
+  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
+    <div class="bg-surface-card border border-surface-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
-          Base de Dados Supabase (Multi-Dispositivo)
+          <i data-lucide="database" class="w-4 h-4 text-profit"></i>
+          Sincronização em Nuvem (Supabase)
         </h3>
-        <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+        <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-elevated transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
-        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2">
+        <div class="p-3 rounded-xl bg-profit/10 border border-profit/20 text-profit flex items-center gap-2">
           <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-          <span>A sincronização em nuvem e a proteção de dados locais estão ativas.</span>
+          <span>Os teus dados estão protegidos localmente e sincronizados com a nuvem.</span>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Project URL</label>
+          <label class="block font-semibold text-slate-300 mb-1">URL do Projeto</label>
           <input 
             type="text" 
             value="https://efdnhtlixevwnakrfjuq.supabase.co" 
-            class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-[11px]" 
+            class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-slate-300 font-mono text-[11px]" 
             readonly
           >
         </div>
 
-        <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+        <div class="p-3 rounded-xl bg-surface-base border border-surface-border space-y-1.5">
           <div class="font-semibold text-slate-300 flex items-center gap-1.5">
-            <i data-lucide="terminal" class="w-3.5 h-3.5 text-sky-400"></i>
-            <span>Garantir suporte à coluna de Data no Supabase:</span>
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>Garantir coluna de data de compra no Supabase:</span>
           </div>
-          <p class="text-[11px] text-slate-400">No SQL Editor do teu Supabase, podes correr este comando simples se quiseres guardar a data exata de cada lote na nuvem:</p>
-          <code class="block bg-slate-900 p-2 rounded text-[10px] text-sky-300 font-mono select-all">alter table portfolio add column if not exists buy_date text;</code>
+          <p class="text-[11px] text-slate-400">Caso configures uma nova tabela no teu Supabase, corre este comando no SQL Editor:</p>
+          <code class="block bg-surface-card p-2 rounded text-[10px] text-blue-300 font-mono select-all">alter table portfolio add column if not exists buy_date text;</code>
         </div>
 
-        <!-- Safety Backup Recovery Button -->
-        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
-          <button onclick="restoreFromSafetyBackup()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-medium rounded-lg text-xs transition active:scale-95" title="Recupera a última cópia antes da sincronização">
-            Recuperar Cópia de Segurança
+        <!-- Ações do Supabase -->
+        <div class="pt-2 border-t border-surface-border/60 flex items-center justify-between">
+          <button onclick="restoreFromSafetyBackup()" class="px-3.5 py-1.5 bg-surface-elevated hover:bg-surface-border text-amber-300 font-medium rounded-lg text-xs transition active:scale-95" title="Recupera a última cópia antes da sincronização">
+            Restaurar Cópia Local
           </button>
-          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow transition active:scale-95">
-            Forçar Upload Agora
+          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-profit hover:bg-emerald-600 text-slate-950 font-bold rounded-xl shadow transition active:scale-95">
+            Sincronizar Agora
           </button>
         </div>
       </div>
@@ -636,7 +632,7 @@
 
   <script>
     // ==========================================
-    // 1. SUPABASE CREDENTIALS & INITIAL STATE
+    // 1. SUPABASE & CONFIGURAÇÃO INICIAL
     // ==========================================
     const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
@@ -718,77 +714,39 @@
       }
     ];
 
-    // Comprehensive Directory including ServiceNow (NOW), Cloud, AI, and Popular ETFs
+    // Catálogo Integrado Rico (Inclui NOW - ServiceNow)
     const TICKER_DIRECTORY = {
-      // User requested stock: ServiceNow
-      "NOW":  { name: "ServiceNow, Inc.", price: 137.50, category: "Tecnologia" },
-
-      // Big Tech & Cloud / SaaS
-      "NVDA": { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
-      "MSFT": { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
-      "AAPL": { name: "Apple Inc.", price: 338.98, category: "Tecnologia" },
-      "AMZN": { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia" },
-      "GOOGL":{ name: "Alphabet Inc.", price: 354.97, category: "Tecnologia" },
-      "GOOG": { name: "Alphabet Inc. (Class C)", price: 355.20, category: "Tecnologia" },
-      "META": { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia" },
-      "TSLA": { name: "Tesla Inc.", price: 375.30, category: "Tecnologia" },
-      "CRM":  { name: "Salesforce, Inc.", price: 238.50, category: "Tecnologia" },
-      "ADBE": { name: "Adobe Inc.", price: 249.20, category: "Tecnologia" },
-      "ORCL": { name: "Oracle Corporation", price: 148.00, category: "Tecnologia" },
-      "PLTR": { name: "Palantir Technologies Inc.", price: 62.40, category: "Tecnologia" },
-      "SNOW": { name: "Snowflake Inc.", price: 331.00, category: "Tecnologia" },
-      "AMD":  { name: "Advanced Micro Devices", price: 156.80, category: "Tecnologia" },
-      "INTC": { name: "Intel Corporation", price: 28.50, category: "Tecnologia" },
-      "AVGO": { name: "Broadcom Inc.", price: 172.50, category: "Tecnologia" },
-      "QCOM": { name: "Qualcomm Inc.", price: 168.30, category: "Tecnologia" },
-      "CRWD": { name: "CrowdStrike Holdings", price: 237.50, category: "Tecnologia" },
-      "PANW": { name: "Palo Alto Networks", price: 363.00, category: "Tecnologia" },
-      "DDOG": { name: "Datadog, Inc.", price: 229.50, category: "Tecnologia" },
-      "NET":  { name: "Cloudflare, Inc.", price: 98.20, category: "Tecnologia" },
-      "MDB":  { name: "MongoDB, Inc.", price: 285.00, category: "Tecnologia" },
-      "UBER": { name: "Uber Technologies, Inc.", price: 78.40, category: "Tecnologia" },
-      "ABNB": { name: "Airbnb, Inc.", price: 134.50, category: "Tecnologia" },
-      "NFLX": { name: "Netflix, Inc.", price: 692.00, category: "Tecnologia" },
-      "DIS":  { name: "The Walt Disney Company", price: 95.80, category: "Consumo" },
-      "SPOT": { name: "Spotify Technology S.A.", price: 335.20, category: "Tecnologia" },
-
-      // Consumer & Staples
-      "KO":   { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
-      "PEP":  { name: "PepsiCo, Inc.", price: 174.50, category: "Consumo" },
-      "MCD":  { name: "McDonald's Corporation", price: 295.40, category: "Consumo" },
-      "SBUX": { name: "Starbucks Corporation", price: 94.20, category: "Consumo" },
-      "NKE":  { name: "Nike, Inc.", price: 82.50, category: "Consumo" },
-      "COST": { name: "Costco Wholesale Corporation", price: 885.00, category: "Consumo" },
-      "WMT":  { name: "Walmart Inc.", price: 79.50, category: "Consumo" },
-      "PG":   { name: "Procter & Gamble Company", price: 168.20, category: "Consumo" },
-
-      // Financials
-      "JPM":  { name: "JPMorgan Chase & Co.", price: 215.40, category: "Financeiro" },
-      "V":    { name: "Visa Inc.", price: 278.30, category: "Financeiro" },
-      "MA":   { name: "Mastercard Incorporated", price: 482.10, category: "Financeiro" },
-      "BAC":  { name: "Bank of America Corporation", price: 39.80, category: "Financeiro" },
-      "BRK.B":{ name: "Berkshire Hathaway Inc. B", price: 448.00, category: "Financeiro" },
-
-      // Healthcare
-      "LLY":  { name: "Eli Lilly and Company", price: 915.00, category: "Saúde" },
-      "NVO":  { name: "Novo Nordisk A/S", price: 128.50, category: "Saúde" },
-      "JNJ":  { name: "Johnson & Johnson", price: 162.30, category: "Saúde" },
-      "ABBV": { name: "AbbVie Inc.", price: 192.40, category: "Saúde" },
-
-      // Popular Indices & UCITS ETFs
-      "VOO":  { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF" },
-      "SPY":  { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF" },
-      "QQQ":  { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" },
-      "VTI":  { name: "Vanguard Total Stock Market", price: 274.50, category: "ETF" },
-      "VWCE": { name: "Vanguard FTSE All-World UCITS", price: 122.40, category: "ETF" },
-      "IWDA": { name: "iShares Core MSCI World UCITS", price: 96.80, category: "ETF" },
-      "VUAA": { name: "Vanguard S&P 500 UCITS ETF", price: 104.20, category: "ETF" },
-      "QDVE": { name: "iShares S&P 500 Info Tech ETF", price: 28.50, category: "ETF" },
-      "SMH":  { name: "VanEck Semiconductor ETF", price: 252.00, category: "ETF" },
-      "SCHD": { name: "Schwab U.S. Dividend Equity ETF", price: 81.30, category: "ETF" }
+      "NOW":   { name: "ServiceNow, Inc.", price: 137.50, category: "Tecnologia" },
+      "NVDA":  { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
+      "MSFT":  { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
+      "AAPL":  { name: "Apple Inc.", price: 338.98, category: "Tecnologia" },
+      "AMZN":  { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia" },
+      "GOOGL": { name: "Alphabet Inc. (Class A)", price: 354.97, category: "Tecnologia" },
+      "GOOG":  { name: "Alphabet Inc. (Class C)", price: 355.20, category: "Tecnologia" },
+      "META":  { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia" },
+      "TSLA":  { name: "Tesla Inc.", price: 375.30, category: "Tecnologia" },
+      "CRM":   { name: "Salesforce, Inc.", price: 238.50, category: "Tecnologia" },
+      "ADBE":  { name: "Adobe Inc.", price: 249.20, category: "Tecnologia" },
+      "ORCL":  { name: "Oracle Corporation", price: 148.00, category: "Tecnologia" },
+      "PLTR":  { name: "Palantir Technologies Inc.", price: 62.40, category: "Tecnologia" },
+      "SNOW":  { name: "Snowflake Inc.", price: 331.00, category: "Tecnologia" },
+      "AMD":   { name: "Advanced Micro Devices", price: 156.80, category: "Tecnologia" },
+      "AVGO":  { name: "Broadcom Inc.", price: 172.50, category: "Tecnologia" },
+      "NFLX":  { name: "Netflix, Inc.", price: 692.00, category: "Tecnologia" },
+      "KO":    { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
+      "PEP":   { name: "PepsiCo, Inc.", price: 174.50, category: "Consumo" },
+      "MCD":   { name: "McDonald's Corporation", price: 295.40, category: "Consumo" },
+      "COST":  { name: "Costco Wholesale Corporation", price: 885.00, category: "Consumo" },
+      "JPM":   { name: "JPMorgan Chase & Co.", price: 215.40, category: "Financeiro" },
+      "V":     { name: "Visa Inc.", price: 278.30, category: "Financeiro" },
+      "LLY":   { name: "Eli Lilly and Company", price: 915.00, category: "Saúde" },
+      "VOO":   { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF" },
+      "SPY":   { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF" },
+      "QQQ":   { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" },
+      "VWCE":  { name: "Vanguard FTSE All-World UCITS", price: 122.40, category: "ETF" }
     };
 
-    // State Variables
+    // Variáveis de Estado
     let portfolio = [];
     let EUR_USD = 1.0850;
     let currentFilter = 'ALL';
@@ -798,7 +756,7 @@
     let deletedIdsSet = new Set();
 
     // ==========================================
-    // 2. UTILITY & FORMATTING FUNCTIONS
+    // 2. FUNÇÕES UTILITÁRIAS E FORMATAÇÃO
     // ==========================================
     function parseNumericInput(val) {
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
@@ -820,12 +778,12 @@
 
       text.textContent = msg;
       icon.innerHTML = isSuccess 
-        ? `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>` 
-        : `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-400"></i>`;
+        ? `<i data-lucide="check-circle" class="w-4 h-4 text-profit"></i>` 
+        : `<i data-lucide="alert-circle" class="w-4 h-4 text-loss"></i>`;
       lucide.createIcons();
 
       toast.classList.remove("hidden");
-      setTimeout(() => toast.classList.add("hidden"), 3800);
+      setTimeout(() => toast.classList.add("hidden"), 3600);
     }
 
     function openConfirmModal(title, message, onConfirm) {
@@ -850,7 +808,7 @@
     }
 
     // ==========================================
-    // 3. STORAGE & SUPABASE RESILIENT ENGINE
+    // 3. ARMAZENAMENTO E RESILIÊNCIA DA BASE DE DADOS
     // ==========================================
     function loadDeletedIds() {
       try {
@@ -888,7 +846,7 @@
         }
       }
 
-      // Initial visit demo load
+      // Demonstração inicial na primeira visita
       portfolio = [...INITIAL_PORTFOLIO];
       localStorage.setItem("assetpulse_has_initialized_v5", "true");
       saveLocalPortfolio();
@@ -909,7 +867,7 @@
       portfolio = [...INITIAL_PORTFOLIO];
       saveLocalPortfolio();
       renderAll();
-      showToast("Ativos de demonstração repostos com sucesso!");
+      showToast("Ativos de teste repostos com sucesso!");
       syncAllToSupabase();
     };
 
@@ -920,7 +878,7 @@
           portfolio = JSON.parse(snap);
           saveLocalPortfolio();
           renderAll();
-          showToast("Cópia de segurança restaurada com sucesso!");
+          showToast("Cópia de segurança restaurada!");
           syncAllToSupabase();
         } catch (e) {
           showToast("Erro ao ler cópia de segurança.", false);
@@ -1050,7 +1008,7 @@
     }
 
     // ==========================================
-    // 4. LIVE EXCHANGE & STOCK QUOTES ENGINE
+    // 4. TAXAS DE CÂMBIO E COTAÇÕES REAIS
     // ==========================================
     async function fetchLiveExchangeRate(manual = false) {
       try {
@@ -1070,18 +1028,13 @@
       }
     }
 
-    // High availability multi-proxy ticker search with Yahoo Finance query2
     async function fetchQuoteFromWeb(ticker) {
       const clean = (ticker || "").trim().toUpperCase();
       if (!clean) return null;
 
-      // 1. Direct hit on local comprehensive directory first
       const dirEntry = TICKER_DIRECTORY[clean];
 
-      // Endpoints to check
       const yfUrlChart = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`;
-      const yfUrlSearch = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(clean)}`;
-
       const proxyAttempts = [
         `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrlChart)}`,
         `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrlChart)}`,
@@ -1109,7 +1062,6 @@
         } catch (e) {}
       }
 
-      // If online proxies fail, safely fallback to the built-in directory
       if (dirEntry) {
         return {
           price: dirEntry.price,
@@ -1155,13 +1107,13 @@
       if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
 
       if (manual) {
-        showToast(`${updatedCount} cotações atualizadas com sucesso!`);
+        showToast(`${updatedCount} cotações atualizadas!`);
         syncAllToSupabase(false);
       }
     }
 
     // ==========================================
-    // 5. CALCULATIONS & PERFORMANCE DECOMPOSITION
+    // 5. CÁLCULOS E DECOMPOSIÇÃO DE RENTABILIDADE
     // ==========================================
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
@@ -1293,14 +1245,14 @@
     }
 
     // ==========================================
-    // 6. DASHBOARDS & RENDERING ENGINE
+    // 6. RENDERIZAÇÃO DA INTERFACE LIMPA
     // ==========================================
     function renderKPIs(metrics) {
       document.getElementById("kpi-total-invested").textContent = fmtEUR(metrics.totalInvEUR);
-      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} (custo total)`;
+      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} custo base`;
 
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
-      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} (em tempo real)`;
+      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} em tempo real`;
 
       const plPctEl = document.getElementById("kpi-pl-pct");
       const plEurEl = document.getElementById("kpi-pl-eur");
@@ -1309,16 +1261,17 @@
 
       const isPositive = metrics.totalPLEUR >= 0;
       plPctEl.textContent = fmtPCT(metrics.totalPLPct);
-      plPctEl.className = `text-xl sm:text-3xl font-extrabold font-mono tracking-tight ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`;
+      plPctEl.className = `text-2xl sm:text-3xl font-extrabold font-mono tracking-tight ${isPositive ? 'text-profit' : 'text-loss'}`;
 
       plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
-      plEurEl.className = isPositive ? 'text-emerald-400' : 'text-rose-400';
+      plEurEl.className = isPositive ? 'text-profit' : 'text-loss';
       plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)})`;
 
       if (plIcon) {
+        plIcon.className = isPositive ? 'text-profit' : 'text-loss';
         plIcon.innerHTML = isPositive 
-          ? `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>` 
-          : `<i data-lucide="trending-down" class="w-4 h-4 text-rose-400"></i>`;
+          ? `<i data-lucide="trending-up" class="w-4 h-4"></i>` 
+          : `<i data-lucide="trending-down" class="w-4 h-4"></i>`;
       }
 
       if (metrics.assets.length > 0) {
@@ -1346,55 +1299,58 @@
       const totalPos = metrics.totalPLPct >= 0;
 
       elStockPct.textContent = fmtPCT(metrics.totalStockPctUSD);
-      elStockPct.className = `font-bold ${stockPos ? 'text-emerald-400' : 'text-rose-400'}`;
+      elStockPct.className = `font-bold ${stockPos ? 'text-profit' : 'text-loss'}`;
 
       elFxPct.textContent = fmtPCT(metrics.totalFxPct);
-      elFxPct.className = `font-bold ${fxPos ? 'text-sky-400' : 'text-amber-400'}`;
+      elFxPct.className = `font-bold ${fxPos ? 'text-blue-400' : 'text-amber-400'}`;
 
       elTotalPct.textContent = fmtPCT(metrics.totalPLPct);
-      elTotalPct.className = `text-base font-extrabold font-mono ${totalPos ? 'text-emerald-400' : 'text-rose-400'}`;
+      elTotalPct.className = `text-base font-extrabold ${totalPos ? 'text-profit' : 'text-loss'}`;
 
       const barStock = document.getElementById("bar-perf-asset");
       const barFx = document.getElementById("bar-perf-fx");
       if (barStock) {
-        const wStock = Math.min(100, Math.max(8, Math.abs(metrics.totalStockPctUSD)));
+        const wStock = Math.min(100, Math.max(6, Math.abs(metrics.totalStockPctUSD)));
         barStock.style.width = `${wStock}%`;
-        barStock.className = `h-full rounded-full transition-all ${stockPos ? 'bg-emerald-500' : 'bg-rose-500'}`;
+        barStock.className = `h-full rounded-full transition-all duration-500 ${stockPos ? 'bg-profit' : 'bg-loss'}`;
       }
       if (barFx) {
-        const wFx = Math.min(100, Math.max(8, Math.abs(metrics.totalFxPct) * 3));
+        const wFx = Math.min(100, Math.max(6, Math.abs(metrics.totalFxPct) * 3));
         barFx.style.width = `${wFx}%`;
-        barFx.className = `h-full rounded-full transition-all ${fxPos ? 'bg-sky-400' : 'bg-amber-400'}`;
+        barFx.className = `h-full rounded-full transition-all duration-500 ${fxPos ? 'bg-blue-400' : 'bg-amber-400'}`;
       }
 
       const container = document.getElementById("ranking-bars-container");
+      const countLabel = document.getElementById("ranking-count-label");
       if (!container) return;
       container.innerHTML = "";
 
       if (metrics.assets.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-500 py-3 text-center">Nenhum ativo registado para apresentar percentagens.</div>`;
+        container.innerHTML = `<div class="text-xs text-slate-400 py-4 text-center">Nenhum ativo registado para apresentar percentagens.</div>`;
+        if (countLabel) countLabel.textContent = "0 posições";
         return;
       }
 
       const sortedAssets = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
+      if (countLabel) countLabel.textContent = `${sortedAssets.length} posições`;
       const maxAbsPct = Math.max(...sortedAssets.map(a => Math.abs(a.plPct)), 1);
 
       sortedAssets.forEach(asset => {
         const isPos = asset.plPct >= 0;
-        const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
-        const bgBarClass = isPos ? 'bg-emerald-500' : 'bg-rose-500';
+        const colorClass = isPos ? 'text-profit' : 'text-loss';
+        const bgBarClass = isPos ? 'bg-profit' : 'bg-loss';
         const barWidth = Math.min(100, Math.max(6, (Math.abs(asset.plPct) / maxAbsPct) * 100));
 
         const row = document.createElement("div");
         row.className = "flex items-center gap-3 text-xs font-mono";
         row.innerHTML = `
-          <div class="w-16 shrink-0 flex items-center gap-1.5 font-bold text-white">
-            <span class="w-2 h-2 rounded-full ${isPos ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+          <div class="w-16 shrink-0 flex items-center gap-2 font-bold text-white">
+            <span class="w-1.5 h-1.5 rounded-full ${isPos ? 'bg-profit' : 'bg-loss'}"></span>
             ${asset.ticker}
           </div>
           <div class="flex-1">
-            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
-              <div class="h-full ${bgBarClass} rounded-full transition-all" style="width: ${barWidth}%"></div>
+            <div class="w-full h-2 bg-surface-base rounded-full overflow-hidden border border-surface-border">
+              <div class="h-full ${bgBarClass} rounded-full transition-all duration-500" style="width: ${barWidth}%"></div>
             </div>
           </div>
           <div class="w-20 text-right font-extrabold ${colorClass} shrink-0">
@@ -1433,80 +1389,80 @@
       filtered.forEach(asset => {
         const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
         const isPos = asset.plEUR >= 0;
-        const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
+        const colorClass = isPos ? 'text-profit' : 'text-loss';
         const isExpanded = expandedTickers.has(asset.ticker);
 
         const parentTr = document.createElement("tr");
-        parentTr.className = `cursor-pointer transition-colors border-b border-slate-800/60 ${isExpanded ? 'bg-slate-900/90' : 'hover:bg-slate-800/40 bg-slate-950/30'}`;
+        parentTr.className = `cursor-pointer transition border-b border-surface-border/60 ${isExpanded ? 'bg-surface-elevated/70' : 'hover:bg-surface-elevated/30'}`;
         parentTr.onclick = (e) => {
           if (e.target.closest('button')) return;
           toggleTickerExpand(asset.ticker);
         };
 
         parentTr.innerHTML = `
-          <td class="py-3 px-3 sm:px-4">
-            <div class="flex items-center gap-2">
-              <div class="p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-400 transition">
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-3">
+              <div class="text-slate-400 hover:text-white transition">
                 <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4"></i>
               </div>
-              <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700/80 flex items-center justify-center font-bold text-xs text-sky-400 font-mono">
+              <div class="w-8 h-8 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-center font-bold text-xs text-blue-400 font-mono">
                 ${asset.ticker.slice(0, 4)}
               </div>
               <div>
                 <div class="font-bold text-white font-mono text-xs flex items-center gap-1.5">
                   ${asset.ticker}
-                  <span class="text-[9px] px-1.5 py-0.2 rounded-full ${asset.lots.length > 1 ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30' : 'bg-slate-800 text-slate-400'} font-mono">
-                    ${asset.lots.length} ${asset.lots.length === 1 ? 'compra' : 'compras'}
+                  <span class="text-[10px] px-1.5 py-0.2 rounded-full ${asset.lots.length > 1 ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20' : 'bg-surface-elevated text-slate-400'} font-mono">
+                    ${asset.lots.length} ${asset.lots.length === 1 ? 'lote' : 'lotes'}
                   </span>
                 </div>
-                <div class="text-[10px] text-slate-400 line-clamp-1 max-w-[120px] sm:max-w-[180px]">${asset.name}</div>
+                <div class="text-[11px] text-slate-400 line-clamp-1 max-w-[140px] sm:max-w-[200px]">${asset.name}</div>
               </div>
             </div>
           </td>
 
-          <td class="py-3 px-3 text-right font-mono font-medium text-slate-100">
+          <td class="py-3.5 px-3 text-right font-mono font-medium text-slate-200">
             ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
           </td>
 
-          <td class="py-3 px-3 text-right font-mono">
-            <div class="text-slate-200 font-bold">${fmtUSD(asset.pmpUSD)}</div>
-            <div class="text-[10px] text-slate-500" title="Preço de Equilíbrio consolidado">BE: ${fmtUSD(asset.breakEvenUSD)}</div>
+          <td class="py-3.5 px-3 text-right font-mono">
+            <div class="text-slate-200 font-semibold">${fmtUSD(asset.pmpUSD)}</div>
+            <div class="text-[10px] text-slate-400" title="Preço de Equilíbrio">BE: ${fmtUSD(asset.breakEvenUSD)}</div>
           </td>
 
-          <td class="py-3 px-3 text-right font-mono font-bold text-white">
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-white">
             ${fmtUSD(asset.currUSD)}
           </td>
 
-          <td class="py-3 px-3 text-right font-mono text-slate-300">
+          <td class="py-3.5 px-3 text-right font-mono text-slate-300">
             ${fmtEUR(asset.totalInvEUR)}
           </td>
 
-          <td class="py-3 px-3 text-right font-mono font-bold text-white">
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-white">
             ${fmtEUR(asset.totalCurrEUR)}
           </td>
 
-          <td class="py-3 px-3 text-right font-mono">
+          <td class="py-3.5 px-4 text-right font-mono">
             <div class="text-xs sm:text-sm font-extrabold ${colorClass}">${fmtPCT(asset.plPct)}</div>
-            <div class="text-[10px] text-slate-400 font-medium">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
+            <div class="text-[10px] text-slate-400">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
           </td>
 
-          <td class="py-3 px-3 text-center">
+          <td class="py-3.5 px-3 text-center">
             <div class="w-16 sm:w-20 mx-auto">
               <div class="text-[10px] font-mono text-slate-400 mb-1">${allocPct.toFixed(1)}%</div>
-              <div class="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                <div class="h-full bg-sky-500 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
+              <div class="w-full h-1 bg-surface-base rounded-full overflow-hidden border border-surface-border">
+                <div class="h-full bg-blue-500 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
               </div>
             </div>
           </td>
 
-          <td class="py-3 px-3 text-center">
+          <td class="py-3.5 px-3 text-center">
             <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
-              <button onclick="openModalForTicker('${asset.ticker}')" class="px-2 py-1 text-[11px] font-semibold text-sky-400 hover:text-white bg-sky-500/10 hover:bg-sky-600 rounded-lg border border-sky-500/20 transition active:scale-95 flex items-center gap-1" title="Adicionar Compra a ${asset.ticker}">
+              <button onclick="openModalForTicker('${asset.ticker}')" class="px-2 py-1 text-[11px] font-medium text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-600 rounded-lg transition active:scale-95 flex items-center gap-1" title="Adicionar Compra a ${asset.ticker}">
                 <i data-lucide="plus" class="w-3 h-3"></i>
-                <span class="hidden sm:inline">Reforço</span>
+                <span class="hidden sm:inline">Lote</span>
               </button>
-              <button onclick="deleteEntireAsset('${asset.ticker}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition active:scale-95" title="Eliminar ${asset.ticker} (todos os lotes)">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              <button onclick="deleteEntireAsset('${asset.ticker}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-surface-elevated transition active:scale-95" title="Eliminar ${asset.ticker} (todos os lotes)">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </td>
@@ -1515,21 +1471,21 @@
 
         if (isExpanded) {
           const detailTr = document.createElement("tr");
-          detailTr.className = "bg-slate-950/90 border-b border-slate-800/80";
+          detailTr.className = "bg-surface-base/80 border-b border-surface-border";
 
           let lotsRowsHtml = "";
           asset.lots.forEach((lot, idx) => {
             const lotIsPos = lot.plEUR >= 0;
-            const lotColor = lotIsPos ? 'text-emerald-400' : 'text-rose-400';
+            const lotColor = lotIsPos ? 'text-profit' : 'text-loss';
 
             lotsRowsHtml += `
-              <tr class="border-b border-slate-900/80 hover:bg-slate-900/60 transition text-[11px] font-mono">
+              <tr class="border-b border-surface-border/40 hover:bg-surface-elevated/40 transition text-[11px] font-mono">
                 <td class="py-2.5 px-3 text-slate-300">
                   <div class="flex items-center gap-2">
-                    <span class="w-5 h-5 rounded-md bg-slate-800 text-sky-400 flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
+                    <span class="w-5 h-5 rounded bg-surface-elevated text-blue-400 flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
                     <div>
-                      <span class="text-white font-semibold">📅 ${lot.buyDate || '2024-01-01'}</span>
-                      <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400">[${lot.broker}]</span>
+                      <span class="text-white font-medium">${lot.buyDate || '2024-01-01'}</span>
+                      <span class="ml-1 text-[10px] text-slate-400">[${lot.broker}]</span>
                     </div>
                   </div>
                 </td>
@@ -1538,7 +1494,7 @@
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtUSD(lot.avgUSD)}
-                  <span class="block text-[9px] text-slate-500">Taxa: ${fmtUSD(lot.feesUSD || 0)}</span>
+                  <span class="block text-[9px] text-slate-400">Tx: ${fmtUSD(lot.feesUSD || 0)}</span>
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
@@ -1548,19 +1504,19 @@
                 </td>
                 <td class="py-2.5 px-3 text-right">
                   <div class="font-extrabold ${lotColor}">${fmtPCT(lot.plPct)}</div>
-                  <div class="text-[9px] text-slate-400">Ativo: ${fmtPCT(lot.stockPctUSD)} | FX: ${fmtPCT(lot.fxPct)}</div>
+                  <div class="text-[9px] text-slate-400">Ação: ${fmtPCT(lot.stockPctUSD)} | FX: ${fmtPCT(lot.fxPct)}</div>
                 </td>
                 <td class="py-2.5 px-3 text-center">
-                  <span class="px-2 py-0.5 rounded-full bg-slate-800 text-sky-300 text-[10px]" title="Percentagem desta compra no total do ativo">
+                  <span class="px-2 py-0.5 rounded-full bg-surface-elevated text-blue-300 text-[10px]">
                     ${lot.lotPositionWeight.toFixed(1)}%
                   </span>
                 </td>
                 <td class="py-2.5 px-3 text-center">
                   <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
-                    <button onclick="openModal('${lot.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 rounded-lg hover:bg-slate-800 transition" title="Editar este lote">
+                    <button onclick="openModal('${lot.id}')" class="p-1 text-slate-400 hover:text-blue-400 rounded hover:bg-surface-card transition" title="Editar lote">
                       <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                     </button>
-                    <button onclick="deleteAsset('${lot.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition" title="Eliminar este lote individual">
+                    <button onclick="deleteAsset('${lot.id}')" class="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-surface-card transition" title="Eliminar lote">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </div>
@@ -1570,19 +1526,19 @@
           });
 
           detailTr.innerHTML = `
-            <td colspan="9" class="p-3 sm:p-4 bg-slate-950/80">
-              <div class="rounded-xl border border-sky-500/20 bg-slate-900/50 p-3.5 space-y-3">
-                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <td colspan="9" class="p-3 sm:p-4 bg-surface-base/90">
+              <div class="rounded-xl border border-blue-500/20 bg-surface-card p-3.5 space-y-3">
+                <div class="flex items-center justify-between border-b border-surface-border pb-2">
                   <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                     <h4 class="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Lotes & Percentagens de ${asset.ticker} (${asset.lots.length} Compras)
+                      Lotes Individuais de ${asset.ticker} (${asset.lots.length} Compras)
                     </h4>
                   </div>
                   <div class="flex items-center gap-3">
-                    <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1 transition">
+                    <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition">
                       <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                      + Registar Nova Compra
+                      Novo Lote
                     </button>
                     <button onclick="deleteEntireAsset('${asset.ticker}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -1594,18 +1550,18 @@
                 <div class="overflow-x-auto custom-scrollbar">
                   <table class="w-full text-left border-collapse">
                     <thead>
-                      <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-slate-800">
+                      <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-surface-border">
                         <th class="py-1.5 px-3">Lote / Data</th>
                         <th class="py-1.5 px-3 text-right">Qtd</th>
                         <th class="py-1.5 px-3 text-right">Preço Pago ($)</th>
                         <th class="py-1.5 px-3 text-right">Custo (€)</th>
                         <th class="py-1.5 px-3 text-right">Valor Atual (€)</th>
-                        <th class="py-1.5 px-3 text-right">Valorização (%) [Ativo | FX]</th>
+                        <th class="py-1.5 px-3 text-right">Valorização (%) [Ação | Moeda]</th>
                         <th class="py-1.5 px-3 text-center">Peso no Ativo</th>
                         <th class="py-1.5 px-3 text-center">Ações</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-800/40">
+                    <tbody class="divide-y divide-surface-border/40">
                       ${lotsRowsHtml}
                     </tbody>
                   </table>
@@ -1621,7 +1577,7 @@
     }
 
     // ==========================================
-    // 7. PURCHASE MODAL & AUTOCOMPLETE SUGGESTIONS
+    // 7. MODAL DE COMPRA & SUGESTÕES DE TICKER
     // ==========================================
     window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
@@ -1638,12 +1594,12 @@
 
       const statusLabel = document.getElementById("ticker-status-label");
       if (statusLabel) {
-        statusLabel.innerHTML = `<i data-lucide="search" class="w-3 h-3 text-slate-500"></i> Procura cotação e preenche a empresa`;
+        statusLabel.textContent = "Pesquisa automática de cotação e empresa";
       }
 
       document.getElementById("form-id").value = "";
-      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
-      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como uma posição individual rastreável.";
+      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
+      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como um lote independente rastreável.";
 
       const dateInput = document.getElementById("form-date");
       if (dateInput) {
@@ -1699,14 +1655,12 @@
       if (suggestionsBox) suggestionsBox.classList.add("hidden");
     };
 
-    // Real-time Autocomplete & Suggestion Filter
     window.onTickerInput = function (rawVal) {
       const query = (rawVal || "").trim().toUpperCase();
       const currentEditId = document.getElementById("form-id")?.value;
       const hintBox = document.getElementById("form-existing-hint");
       const suggestionsBox = document.getElementById("ticker-suggestions");
 
-      // Check existing holdings
       if (query.length >= 1 && !currentEditId) {
         const existingCount = portfolio.filter(it => it.ticker === query).length;
         if (existingCount > 0) {
@@ -1721,7 +1675,6 @@
         if (hintBox) hintBox.classList.add("hidden");
       }
 
-      // Autocomplete list matching
       if (query.length >= 1 && suggestionsBox) {
         const matches = Object.entries(TICKER_DIRECTORY).filter(([sym, data]) => {
           return sym.startsWith(query) || (data.name && data.name.toUpperCase().includes(query));
@@ -1731,10 +1684,10 @@
           suggestionsBox.innerHTML = matches.map(([sym, data]) => `
             <div 
               onclick="selectTickerSuggestion('${sym}', '${data.name.replace(/'/g, "\\'")}', '${data.category}', ${data.price})"
-              class="px-3 py-2 hover:bg-sky-500/20 cursor-pointer border-b border-slate-800/60 last:border-none flex items-center justify-between transition"
+              class="px-3 py-2 hover:bg-surface-border cursor-pointer border-b border-surface-border/40 last:border-none flex items-center justify-between transition"
             >
               <div>
-                <span class="font-bold text-sky-400 font-mono text-xs">${sym}</span>
+                <span class="font-bold text-blue-400 font-mono text-xs">${sym}</span>
                 <span class="text-[11px] text-slate-300 ml-1.5">${data.name}</span>
               </div>
               <span class="text-[10px] font-mono text-slate-400 font-semibold">$${data.price.toFixed(2)}</span>
@@ -1764,7 +1717,7 @@
 
       const statusLabel = document.getElementById("ticker-status-label");
       if (statusLabel) {
-        statusLabel.innerHTML = `<span class="text-emerald-400 flex items-center gap-1 font-semibold">✓ ${name} selecionada ($${price.toFixed(2)})</span>`;
+        statusLabel.innerHTML = `<span class="text-profit font-semibold">✓ ${name} selecionada ($${price.toFixed(2)})</span>`;
       }
 
       const suggestionsBox = document.getElementById("ticker-suggestions");
@@ -1780,7 +1733,7 @@
 
       if (clean.length >= 2) {
         if (statusLabel) {
-          statusLabel.innerHTML = `<span class="text-sky-400 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> A pesquisar ${clean}...</span>`;
+          statusLabel.innerHTML = `<span class="text-blue-400 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> A pesquisar ${clean}...</span>`;
           lucide.createIcons();
         }
 
@@ -1805,11 +1758,11 @@
               catInput.value = quote.category;
             }
             if (statusLabel) {
-              statusLabel.innerHTML = `<span class="text-emerald-400 flex items-center gap-1 font-semibold">✓ ${quote.name} encontrada ($${quote.price.toFixed(2)}) [${quote.source}]</span>`;
+              statusLabel.innerHTML = `<span class="text-profit font-semibold">✓ ${quote.name} encontrada ($${quote.price.toFixed(2)})</span>`;
             }
           } else {
             if (statusLabel) {
-              statusLabel.innerHTML = `<span class="text-amber-400 flex items-center gap-1 font-medium">Ativo não listado. Podes introduzir o nome e cotação manualmente.</span>`;
+              statusLabel.innerHTML = `<span class="text-amber-400 font-medium">Ativo não listado. Podes introduzir o nome e cotação manualmente.</span>`;
             }
           }
         }, 500);
@@ -1929,7 +1882,7 @@
         };
         portfolio.push(newLot);
         expandedTickers.add(ticker);
-        showToast(`Nova compra de ${ticker} adicionada com sucesso!`);
+        showToast(`Nova compra de ${ticker} adicionada!`);
       }
 
       saveLocalPortfolio();
@@ -1964,7 +1917,7 @@
 
       const msg = lots.length === 1
         ? `Tens a certeza de que queres eliminar o ativo ${ticker} da carteira?`
-        : `Tens a certeza de que queres eliminar o ativo ${ticker} e todos os seus ${lots.length} lotes de compra da carteira?`;
+        : `Tens a certeza de que queres eliminar o ativo ${ticker} e todos os seus ${lots.length} lotes da carteira?`;
 
       openConfirmModal(
         `Eliminar Ativo ${ticker}`,
@@ -1980,7 +1933,7 @@
           saveLocalPortfolio();
           renderAll();
           deleteEntireAssetFromSupabase(ticker);
-          showToast(`Ativo ${ticker} e respetivos lotes eliminados com sucesso.`);
+          showToast(`Ativo ${ticker} e respetivos lotes eliminados.`);
         }
       );
     };
@@ -2009,16 +1962,16 @@
       saveLocalPortfolio();
       renderAll();
       syncAllToSupabase(false);
-      showToast("Compra de teste da ServiceNow (NOW) adicionada com sucesso!");
+      showToast("Compra de teste da ServiceNow (NOW) adicionada!");
     };
 
     window.setCategoryFilter = function (cat) {
       currentFilter = cat;
       document.querySelectorAll(".cat-pill").forEach(btn => {
         if (btn.getAttribute("data-cat") === cat) {
-          btn.className = "cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-sky-600 text-white transition whitespace-nowrap";
+          btn.className = "cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-blue-600 text-white transition whitespace-nowrap";
         } else {
-          btn.className = "cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition whitespace-nowrap";
+          btn.className = "cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap";
         }
       });
       renderAll();
@@ -2048,7 +2001,7 @@
     }
 
     // ==========================================
-    // 8. APPLICATION INITIALIZATION
+    // 8. ARRANQUE DA APLICAÇÃO
     // ==========================================
     window.addEventListener("DOMContentLoaded", async () => {
       loadLocalPortfolio();
