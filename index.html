@@ -238,9 +238,12 @@
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Curva de Património da Carteira
             </h2>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-sky-400 border border-slate-700">Por Data de Compra</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+              <i data-lucide="check" class="w-3 h-3"></i>
+              Yahoo Finance Oficial
+            </span>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">Evolução temporal acumulada com precisão dia a dia a partir de cada aquisição</p>
+          <p class="text-xs text-slate-400 mt-0.5" id="chart-subtitle">Série cronológica calculada estritamente com velas de fecho históricas reais</p>
         </div>
 
         <!-- Scrubber Inspection Header -->
@@ -266,17 +269,33 @@
 
         <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
           <span class="flex items-center gap-1">
-            <span class="w-3 h-0.5 bg-emerald-400 inline-block"></span> Património
+            <span class="w-3 h-0.5 bg-emerald-400 inline-block"></span> Património Real
           </span>
           <span class="flex items-center gap-1">
-            <span class="w-3 h-0.5 border-b border-dashed border-slate-500 inline-block"></span> Custo
+            <span class="w-3 h-0.5 border-b border-dashed border-slate-500 inline-block"></span> Capital Investido
           </span>
         </div>
       </div>
 
-      <!-- Canvas Chart Container -->
+      <!-- Canvas Chart Container with Loading & Error States -->
       <div class="relative w-full h-64 sm:h-72 touch-none">
         <canvas id="equityLineChart" class="w-full h-full block"></canvas>
+        
+        <!-- Loading Overlay -->
+        <div id="chart-loader" class="hidden absolute inset-0 bg-slate-950/70 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center gap-2 z-10">
+          <i data-lucide="refresh-cw" class="w-6 h-6 text-sky-400 animate-spin"></i>
+          <span class="text-xs font-mono text-slate-300">A obter velas históricas do Yahoo Finance...</span>
+        </div>
+
+        <!-- Strict Error State (No invented fallback) -->
+        <div id="chart-error-banner" class="hidden absolute inset-0 bg-slate-950/90 rounded-xl flex flex-col items-center justify-center p-6 text-center z-10 space-y-2 border border-rose-500/20">
+          <i data-lucide="alert-circle" class="w-8 h-8 text-rose-400"></i>
+          <div class="text-xs font-semibold text-white" id="chart-error-msg">Não foi possível descarregar dados de mercado autênticos.</div>
+          <p class="text-[11px] text-slate-400 max-w-sm">Para manter a integridade contabilística e não exibir números artificiais, o gráfico apenas é desenhado com dados oficiais do Yahoo Finance.</p>
+          <button onclick="setChartTimeframe(currentChartTimeframe)" class="mt-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 font-mono text-xs rounded-lg border border-slate-700 transition">
+            Tentar Novamente
+          </button>
+        </div>
       </div>
     </section>
 
@@ -1402,11 +1421,11 @@
     function timeframeToRangeInterval(tf) {
       switch (tf) {
         case '1D': return { range: '1d', interval: '5m' };
-        case '1S': return { range: '5d', interval: '30m' };
+        case '1S': return { range: '5d', interval: '15m' };
         case '1M': return { range: '1mo', interval: '1d' };
         case '3M': return { range: '3mo', interval: '1d' };
         case '1A': return { range: '1y', interval: '1d' };
-        default:   return { range: '2y', interval: '1wk' };
+        default:   return { range: '5y', interval: '1d' };
       }
     }
 
@@ -1416,162 +1435,205 @@
 
       const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`;
       const proxyList = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
-        `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(yfUrl)}`,
+        `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrl)}`
       ];
 
       for (const pUrl of proxyList) {
         try {
           const controller = new AbortController();
-          const tid = setTimeout(() => controller.abort(), 4500);
+          const tid = setTimeout(() => controller.abort(), 6000);
           const res = await fetch(pUrl, { signal: controller.signal });
           clearTimeout(tid);
           if (res.ok) {
-            const raw = await res.json();
-            const json = raw.contents ? JSON.parse(raw.contents) : raw;
+            const json = await res.json();
             const result = json?.chart?.result?.[0];
             const timestamps = result?.timestamp;
             const closes = result?.indicators?.quote?.[0]?.close;
-            if (Array.isArray(timestamps) && Array.isArray(closes)) {
-              const series = timestamps
-                .map((t, i) => ({ time: new Date(t * 1000), close: closes[i] }))
-                .filter(p => typeof p.close === 'number' && !isNaN(p.close));
+
+            if (Array.isArray(timestamps) && Array.isArray(closes) && timestamps.length > 0) {
+              const series = [];
+              for (let i = 0; i < timestamps.length; i++) {
+                const c = closes[i];
+                if (typeof c === 'number' && !isNaN(c) && c > 0) {
+                  series.push({
+                    time: timestamps[i] * 1000,
+                    close: c
+                  });
+                }
+              }
               if (series.length > 1) {
                 historicalDataCache[cacheKey] = series;
                 return series;
               }
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          // Continua para o próximo proxy sem inventar dados
+        }
       }
       return null;
     }
 
-    function getPriceAtTime(series, targetTime) {
-      let closest = series[0];
-      for (const p of series) {
-        if (p.time.getTime() <= targetTime.getTime()) {
-          closest = p;
+    function getExactOrPrecedingPrice(series, targetTime) {
+      if (!series || series.length === 0) return null;
+      let selected = null;
+      for (let i = 0; i < series.length; i++) {
+        if (series[i].time <= targetTime) {
+          selected = series[i].close;
         } else {
           break;
         }
       }
-      return closest.close;
+      return selected !== null ? selected : series[0].close;
     }
 
     async function generateDateDrivenPoints(metrics, tf) {
-      const now = new Date();
-      let numPoints = 60;
-      let startTime = new Date();
+      const loader = document.getElementById("chart-loader");
+      const errBanner = document.getElementById("chart-error-banner");
+      const errMsg = document.getElementById("chart-error-msg");
+      
+      if (loader) loader.classList.remove("hidden");
+      if (errBanner) errBanner.classList.add("hidden");
 
-      if (tf === '1D') {
-        startTime.setHours(startTime.getHours() - 24);
-        numPoints = 36;
-      } else if (tf === '1S') {
-        startTime.setDate(startTime.getDate() - 7);
-        numPoints = 42;
-      } else if (tf === '1M') {
-        startTime.setDate(startTime.getDate() - 30);
-        numPoints = 45;
-      } else if (tf === '3M') {
-        startTime.setDate(startTime.getDate() - 90);
-        numPoints = 50;
-      } else if (tf === '1A') {
-        startTime.setFullYear(startTime.getFullYear() - 1);
-        numPoints = 55;
-      } else {
-        let oldest = new Date();
+      try {
+        if (!portfolio || portfolio.length === 0) {
+          return [];
+        }
+
+        const uniqueTickers = [...new Set(portfolio.map(l => l.ticker))];
+        const { range, interval } = timeframeToRangeInterval(tf);
+
+        // Pedir séries reais para todos os ativos e também a taxa histórica EUR/USD (EURUSD=X)
+        const fetchPromises = [
+          ...uniqueTickers.map(t => fetchHistoricalSeries(t, range, interval)),
+          fetchHistoricalSeries("EURUSD=X", range, interval)
+        ];
+
+        const results = await Promise.all(fetchPromises);
+        const eurusdSeries = results[results.length - 1];
+
+        const tickerSeriesMap = {};
+        const missingTickers = [];
+
+        uniqueTickers.forEach((t, i) => {
+          const series = results[i];
+          if (series && series.length > 0) {
+            tickerSeriesMap[t] = series;
+          } else {
+            missingTickers.push(t);
+          }
+        });
+
+        // REQUISITO ESTRITO: se o Yahoo Finance falhar para algum ticker, NÃO inventar dados
+        if (missingTickers.length > 0) {
+          if (errBanner && errMsg) {
+            errMsg.textContent = `Impossível obter dados reais do Yahoo Finance para: ${missingTickers.join(', ')}`;
+            errBanner.classList.remove("hidden");
+          }
+          return [];
+        }
+
+        // Construir uma linha temporal baseada exclusivamente nos carimbos de data/hora oficiais da bolsa
+        const allTimestampsSet = new Set();
+        uniqueTickers.forEach(t => {
+          tickerSeriesMap[t].forEach(pt => allTimestampsSet.add(pt.time));
+        });
+
+        let sortedTimestamps = Array.from(allTimestampsSet).sort((a, b) => a - b);
+        if (sortedTimestamps.length === 0) return [];
+
+        // Para períodos longos (TUDO / 1A), encontrar a data do lote mais antigo
+        let oldestBuyDate = new Date();
         portfolio.forEach(it => {
           if (it.buyDate) {
             const d = new Date(it.buyDate);
-            if (!isNaN(d.getTime()) && d < oldest) oldest = d;
+            if (!isNaN(d.getTime()) && d < oldestBuyDate) oldestBuyDate = d;
           }
         });
-        startTime = new Date(oldest.getTime());
-        numPoints = 65;
-      }
 
-      const totalSpan = Math.max(1000 * 60 * 60, now.getTime() - startTime.getTime());
-      const points = [];
+        // Filtrar apenas pontos a partir da data de início do timeframe ou da primeira compra
+        const now = new Date().getTime();
+        let startTimeLimit = 0;
+        if (tf === '1D') startTimeLimit = now - (24 * 60 * 60 * 1000);
+        else if (tf === '1S') startTimeLimit = now - (7 * 24 * 60 * 60 * 1000);
+        else if (tf === '1M') startTimeLimit = now - (31 * 24 * 60 * 60 * 1000);
+        else if (tf === '3M') startTimeLimit = now - (92 * 24 * 60 * 60 * 1000);
+        else if (tf === '1A') startTimeLimit = now - (366 * 24 * 60 * 60 * 1000);
+        else startTimeLimit = oldestBuyDate.getTime();
 
-      const uniqueTickers = [...new Set(portfolio.map(l => l.ticker))];
-      const { range, interval } = timeframeToRangeInterval(tf);
-      const seriesList = await Promise.all(uniqueTickers.map(t => fetchHistoricalSeries(t, range, interval)));
-      const tickerSeriesMap = {};
-      uniqueTickers.forEach((t, i) => { tickerSeriesMap[t] = seriesList[i]; });
+        sortedTimestamps = sortedTimestamps.filter(t => t >= startTimeLimit);
+        if (sortedTimestamps.length < 2) {
+          // Se o filtro temporal limitou em demasia, manter pelo menos as últimas velas reais
+          const fullUnion = Array.from(allTimestampsSet).sort((a, b) => a - b);
+          sortedTimestamps = fullUnion.slice(-Math.min(30, fullUnion.length));
+        }
 
-      for (let i = 0; i <= numPoints; i++) {
-        const ptProgress = i / numPoints;
-        const ptTime = new Date(startTime.getTime() + (totalSpan * ptProgress));
+        const points = [];
 
-        let investedAtPt = 0;
-        let valueAtPt = 0;
+        for (let idx = 0; idx < sortedTimestamps.length; idx++) {
+          const t = sortedTimestamps[idx];
+          const ptDate = new Date(t);
 
-        portfolio.forEach(lot => {
-          const buyD = lot.buyDate || '2024-01-01';
-          const buyTime = new Date(buyD).getTime();
-          const isOwned = (ptTime.getTime() >= buyTime) || (tf === '1D');
+          // Obter a taxa de câmbio histórica EUR/USD exata desse dia fornecida pelo Yahoo Finance
+          let liveFxRate = EUR_USD;
+          if (eurusdSeries && eurusdSeries.length > 0) {
+            const fx = getExactOrPrecedingPrice(eurusdSeries, t);
+            if (fx && fx > 0.5 && fx < 2.0) liveFxRate = fx;
+          }
 
-          if (isOwned) {
-            const buyRate = lot.eurUsdRateAtBuy || EUR_USD;
-            const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / buyRate;
-            investedAtPt += costEUR;
+          let investedAtPt = 0;
+          let valueAtPt = 0;
+          let anyLotActive = false;
 
-            let assetProgress = 0;
-            if (tf === '1D') {
-              assetProgress = ptProgress;
-            } else {
-              const spanFromBuy = now.getTime() - buyTime;
-              if (spanFromBuy > 0) {
-                assetProgress = Math.max(0, Math.min(1, (ptTime.getTime() - buyTime) / spanFromBuy));
-              } else {
-                assetProgress = 1;
+          portfolio.forEach(lot => {
+            const buyTime = new Date(lot.buyDate || '2024-01-01').getTime();
+            // Um lote só contribui após ter sido efetivamente adquirido
+            if (t >= buyTime || tf === '1D') {
+              anyLotActive = true;
+              const buyRate = lot.eurUsdRateAtBuy || liveFxRate;
+              const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / buyRate;
+              investedAtPt += costEUR;
+
+              const series = tickerSeriesMap[lot.ticker];
+              const realPriceUSD = getExactOrPrecedingPrice(series, t);
+
+              if (realPriceUSD !== null) {
+                valueAtPt += (lot.qty * realPriceUSD) / liveFxRate;
               }
             }
+          });
 
-            const series = tickerSeriesMap[lot.ticker];
-            let dynamicPrice;
-            if (series && series.length > 1) {
-              dynamicPrice = getPriceAtTime(series, ptTime);
-            } else {
-              const assetCurrentUSD = lot.currUSD || lot.avgUSD;
-              dynamicPrice = lot.avgUSD + ((assetCurrentUSD - lot.avgUSD) * assetProgress);
-            }
-
-            valueAtPt += (lot.qty * Math.max(0.01, dynamicPrice)) / EUR_USD;
+          // Se a carteira já detinha ativos nesta data de mercado, adicionar o ponto oficial
+          if (anyLotActive && investedAtPt > 0) {
+            points.push({
+              time: ptDate,
+              dateLabel: ptDate.toLocaleDateString('pt-PT', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: tf === '1A' || tf === 'TUDO' ? '2-digit' : undefined,
+                hour: tf === '1D' || tf === '1S' ? '2-digit' : undefined,
+                minute: tf === '1D' || tf === '1S' ? '2-digit' : undefined
+              }),
+              invested: investedAtPt,
+              value: valueAtPt
+            });
           }
-        });
-
-        if (i === numPoints) {
-          investedAtPt = metrics.totalInvEUR;
-          valueAtPt = metrics.totalCurrEUR;
         }
 
-        if (investedAtPt === 0 && points.length === 0) {
-          const firstLot = [...portfolio].sort((a,b) => (a.buyDate||'').localeCompare(b.buyDate||''))[0];
-          if (firstLot) {
-            const firstBuyRate = firstLot.eurUsdRateAtBuy || EUR_USD;
-            investedAtPt = ((firstLot.qty * firstLot.avgUSD) + (firstLot.feesUSD || 0)) / firstBuyRate;
-            valueAtPt = investedAtPt;
-          }
-        } else if (investedAtPt === 0 && points.length > 0) {
-          investedAtPt = points[points.length - 1].invested;
-          valueAtPt = points[points.length - 1].value;
+        // Ancorar o último ponto exatamente à cotação mais recente em tempo real
+        if (points.length > 0) {
+          const last = points[points.length - 1];
+          last.invested = metrics.totalInvEUR;
+          last.value = metrics.totalCurrEUR;
         }
 
-        points.push({
-          time: ptTime,
-          dateLabel: ptTime.toLocaleDateString('pt-PT', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: tf === '1A' || tf === 'TUDO' ? '2-digit' : undefined 
-          }),
-          invested: investedAtPt,
-          value: valueAtPt
-        });
+        return points;
+      } finally {
+        if (loader) loader.classList.add("hidden");
+        lucide.createIcons();
       }
-
-      return points;
     }
 
     let chartRenderToken = 0;
@@ -1595,9 +1657,7 @@
         try {
           const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
           if (myToken !== chartRenderToken) return;
-          if (points && points.length >= 2) {
-            cachedChartPoints = points;
-          }
+          cachedChartPoints = points || [];
         } finally {
           isFetchingChart = false;
         }
