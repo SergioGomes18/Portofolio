@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
@@ -1371,10 +1371,52 @@
                   </div>
                 </div>
 
+                <div class="overflow-x-auto custom-scrollbar">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-slate-800">
+                        <th class="py-1.5 px-3">Lote / Data</th>
+                        <th class="py-1.5 px-3 text-right">Qtd</th>
+                        <th class="py-1.5 px-3 text-right">Preço Pago ($)</th>
+                        <th class="py-1.5 px-3 text-right">Custo (€)</th>
+                        <th class="py-1.5 px-3 text-right">Valor Atual (€)</th>
+                        <th class="py-1.5 px-3 text-right">Rentabilidade do Lote</th>
+                        <th class="py-1.5 px-3 text-center">Peso no Ativo</th>
+                        <th class="py-1.5 px-3 text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/40">
+                      ${lotsRowsHtml}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(detailTr);
+        }
+      });
+
+      lucide.createIcons();
+    }
+
     // ------------------------------------------------------------------
     // Histórico real de preços (Yahoo Finance, mesma fonte da cotação atual)
     // ------------------------------------------------------------------
     let historicalDataCache = {};
+
+    function setChartTimeframe(tf) {
+      currentChartTimeframe = tf;
+      document.querySelectorAll(".chart-tf-btn").forEach(btn => {
+        if (btn.getAttribute("data-tf") === tf) {
+          btn.className = "chart-tf-btn active px-2.5 py-1 rounded-lg bg-sky-600 text-white font-semibold transition";
+        } else {
+          btn.className = "chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
+        }
+      });
+      cachedChartPoints = [];
+      renderLineChart(true);
+    }
 
     function timeframeToRangeInterval(tf) {
       switch (tf) {
@@ -1384,7 +1426,6 @@
         case '3M': return { range: '3mo', interval: '1d' };
         case '1A': return { range: '1y', interval: '1d' };
         default: {
-          // Para "TUDO", ajusta dinamicamente ao ano da compra mais antiga
           let oldestYear = new Date().getFullYear();
           portfolio.forEach(it => {
             if (it.buyDate) {
@@ -1402,7 +1443,6 @@
       const cacheKey = `${ticker}_${range}_${interval}`;
       if (historicalDataCache[cacheKey]) return historicalDataCache[cacheKey];
 
-      // Tenta recuperar da cache local da sessão para carregamento instantâneo
       try {
         const stored = sessionStorage.getItem(`ap_hist_${cacheKey}`);
         if (stored) {
@@ -1414,7 +1454,6 @@
         }
       } catch (e) {}
 
-      // URLs do Yahoo Finance: query2 é prioritário por ser mais resiliente a bots/CORS
       const targetUrls = [
         `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`,
         `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`
@@ -1422,24 +1461,20 @@
 
       for (const yfUrl of targetUrls) {
         const proxyList = [
-          // AllOrigins com /get (retorna envelope JSON e não bloqueia em mobile)
           `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
-          // CorsProxy oficial
           `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`,
-          // CodeTabs proxy
           `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrl)}`
         ];
 
         for (const pUrl of proxyList) {
           try {
             const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 9000); // 9s para ligações móveis
+            const tid = setTimeout(() => controller.abort(), 7500);
             const res = await fetch(pUrl, { signal: controller.signal });
             clearTimeout(tid);
 
             if (res.ok) {
               const raw = await res.json();
-              // Desempacota quer venha direto quer venha envolvido em { contents: "..." }
               let json = raw;
               if (raw && typeof raw.contents === 'string') {
                 try {
@@ -1474,9 +1509,7 @@
                 }
               }
             }
-          } catch (e) {
-            // Segue para a próxima rota sem bloquear a execução
-          }
+          } catch (e) {}
         }
       }
 
@@ -2233,3 +2266,4 @@
   </script>
 </body>
 </html>
+```
