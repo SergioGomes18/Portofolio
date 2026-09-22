@@ -454,7 +454,7 @@
               inputmode="decimal"
               id="form-avg" 
               required 
-              placeholder="ex: 108.84" 
+              placeholder="ex: 584.16" 
               oninput="recalculateFormFees()"
               class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
@@ -471,6 +471,40 @@
               id="form-curr" 
               placeholder="Auto / Vazio" 
               class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
+            >
+          </div>
+        </div>
+
+        <!-- NOVO CAMPO: ALINHAMENTO COM A CORRETORA (€ REAL DEBITADO) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface-subtle/80 border border-surface-border">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-accent">Total Pago Real (€ EUR)</label>
+              <span class="text-[10px] text-slate-400 font-mono">Corretora</span>
+            </div>
+            <input 
+              type="text" 
+              inputmode="decimal"
+              id="form-cost-eur" 
+              placeholder="ex: 508.45" 
+              oninput="onCostEURInput(this.value)"
+              class="w-full px-3 py-2 bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
+              title="Coloca aqui o valor exato em Euros que foi debitado pela tua corretora (incluindo taxas e câmbio real)"
+            >
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-300">Câmbio EUR/USD Efetivo</label>
+              <span class="text-[10px] text-slate-400 font-mono" id="form-fx-hint">Auto</span>
+            </div>
+            <input 
+              type="text" 
+              inputmode="decimal"
+              id="form-rate-at-buy" 
+              placeholder="1.0850" 
+              oninput="onFxRateInput(this.value)"
+              class="w-full px-3 py-2 bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
             >
           </div>
         </div>
@@ -761,7 +795,8 @@
                 currUSD: parseFloat(item.currUSD),
                 prevCloseUSD: parseFloat(item.prevCloseUSD || item.currUSD),
                 feesUSD: parseFloat(item.feesUSD || 0),
-                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || EUR_USD)
+                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || EUR_USD),
+                costEUR: item.costEUR ? parseFloat(item.costEUR) : null
               });
             });
 
@@ -807,6 +842,7 @@
         avgUSD: item.avgUSD,
         currUSD: item.currUSD,
         feesUSD: item.feesUSD || 0,
+        eurUsdRateAtBuy: item.eurUsdRateAtBuy || EUR_USD,
         updated_at: new Date().toISOString()
       }));
 
@@ -834,13 +870,12 @@
       } catch (e) {}
     }
 
-    // LEITURA DIRETA DO ENDPOINT GOOGLE APPS SCRIPT (URL LIMPO E ESTÁVEL)
+    // LEITURA DIRETA DO ENDPOINT GOOGLE APPS SCRIPT
     async function fetchLiveMarketData(manual = false) {
       const icon = document.getElementById("icon-sync-quotes");
       if (icon) icon.classList.add("animate-spin");
 
       try {
-        // Pedido universal: devolve cotações em direto e histórico no mesmo JSON
         const res = await fetch(GOOGLE_API_URL);
         if (!res.ok) throw new Error("Falha HTTP na ligação ao Google Script");
 
@@ -905,12 +940,17 @@
       const groupedMap = new Map();
 
       portfolio.forEach(lot => {
-        const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
         const orderVolUSD = lot.qty * lot.avgUSD;
         const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
         const lotCurrValUSD = lot.qty * lot.currUSD;
 
-        const lotInvEUR = lotCostUSD / rateAtBuy;
+        // Custo em Euros: utiliza o valor exato debitado ou converte pelo câmbio da compra
+        let lotInvEUR = lot.costEUR;
+        if (!lotInvEUR || lotInvEUR <= 0) {
+          const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+          lotInvEUR = lotCostUSD / rateAtBuy;
+        }
+
         const lotCurrEUR = lotCurrValUSD / EUR_USD;
         const lotPLEUR = lotCurrEUR - lotInvEUR;
         const lotPLUSD = lotCurrValUSD - lotCostUSD;
@@ -1154,7 +1194,10 @@
 
           if (lotDateStr <= dateStr) {
             hasBought = true;
-            const lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || fxRate);
+            let lotCostEUR = lot.costEUR;
+            if (!lotCostEUR || lotCostEUR <= 0) {
+              lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || fxRate);
+            }
             dayInvestedEUR += lotCostEUR;
 
             if (history[lot.ticker] && history[lot.ticker][dateStr]) {
@@ -1534,6 +1577,35 @@
       lucide.createIcons();
     }
 
+    // SINCRONIZAÇÃO AUTOMÁTICA ENTRE CUSTO EM EUROS E CÂMBIO
+    window.onCostEURInput = function(val) {
+      const costEUR = parseNumericInput(val);
+      const qty = parseNumericInput(document.getElementById("form-qty")?.value);
+      const avg = parseNumericInput(document.getElementById("form-avg")?.value);
+      const fees = parseNumericInput(document.getElementById("form-fees")?.value);
+      const totalUSD = (qty * avg) + fees;
+
+      if (costEUR > 0 && totalUSD > 0) {
+        const impliedRate = totalUSD / costEUR;
+        const rateInput = document.getElementById("form-rate-at-buy");
+        if (rateInput) rateInput.value = impliedRate.toFixed(4);
+      }
+    };
+
+    window.onFxRateInput = function(val) {
+      const rate = parseNumericInput(val);
+      const qty = parseNumericInput(document.getElementById("form-qty")?.value);
+      const avg = parseNumericInput(document.getElementById("form-avg")?.value);
+      const fees = parseNumericInput(document.getElementById("form-fees")?.value);
+      const totalUSD = (qty * avg) + fees;
+
+      if (rate > 0 && totalUSD > 0) {
+        const impliedCostEUR = totalUSD / rate;
+        const costInput = document.getElementById("form-cost-eur");
+        if (costInput) costInput.value = impliedCostEUR.toFixed(2);
+      }
+    };
+
     // GESTÃO DE MODAIS E FORMULÁRIO
     window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
@@ -1570,11 +1642,18 @@
           document.getElementById("form-avg").value = lot.avgUSD;
           document.getElementById("form-curr").value = lot.currUSD;
           document.getElementById("form-fees").value = lot.feesUSD || 0;
+          
+          const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+          const costEUR = lot.costEUR || (((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / rateAtBuy);
+          document.getElementById("form-cost-eur").value = Number(costEUR.toFixed(2));
+          document.getElementById("form-rate-at-buy").value = Number(rateAtBuy.toFixed(4));
+
           updateBreakEvenDisplay();
         }
       } else {
         const feesInput = document.getElementById("form-fees");
         if (feesInput) feesInput.value = "0.35";
+        document.getElementById("form-rate-at-buy").value = EUR_USD.toFixed(4);
         updateBreakEvenDisplay();
       }
 
@@ -1635,6 +1714,18 @@
 
       if (feesInput) feesInput.value = fees.toFixed(2);
       updateBreakEvenDisplay();
+
+      // Recalcula o Custo em Euros sugerido se o campo ainda não foi preenchido manualmente
+      const totalUSD = orderVol + fees;
+      const rateInput = document.getElementById("form-rate-at-buy");
+      let rate = parseNumericInput(rateInput?.value) || EUR_USD;
+      if (rate <= 0) rate = EUR_USD;
+      if (rateInput && !rateInput.value) rateInput.value = rate.toFixed(4);
+
+      const costInput = document.getElementById("form-cost-eur");
+      if (costInput && (!costInput.value || costInput.value === "0")) {
+        costInput.value = (totalUSD / rate).toFixed(2);
+      }
     };
 
     window.updateBreakEvenDisplay = function () {
@@ -1692,6 +1783,20 @@
       const prevCloseUSD = cachedQuotes[ticker]?.prevClose || currUSD;
       const feesUSD = parseNumericInput(document.getElementById("form-fees")?.value);
 
+      // Custo em Euros e Câmbio Efetivo
+      let costEUR = parseNumericInput(document.getElementById("form-cost-eur")?.value);
+      let eurUsdRateAtBuy = parseNumericInput(document.getElementById("form-rate-at-buy")?.value);
+
+      const totalUSD = (qty * avgUSD) + feesUSD;
+      if (costEUR > 0 && eurUsdRateAtBuy <= 0) {
+        eurUsdRateAtBuy = totalUSD / costEUR;
+      } else if (eurUsdRateAtBuy > 0 && costEUR <= 0) {
+        costEUR = totalUSD / eurUsdRateAtBuy;
+      } else if (costEUR <= 0 && eurUsdRateAtBuy <= 0) {
+        eurUsdRateAtBuy = EUR_USD;
+        costEUR = totalUSD / EUR_USD;
+      }
+
       if (id) {
         const idx = portfolio.findIndex(it => String(it.id) === String(id));
         if (idx !== -1) {
@@ -1706,7 +1811,9 @@
             avgUSD,
             currUSD,
             prevCloseUSD,
-            feesUSD
+            feesUSD,
+            costEUR,
+            eurUsdRateAtBuy
           };
         }
         showToast(`Lote de ${ticker} atualizado!`);
@@ -1723,7 +1830,8 @@
           currUSD,
           prevCloseUSD,
           feesUSD,
-          eurUsdRateAtBuy: EUR_USD
+          costEUR,
+          eurUsdRateAtBuy
         };
         portfolio.push(newLot);
         expandedTickers.add(ticker);
