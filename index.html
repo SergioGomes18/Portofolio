@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Portfolio Tracker Pro | Value & Growth Terminal</title>
+  <title>Portfolio Tracker Pro | Gestão Multi-Lotes</title>
 
   <!-- Tailwind CSS & Supabase SDK -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -34,21 +34,6 @@
               850: '#111827',
               800: '#1f2937',
               700: '#374151',
-            },
-            brand: {
-              400: '#38bdf8',
-              500: '#0ea5e9',
-              600: '#0284c7',
-            },
-            profit: {
-              DEFAULT: '#10b981',
-              dark: '#059669',
-              glow: 'rgba(16, 185, 129, 0.15)',
-            },
-            loss: {
-              DEFAULT: '#f43f5e',
-              dark: '#e11d48',
-              glow: 'rgba(244, 63, 94, 0.15)',
             }
           }
         }
@@ -95,15 +80,15 @@
       <!-- Brand Logo & Live Indicators -->
       <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
         <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
-          <i data-lucide="line-chart" class="w-5 h-5"></i>
+          <i data-lucide="layers" class="w-5 h-5"></i>
         </div>
         <div>
           <div class="flex items-center gap-1.5">
             <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-white font-mono">AssetPulse</h1>
-            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">PRO</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">MULTI-LOTES</span>
           </div>
           <div class="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
-            <span id="header-eurusd" class="hover:text-sky-300 transition cursor-pointer" onclick="fetchLiveExchangeRate(true)" title="Clique para atualizar taxa de câmbio">
+            <span id="header-eurusd" class="hover:text-sky-300 transition cursor-pointer" onclick="fetchLiveExchangeRate(true)" title="Atualizar taxa de câmbio">
               1€ = <span id="val-eurusd">1.0850</span>$
             </span>
             <span class="text-slate-600">•</span>
@@ -115,22 +100,22 @@
         </div>
       </div>
 
-      <!-- Action Buttons Bar (Responsive Scrollable on Narrow Screens) -->
+      <!-- Action Buttons Bar -->
       <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto custom-scrollbar py-1">
         
         <!-- Live Quotes Refresh -->
-        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Atualizar Cotações Oficiais">
+        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Atualizar Cotações">
           <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-sky-400"></i>
           <span class="hidden md:inline">Cotações Reais</span>
         </button>
 
         <!-- Test Random Asset Button -->
-        <button onclick="injectTestAsset()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Inserir Ação de Teste">
+        <button onclick="injectTestAsset()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0" title="Inserir Compra de Teste">
           <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
-          <span class="hidden lg:inline">Testar Ação</span>
+          <span class="hidden lg:inline">Testar Compra</span>
         </button>
 
-        <!-- Supabase Status & Config -->
+        <!-- Supabase Cloud Modal -->
         <button onclick="openSupabaseModal()" class="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700/80 transition active:scale-95 shrink-0">
           <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
           <span class="hidden sm:inline">Nuvem</span>
@@ -139,7 +124,7 @@
         <!-- ADD ASSET BUTTON -->
         <button onclick="openModal()" class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow-md shadow-sky-600/30 transition active:scale-95 shrink-0">
           <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
-          <span>+ Ativo</span>
+          <span>+ Nova Compra</span>
         </button>
       </div>
 
@@ -169,7 +154,7 @@
           </div>
         </div>
         <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
-        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-total-invested-usd">$0.00 (custo de aquisição)</div>
+        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-total-invested-usd">$0.00 (custo total)</div>
       </div>
 
       <!-- Current Portfolio Value -->
@@ -181,7 +166,7 @@
           </div>
         </div>
         <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
-        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 (ao câmbio do dia)</div>
+        <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 (em tempo real)</div>
       </div>
 
       <!-- Total Net Profit/Loss -->
@@ -232,7 +217,7 @@
             </h2>
             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-sky-400 border border-slate-700">Por Data de Compra</span>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">Evolução do valor total em Euros (€) com linha de custo de aquisição</p>
+          <p class="text-xs text-slate-400 mt-0.5">Evolução temporal com acumulação precisa de cada compra individual</p>
         </div>
 
         <!-- Scrubber Inspection Header -->
@@ -269,23 +254,23 @@
       <!-- Canvas Chart Container -->
       <div class="relative w-full h-64 sm:h-72 touch-none">
         <canvas id="equityLineChart" class="w-full h-full block"></canvas>
-        <div id="chart-loading-overlay" class="hidden absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center text-xs font-mono text-sky-400">
-          <i data-lucide="refresh-cw" class="w-4 h-4 animate-spin mr-2"></i> A carregar dados históricos...
-        </div>
       </div>
     </section>
 
-    <!-- Portfolio Positions Table -->
+    <!-- Portfolio Positions & Multi-Lots Table -->
     <section class="rounded-2xl glass-panel overflow-hidden flex flex-col">
       
       <!-- Table Header & Filters -->
       <div class="p-3.5 sm:p-4 border-b border-slate-800 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-        <div class="flex items-center gap-2">
-          <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="briefcase" class="w-4 h-4 text-sky-400"></i>
-            Ativos da Carteira
-          </h2>
-          <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300" id="table-asset-count">0 ativos</span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="briefcase" class="w-4 h-4 text-sky-400"></i>
+              Ativos Consolidados & Posições
+            </h2>
+            <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300" id="table-asset-count">0 ativos</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Clica em qualquer linha para expandir e ver todas as tuas compras individuais e respetivas percentagens.</p>
         </div>
 
         <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
@@ -301,13 +286,13 @@
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="border-b border-slate-800/80 bg-slate-950/60 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-3 sm:px-4">Ativo / Compra</th>
-              <th class="py-3 px-3 text-right">Qtd</th>
-              <th class="py-3 px-3 text-right">Preço Médio ($)</th>
+              <th class="py-3 px-3 sm:px-4">Ativo</th>
+              <th class="py-3 px-3 text-right">Qtd Total</th>
+              <th class="py-3 px-3 text-right">PMP ($)</th>
               <th class="py-3 px-3 text-right">Cotação ($)</th>
               <th class="py-3 px-3 text-right">Investido (€)</th>
               <th class="py-3 px-3 text-right">Valor Atual (€)</th>
-              <th class="py-3 px-3 text-right">Mais-Valia Líquida</th>
+              <th class="py-3 px-3 text-right">Mais-Valia Total</th>
               <th class="py-3 px-3 text-center">Peso</th>
               <th class="py-3 px-3 text-center">Ações</th>
             </tr>
@@ -324,14 +309,14 @@
           <i data-lucide="inbox" class="w-6 h-6"></i>
         </div>
         <h3 class="text-sm font-semibold text-slate-200">Nenhum ativo registado</h3>
-        <p class="text-xs text-slate-500 mt-1">Clica no botão "+ Ativo" para adicionar a tua primeira posição.</p>
+        <p class="text-xs text-slate-500 mt-1">Clica no botão "+ Nova Compra" para adicionar a tua primeira posição.</p>
       </div>
 
       <!-- Table Footer Status -->
       <div class="px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1.5 font-mono">
         <span class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-          <span>Conversão dinâmica USD/EUR com taxas oficiais de corretagem deduzidas.</span>
+          <span>Clica num ativo para detalhar lotes, histórico de compras e rentabilidade individual.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -340,27 +325,39 @@
 
   </main>
 
-  <!-- ==================== ASSET MODAL (ADD / EDIT) ==================== -->
+  <!-- ==================== ASSET / PURCHASE MODAL (ADD / EDIT) ==================== -->
   <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 hidden">
     <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
       <!-- Modal Header -->
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2" id="modal-title">
-          <span class="w-2 h-2 rounded-full bg-sky-500"></span>
-          Registar Novo Ativo
-        </h3>
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2" id="modal-title">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            Registar Nova Compra
+          </h3>
+          <p class="text-[11px] text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como uma posição individual rastreável.</p>
+        </div>
         <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Modal Body (Scrollable for Small Screens) -->
+      <!-- Modal Body -->
       <form id="asset-form" onsubmit="saveAsset(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar">
         <input type="hidden" id="form-id" value="">
 
         <!-- Error Feedback Banner -->
         <div id="form-error-feedback" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs"></div>
+
+        <!-- Existing Ticker Hint Badge -->
+        <div id="form-existing-hint" class="hidden p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sky-300">
+            <i data-lucide="info" class="w-4 h-4 text-sky-400 shrink-0"></i>
+            <span>Já possuis compras deste ativo na carteira. Esta compra será adicionada como um novo lote rastreável.</span>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono font-bold" id="form-hint-ticker">NVDA</span>
+        </div>
 
         <!-- Ticker & Autocomplete -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -372,14 +369,14 @@
                 id="form-ticker" 
                 required 
                 placeholder="ex: NVDA, MSFT, AAPL" 
-                oninput="debounceTickerLookup(this.value)"
+                oninput="onTickerInput(this.value)"
                 class="w-full uppercase px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono tracking-wider"
               >
               <div id="ticker-fetch-indicator" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-sky-400">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i>
               </div>
             </div>
-            <span class="text-[10px] text-slate-500 mt-1 block">Procura cotação e nome automaticamente</span>
+            <span class="text-[10px] text-slate-500 mt-1 block">Procura cotação e preenche a empresa</span>
           </div>
 
           <div>
@@ -396,7 +393,7 @@
           </div>
         </div>
 
-        <!-- Company Name (Optional / Auto-filled) -->
+        <!-- Company Name (Auto-filled) -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa (Opcional)</label>
           <input 
@@ -410,7 +407,7 @@
         <!-- Broker & Purchase Date -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora *</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora desta Compra *</label>
             <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-sky-500">
               <option value="IBKR">Interactive Brokers (Tiered $0.35)</option>
               <option value="IBKR_FIXED">Interactive Brokers (Fixed $1.00)</option>
@@ -421,7 +418,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Data de Compra (Início no Gráfico) *</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Data desta Compra *</label>
             <input 
               type="date" 
               id="form-date" 
@@ -447,7 +444,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Preço Médio ($ USD) *</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Preço Pago ($ USD) *</label>
             <input 
               type="text" 
               inputmode="decimal"
@@ -490,7 +487,7 @@
             </div>
           </div>
           <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-800/80">
-            <span class="text-slate-400">Preço de Equilíbrio (Break-Even):</span>
+            <span class="text-slate-400">Preço de Equilíbrio (Break-Even deste lote):</span>
             <span class="font-mono font-bold text-sky-400" id="form-be-display">$0.00</span>
           </div>
           <p class="text-[10px] text-slate-500" id="form-fee-note">IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).</p>
@@ -507,9 +504,10 @@
           </button>
           <button 
             type="submit" 
+            id="form-submit-btn"
             class="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-lg shadow-sky-600/30 transition active:scale-95"
           >
-            Guardar Ativo
+            Guardar Compra
           </button>
         </div>
 
@@ -524,7 +522,7 @@
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
           <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i>
-          Configuração Nuvem Supabase
+          Base de Dados Supabase (Multi-Dispositivo)
         </h3>
         <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -534,7 +532,7 @@
       <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
         <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center gap-2">
           <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-          <span>A tua base de dados Supabase está ligada e a sincronizar automaticamente.</span>
+          <span>Todas as tuas compras e lotes estão sincronizados na nuvem Supabase.</span>
         </div>
 
         <div>
@@ -546,27 +544,6 @@
             class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-[11px]" 
             readonly
           >
-        </div>
-
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">Script SQL de Inicialização (Caso Necessário)</label>
-          <pre class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[10px] text-slate-300 overflow-x-auto select-all">
-create table if not exists portfolio (
-  id text primary key,
-  ticker text not null,
-  name text not null,
-  category text not null,
-  broker text not null,
-  buy_date text,
-  qty numeric not null,
-  "avgUSD" numeric not null,
-  "currUSD" numeric not null,
-  "feesUSD" numeric default 0,
-  updated_at timestamp with time zone default timezone('utc'::text, now())
-);
-alter table portfolio enable row level security;
-create policy "Acesso Livre" on portfolio for all using (true) with check (true);
-          </pre>
         </div>
 
         <div class="flex items-center justify-between pt-2">
@@ -598,7 +575,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       console.warn("Supabase init guard:", e);
     }
 
-    // Default reference portfolio with real calibrated market prices
+    // Default portfolio illustrating multiple purchases for the same asset (e.g., NVDA has 2 lots)
     const INITIAL_PORTFOLIO = [
       {
         id: "1",
@@ -607,8 +584,20 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         category: "Tecnologia",
         broker: "IBKR",
         buyDate: "2024-01-15",
-        qty: 15,
-        avgUSD: 118.50,
+        qty: 10,
+        avgUSD: 110.00,
+        currUSD: 227.38,
+        feesUSD: 0.35
+      },
+      {
+        id: "1-b",
+        ticker: "NVDA",
+        name: "NVIDIA Corporation",
+        category: "Tecnologia",
+        broker: "IBKR",
+        buyDate: "2024-05-10",
+        qty: 5,
+        avgUSD: 135.50,
         currUSD: 227.38,
         feesUSD: 0.35
       },
@@ -650,7 +639,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       }
     ];
 
-    // Reference directory for real market prices
     const TICKER_DIRECTORY = {
       "NVDA": { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
       "MSFT": { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
@@ -670,9 +658,9 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
     let EUR_USD = 1.0850;
     let currentFilter = 'ALL';
     let currentChartTimeframe = 'TUDO';
-    let historicalCache = {};
     let lookupDebounceTimer = null;
     let chartHoverIndex = -1;
+    let expandedTickers = new Set(); // Tracks which tickers are expanded in the UI
 
     // ==========================================
     // 2. UTILITY & FORMATTING FUNCTIONS
@@ -709,7 +697,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
     // 3. STORAGE & SUPABASE SYNC ENGINE
     // ==========================================
     function loadLocalPortfolio() {
-      const stored = localStorage.getItem("assetpulse_portfolio_v2");
+      const stored = localStorage.getItem("assetpulse_portfolio_lots_v3");
       if (stored) {
         try {
           portfolio = JSON.parse(stored);
@@ -723,7 +711,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
     }
 
     function saveLocalPortfolio() {
-      localStorage.setItem("assetpulse_portfolio_v2", JSON.stringify(portfolio));
+      localStorage.setItem("assetpulse_portfolio_lots_v3", JSON.stringify(portfolio));
     }
 
     async function syncFromSupabase() {
@@ -746,7 +734,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
           saveLocalPortfolio();
           renderAll();
         } else if (!error && (!data || data.length === 0)) {
-          // Se a tabela estiver vazia na nuvem, carrega os dados locais para lá
           syncAllToSupabase();
         }
       } catch (err) {
@@ -811,7 +798,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       const clean = (ticker || "").trim().toUpperCase();
       if (!clean) return null;
 
-      // 1. Yahoo Finance chart API via Proxies
       const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`;
       const proxyList = [
         `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
@@ -839,7 +825,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         } catch (e) {}
       }
 
-      // 2. Diretório Real Calibrado (Fallback)
       if (TICKER_DIRECTORY[clean]) {
         return {
           price: TICKER_DIRECTORY[clean].price,
@@ -855,15 +840,21 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       const icon = document.getElementById("icon-sync-quotes");
       if (icon) icon.classList.add("animate-spin");
 
+      const uniqueTickers = [...new Set(portfolio.map(it => it.ticker))];
       let updatedCount = 0;
-      for (let i = 0; i < portfolio.length; i++) {
-        const item = portfolio[i];
-        const quote = await fetchQuoteFromWeb(item.ticker);
+
+      for (const ticker of uniqueTickers) {
+        const quote = await fetchQuoteFromWeb(ticker);
         if (quote && quote.price > 0) {
-          portfolio[i].currUSD = quote.price;
-          if (!portfolio[i].name || portfolio[i].name === portfolio[i].ticker) {
-            portfolio[i].name = quote.name;
-          }
+          // Update all buy lots for this ticker with the latest market price
+          portfolio.forEach(item => {
+            if (item.ticker === ticker) {
+              item.currUSD = quote.price;
+              if (!item.name || item.name === item.ticker) {
+                item.name = quote.name;
+              }
+            }
+          });
           updatedCount++;
         }
       }
@@ -883,7 +874,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
     }
 
     // ==========================================
-    // 5. CALCULATIONS & RENDERING
+    // 5. CONSOLIDATED POSITIONS & LOT CALCULATIONS
     // ==========================================
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
@@ -891,33 +882,96 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       let totalCurrEUR = 0;
       let totalCurrUSD = 0;
 
-      const itemsWithMetrics = portfolio.map(item => {
-        const orderVolUSD = item.qty * item.avgUSD;
-        const totalCostUSD = orderVolUSD + (item.feesUSD || 0);
-        const currValUSD = item.qty * item.currUSD;
+      // Group individual purchase lots by Ticker
+      const groupedMap = new Map();
 
-        const invEUR = totalCostUSD / EUR_USD;
-        const currEUR = currValUSD / EUR_USD;
-        const plEUR = currEUR - invEUR;
-        const plUSD = currValUSD - totalCostUSD;
-        const plPct = totalCostUSD > 0 ? (plUSD / totalCostUSD) * 100 : 0;
-        const breakEvenUSD = item.qty > 0 ? totalCostUSD / item.qty : item.avgUSD;
+      portfolio.forEach(lot => {
+        const orderVolUSD = lot.qty * lot.avgUSD;
+        const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
+        const lotCurrValUSD = lot.qty * lot.currUSD;
 
-        totalInvEUR += invEUR;
-        totalInvUSD += totalCostUSD;
-        totalCurrEUR += currEUR;
-        totalCurrUSD += currValUSD;
+        const lotInvEUR = lotCostUSD / EUR_USD;
+        const lotCurrEUR = lotCurrValUSD / EUR_USD;
+        const lotPLEUR = lotCurrEUR - lotInvEUR;
+        const lotPLUSD = lotCurrValUSD - lotCostUSD;
+        const lotPLPct = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
+        const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
+
+        totalInvEUR += lotInvEUR;
+        totalInvUSD += lotCostUSD;
+        totalCurrEUR += lotCurrEUR;
+        totalCurrUSD += lotCurrValUSD;
+
+        const calculatedLot = {
+          ...lot,
+          costUSD: lotCostUSD,
+          currValUSD: lotCurrValUSD,
+          invEUR: lotInvEUR,
+          currEUR: lotCurrEUR,
+          plEUR: lotPLEUR,
+          plUSD: lotPLUSD,
+          plPct: lotPLPct,
+          breakEvenUSD: lotBreakEvenUSD
+        };
+
+        if (!groupedMap.has(lot.ticker)) {
+          groupedMap.set(lot.ticker, {
+            ticker: lot.ticker,
+            name: lot.name || lot.ticker,
+            category: lot.category || 'Tecnologia',
+            currUSD: lot.currUSD,
+            lots: []
+          });
+        }
+        groupedMap.get(lot.ticker).lots.push(calculatedLot);
+      });
+
+      // Compute consolidated statistics for each asset group
+      const consolidatedAssets = Array.from(groupedMap.values()).map(asset => {
+        let totalQty = 0;
+        let totalCostBasisUSD = 0;
+        let totalFeesUSD = 0;
+        let totalValUSD = 0;
+        let totalInvEUR_asset = 0;
+        let totalCurrEUR_asset = 0;
+
+        // Sort lots by purchase date
+        asset.lots.sort((a, b) => (a.buyDate || '').localeCompare(b.buyDate || ''));
+
+        asset.lots.forEach(lot => {
+          totalQty += lot.qty;
+          totalCostBasisUSD += (lot.qty * lot.avgUSD);
+          totalFeesUSD += (lot.feesUSD || 0);
+          totalValUSD += lot.currValUSD;
+          totalInvEUR_asset += lot.invEUR;
+          totalCurrEUR_asset += lot.currEUR;
+        });
+
+        const pmpUSD = totalQty > 0 ? (totalCostBasisUSD / totalQty) : 0;
+        const breakEvenUSD = totalQty > 0 ? ((totalCostBasisUSD + totalFeesUSD) / totalQty) : 0;
+        const plEUR = totalCurrEUR_asset - totalInvEUR_asset;
+        const plUSD = totalValUSD - (totalCostBasisUSD + totalFeesUSD);
+        const plPct = totalInvEUR_asset > 0 ? (plEUR / totalInvEUR_asset) * 100 : 0;
+
+        // Annotate each lot with its weight inside this position
+        asset.lots = asset.lots.map(lot => ({
+          ...lot,
+          lotPositionWeight: totalQty > 0 ? (lot.qty / totalQty) * 100 : 0
+        }));
 
         return {
-          ...item,
-          totalCostUSD,
-          currValUSD,
-          invEUR,
-          currEUR,
+          ...asset,
+          totalQty,
+          pmpUSD,
+          breakEvenUSD,
+          totalFeesUSD,
+          totalCostUSD: totalCostBasisUSD + totalFeesUSD,
+          totalValUSD,
+          totalInvEUR: totalInvEUR_asset,
+          totalCurrEUR: totalCurrEUR_asset,
           plEUR,
           plUSD,
-          plPct,
-          breakEvenUSD
+          plPct
         };
       });
 
@@ -926,7 +980,8 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
 
       return {
-        items: itemsWithMetrics,
+        assets: consolidatedAssets,
+        rawLots: portfolio,
         totalInvEUR,
         totalInvUSD,
         totalCurrEUR,
@@ -939,10 +994,10 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
 
     function renderKPIs(metrics) {
       document.getElementById("kpi-total-invested").textContent = fmtEUR(metrics.totalInvEUR);
-      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} (custo de aquisição)`;
+      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} (custo total)`;
 
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
-      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} (ao câmbio do dia)`;
+      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} (em tempo real)`;
 
       const plEurEl = document.getElementById("kpi-pl-eur");
       const plPctEl = document.getElementById("kpi-pl-pct");
@@ -963,9 +1018,8 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
           : `<i data-lucide="trending-down" class="w-4 h-4 text-rose-400"></i>`;
       }
 
-      // Best and worst performers
-      if (metrics.items.length > 0) {
-        const sorted = [...metrics.items].sort((a, b) => b.plPct - a.plPct);
+      if (metrics.assets.length > 0) {
+        const sorted = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
         const best = sorted[0];
         const worst = sorted[sorted.length - 1];
 
@@ -976,7 +1030,17 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         document.getElementById("kpi-worst-asset").textContent = "-";
       }
 
-      document.getElementById("table-asset-count").textContent = `${metrics.items.length} ativos`;
+      document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
+    }
+
+    function toggleTickerExpand(ticker) {
+      if (expandedTickers.has(ticker)) {
+        expandedTickers.delete(ticker);
+      } else {
+        expandedTickers.add(ticker);
+      }
+      const metrics = calculatePortfolioMetrics();
+      renderTable(metrics);
     }
 
     function renderTable(metrics) {
@@ -984,8 +1048,8 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       const emptyState = document.getElementById("table-empty-state");
       tbody.innerHTML = "";
 
-      const filtered = metrics.items.filter(item => {
-        return currentFilter === 'ALL' || item.category === currentFilter;
+      const filtered = metrics.assets.filter(asset => {
+        return currentFilter === 'ALL' || asset.category === currentFilter;
       });
 
       if (filtered.length === 0) {
@@ -994,67 +1058,79 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       }
       emptyState.classList.add("hidden");
 
-      filtered.forEach(item => {
-        const allocPct = metrics.totalCurrEUR > 0 ? (item.currEUR / metrics.totalCurrEUR) * 100 : 0;
-        const isPos = item.plEUR >= 0;
+      filtered.forEach(asset => {
+        const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
+        const isPos = asset.plEUR >= 0;
         const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
         const badgeBg = isPos ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        const isExpanded = expandedTickers.has(asset.ticker);
 
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-800/40 transition-colors border-b border-slate-800/50";
-        tr.innerHTML = `
-          <!-- Ticker & Data de Compra -->
+        // PARENT CONSOLIDATED ROW
+        const parentTr = document.createElement("tr");
+        parentTr.className = `cursor-pointer transition-colors border-b border-slate-800/60 ${isExpanded ? 'bg-slate-900/90' : 'hover:bg-slate-800/40 bg-slate-950/30'}`;
+        parentTr.onclick = (e) => {
+          // If clicked on an action button, don't toggle
+          if (e.target.closest('button')) return;
+          toggleTickerExpand(asset.ticker);
+        };
+
+        parentTr.innerHTML = `
+          <!-- Ticker & Expander Chevron -->
           <td class="py-3 px-3 sm:px-4">
             <div class="flex items-center gap-2">
+              <div class="p-1 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-400 transition">
+                <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4"></i>
+              </div>
               <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700/80 flex items-center justify-center font-bold text-xs text-sky-400 font-mono">
-                ${item.ticker.slice(0, 3)}
+                ${asset.ticker.slice(0, 3)}
               </div>
               <div>
                 <div class="font-bold text-white font-mono text-xs flex items-center gap-1.5">
-                  ${item.ticker}
-                  <span class="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400 font-normal">[${item.broker}]</span>
+                  ${asset.ticker}
+                  <span class="text-[9px] px-1.5 py-0.2 rounded-full ${asset.lots.length > 1 ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30' : 'bg-slate-800 text-slate-400'} font-mono">
+                    ${asset.lots.length} ${asset.lots.length === 1 ? 'compra' : 'compras'}
+                  </span>
                 </div>
-                <div class="text-[10px] text-slate-400 line-clamp-1 max-w-[120px] sm:max-w-[180px]">${item.name}</div>
-                <div class="text-[9px] text-slate-500 font-mono">📅 ${item.buyDate || '2024-01-01'}</div>
+                <div class="text-[10px] text-slate-400 line-clamp-1 max-w-[120px] sm:max-w-[180px]">${asset.name}</div>
               </div>
             </div>
           </td>
 
-          <!-- Quantidade -->
-          <td class="py-3 px-3 text-right font-mono text-slate-200">
-            ${Number(item.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
+          <!-- Quantidade Total -->
+          <td class="py-3 px-3 text-right font-mono font-medium text-slate-100">
+            ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
           </td>
 
-          <!-- Preço Médio & Break-Even -->
+          <!-- Preço Médio Ponderado (PMP) -->
           <td class="py-3 px-3 text-right font-mono">
-            <div class="text-slate-300">${fmtUSD(item.avgUSD)}</div>
-            <div class="text-[10px] text-slate-500" title="Preço de Equilíbrio com taxas">BE: ${fmtUSD(item.breakEvenUSD)}</div>
+            <div class="text-slate-200 font-bold">${fmtUSD(asset.pmpUSD)}</div>
+            <div class="text-[10px] text-slate-500" title="Preço de Equilíbrio consolidado">BE: ${fmtUSD(asset.breakEvenUSD)}</div>
           </td>
 
-          <!-- Cotação Atual -->
-          <td class="py-3 px-3 text-right font-mono font-semibold text-white">
-            ${fmtUSD(item.currUSD)}
-          </td>
-
-          <!-- Capital Investido (€) -->
-          <td class="py-3 px-3 text-right font-mono text-slate-300">
-            ${fmtEUR(item.invEUR)}
-          </td>
-
-          <!-- Valor Atual (€) -->
+          <!-- Cotação Atual de Mercado -->
           <td class="py-3 px-3 text-right font-mono font-bold text-white">
-            ${fmtEUR(item.currEUR)}
+            ${fmtUSD(asset.currUSD)}
           </td>
 
-          <!-- Mais-Valia Líquida -->
+          <!-- Capital Investido Total (€) -->
+          <td class="py-3 px-3 text-right font-mono text-slate-300">
+            ${fmtEUR(asset.totalInvEUR)}
+          </td>
+
+          <!-- Valor Atual Total (€) -->
+          <td class="py-3 px-3 text-right font-mono font-bold text-white">
+            ${fmtEUR(asset.totalCurrEUR)}
+          </td>
+
+          <!-- Mais-Valia Líquida Consolidada -->
           <td class="py-3 px-3 text-right font-mono">
-            <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(item.plEUR)}</div>
-            <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5">
-              ${fmtPCT(item.plPct)}
+            <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
+            <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5 font-bold">
+              ${fmtPCT(asset.plPct)}
             </div>
           </td>
 
-          <!-- Peso / Alocação -->
+          <!-- Peso / Alocação na Carteira -->
           <td class="py-3 px-3 text-center">
             <div class="w-16 sm:w-20 mx-auto">
               <div class="text-[10px] font-mono text-slate-400 mb-1">${allocPct.toFixed(1)}%</div>
@@ -1067,16 +1143,113 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
           <!-- Ações -->
           <td class="py-3 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button onclick="openModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 rounded-md hover:bg-slate-800 transition" title="Editar">
-                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-              </button>
-              <button onclick="deleteAsset('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-md hover:bg-slate-800 transition" title="Eliminar">
-                <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+              <button onclick="openModalForTicker('${asset.ticker}')" class="px-2 py-1 text-[11px] font-semibold text-sky-400 hover:text-white bg-sky-500/10 hover:bg-sky-600 rounded-lg border border-sky-500/20 transition active:scale-95 flex items-center gap-1" title="Adicionar Compra a este Ativo">
+                <i data-lucide="plus" class="w-3 h-3"></i>
+                <span class="hidden sm:inline">Reforço</span>
               </button>
             </div>
           </td>
         `;
-        tbody.appendChild(tr);
+        tbody.appendChild(parentTr);
+
+        // EXPANDED ACCORDION: DETAIL OF EVERY INDIVIDUAL PURCHASE LOT
+        if (isExpanded) {
+          const detailTr = document.createElement("tr");
+          detailTr.className = "bg-slate-950/90 border-b border-slate-800/80";
+
+          let lotsRowsHtml = "";
+          asset.lots.forEach((lot, idx) => {
+            const lotIsPos = lot.plEUR >= 0;
+            const lotColor = lotIsPos ? 'text-emerald-400' : 'text-rose-400';
+            const lotBadgeBg = lotIsPos ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+
+            lotsRowsHtml += `
+              <tr class="border-b border-slate-900/80 hover:bg-slate-900/60 transition text-[11px] font-mono">
+                <td class="py-2.5 px-3 text-slate-300">
+                  <div class="flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-md bg-slate-800 text-sky-400 flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
+                    <div>
+                      <span class="text-white font-semibold">📅 ${lot.buyDate || '2024-01-01'}</span>
+                      <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400">[${lot.broker}]</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-2.5 px-3 text-right text-slate-200">
+                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} ações
+                </td>
+                <td class="py-2.5 px-3 text-right text-slate-300">
+                  ${fmtUSD(lot.avgUSD)}
+                  <span class="block text-[9px] text-slate-500">Taxa: ${fmtUSD(lot.feesUSD || 0)}</span>
+                </td>
+                <td class="py-2.5 px-3 text-right text-slate-300">
+                  ${fmtEUR(lot.invEUR)}
+                </td>
+                <td class="py-2.5 px-3 text-right text-white font-bold">
+                  ${fmtEUR(lot.currEUR)}
+                </td>
+                <td class="py-2.5 px-3 text-right">
+                  <span class="font-bold ${lotColor}">${lotIsPos ? '+' : ''}${fmtEUR(lot.plEUR)}</span>
+                  <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${lotBadgeBg}">${fmtPCT(lot.plPct)}</span>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full bg-slate-800 text-sky-300 text-[10px]" title="Percentagem desta compra no total do ativo">
+                    ${lot.lotPositionWeight.toFixed(1)}% do ativo
+                  </span>
+                </td>
+                <td class="py-2.5 px-3 text-center">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <button onclick="openModal('${lot.id}')" class="p-1 text-slate-400 hover:text-sky-400 rounded hover:bg-slate-800 transition" title="Editar este lote">
+                      <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="deleteAsset('${lot.id}')" class="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-slate-800 transition" title="Eliminar este lote">
+                      <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+
+          detailTr.innerHTML = `
+            <td colspan="9" class="p-3 sm:p-4 bg-slate-950/80">
+              <div class="rounded-xl border border-sky-500/20 bg-slate-900/50 p-3.5 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                      Todas as Posições & Compras de ${asset.ticker} (${asset.lots.length} Lotes)
+                    </h4>
+                  </div>
+                  <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1 transition">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    + Registar Nova Compra de ${asset.ticker}
+                  </button>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                  <table class="w-full text-left border-collapse">
+                    <thead>
+                      <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-slate-800">
+                        <th class="py-1.5 px-3">Lote / Data</th>
+                        <th class="py-1.5 px-3 text-right">Qtd</th>
+                        <th class="py-1.5 px-3 text-right">Preço Pago ($)</th>
+                        <th class="py-1.5 px-3 text-right">Custo (€)</th>
+                        <th class="py-1.5 px-3 text-right">Valor Atual (€)</th>
+                        <th class="py-1.5 px-3 text-right">Rentabilidade do Lote</th>
+                        <th class="py-1.5 px-3 text-center">Peso no Ativo</th>
+                        <th class="py-1.5 px-3 text-center">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/40">
+                      ${lotsRowsHtml}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(detailTr);
+        }
       });
 
       lucide.createIcons();
@@ -1099,7 +1272,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
 
     function generateDateDrivenPoints(metrics, tf) {
       const now = new Date();
-      let numPoints = 24;
+      let numPoints = 30;
       let startTime = new Date();
 
       if (tf === '1D') {
@@ -1119,7 +1292,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         numPoints = 40;
       } else { // TUDO
         let oldest = new Date();
-        metrics.items.forEach(it => {
+        portfolio.forEach(it => {
           if (it.buyDate) {
             const d = new Date(it.buyDate);
             if (d < oldest) oldest = d;
@@ -1136,26 +1309,23 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         const ptTime = new Date(startTime.getTime() + (totalSpan * (i / numPoints)));
         const ptDateStr = ptTime.toISOString().split("T")[0];
 
-        // Inclui apenas ativos adquiridos até à data deste ponto
         let investedAtPt = 0;
         let valueAtPt = 0;
 
-        metrics.items.forEach(it => {
-          const buyD = it.buyDate || '2024-01-01';
+        portfolio.forEach(lot => {
+          const buyD = lot.buyDate || '2024-01-01';
           if (buyD <= ptDateStr || tf === '1D') {
-            const costEUR = ((it.qty * it.avgUSD) + (it.feesUSD || 0)) / EUR_USD;
+            const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / EUR_USD;
             investedAtPt += costEUR;
 
-            // Variação suave até à cotação final
             const progress = i / numPoints;
-            const seed = (it.ticker.charCodeAt(0) * 7 + i) % 11;
+            const seed = (lot.ticker.charCodeAt(0) * 7 + i) % 11;
             const noise = 1 + ((seed - 5) * 0.003 * (1 - progress));
-            const interpolatedPrice = (it.avgUSD + (it.currUSD - it.avgUSD) * progress) * noise;
-            valueAtPt += (it.qty * interpolatedPrice) / EUR_USD;
+            const interpolatedPrice = (lot.avgUSD + (lot.currUSD - lot.avgUSD) * progress) * noise;
+            valueAtPt += (lot.qty * interpolatedPrice) / EUR_USD;
           }
         });
 
-        // O ponto final tem de bater exatamente certo com os KPIs
         if (i === numPoints) {
           investedAtPt = metrics.totalInvEUR;
           valueAtPt = metrics.totalCurrEUR;
@@ -1204,7 +1374,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
 
       ctx.clearRect(0, 0, W, H);
 
-      // 1. Grelha de Fundo Horizontal
+      // Grid
       ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
       ctx.lineWidth = 1;
       for (let g = 0; g <= 3; g++) {
@@ -1215,7 +1385,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         ctx.stroke();
       }
 
-      // 2. Linha Tracejada do Capital Investido (Baseline em Escada)
+      // Baseline
       ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
@@ -1229,7 +1399,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // 3. Área Preenchida com Gradiente de Lucro
+      // Gradient
       const isPositive = metrics.totalPLEUR >= 0;
       const grad = ctx.createLinearGradient(0, padTop, 0, H - padBottom);
       if (isPositive) {
@@ -1253,7 +1423,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // 4. Linha Principal de Património (Curva Sólida)
+      // Main line
       ctx.strokeStyle = isPositive ? "#10b981" : "#f43f5e";
       ctx.lineWidth = 2.5;
       ctx.lineJoin = "round";
@@ -1266,13 +1436,12 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       });
       ctx.stroke();
 
-      // 5. Scrubber Interativo ao passar o cursor ou dedo
+      // Scrubber
       const activeIdx = (chartHoverIndex >= 0 && chartHoverIndex < points.length) ? chartHoverIndex : (points.length - 1);
       const activePt = points[activeIdx];
       const hx = getX(activeIdx);
       const hy = getY(activePt.value);
 
-      // Linha vertical do scrubber
       ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 2]);
@@ -1282,7 +1451,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Ponto na curva
       ctx.fillStyle = isPositive ? "#10b981" : "#f43f5e";
       ctx.beginPath();
       ctx.arc(hx, hy, 5, 0, Math.PI * 2);
@@ -1291,7 +1459,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Atualiza o cabeçalho de inspeção
       const scrubValEl = document.getElementById("chart-scrub-val");
       const scrubDeltaEl = document.getElementById("chart-scrub-delta");
       const scrubDateEl = document.getElementById("chart-scrub-date");
@@ -1306,7 +1473,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       if (scrubDateEl) scrubDateEl.textContent = activePt.dateLabel;
     }
 
-    // Touch and Mouse Scrubber Listeners
     function setupChartInteractions() {
       const canvas = document.getElementById("equityLineChart");
       if (!canvas) return;
@@ -1340,37 +1506,40 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
     }
 
     // ==========================================
-    // 7. ASSET MODAL & FORM HANDLING
+    // 7. PURCHASE MODAL & LOT REGISTRATION
     // ==========================================
-    window.openModal = function (editId = null) {
+    window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
       if (form) form.reset();
 
       const errBox = document.getElementById("form-error-feedback");
       if (errBox) errBox.classList.add("hidden");
 
-      document.getElementById("form-id").value = "";
-      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editId ? "Editar Ativo" : "Registar Novo Ativo"}`;
+      const hintBox = document.getElementById("form-existing-hint");
+      if (hintBox) hintBox.classList.add("hidden");
 
-      // Data de compra padrão: hoje
+      document.getElementById("form-id").value = "";
+      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-500"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
+      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como uma posição individual rastreável.";
+
       const dateInput = document.getElementById("form-date");
       if (dateInput) {
         dateInput.value = new Date().toISOString().split("T")[0];
       }
 
-      if (editId) {
-        const item = portfolio.find(it => String(it.id) === String(editId));
-        if (item) {
-          document.getElementById("form-id").value = item.id;
-          document.getElementById("form-ticker").value = item.ticker;
-          document.getElementById("form-name").value = item.name;
-          document.getElementById("form-category").value = item.category;
-          document.getElementById("form-broker").value = item.broker;
-          if (dateInput) dateInput.value = item.buyDate || new Date().toISOString().split("T")[0];
-          document.getElementById("form-qty").value = item.qty;
-          document.getElementById("form-avg").value = item.avgUSD;
-          document.getElementById("form-curr").value = item.currUSD;
-          document.getElementById("form-fees").value = item.feesUSD || 0;
+      if (editLotId) {
+        const lot = portfolio.find(it => String(it.id) === String(editLotId));
+        if (lot) {
+          document.getElementById("form-id").value = lot.id;
+          document.getElementById("form-ticker").value = lot.ticker;
+          document.getElementById("form-name").value = lot.name;
+          document.getElementById("form-category").value = lot.category;
+          document.getElementById("form-broker").value = lot.broker;
+          if (dateInput) dateInput.value = lot.buyDate || new Date().toISOString().split("T")[0];
+          document.getElementById("form-qty").value = lot.qty;
+          document.getElementById("form-avg").value = lot.avgUSD;
+          document.getElementById("form-curr").value = lot.currUSD;
+          document.getElementById("form-fees").value = lot.feesUSD || 0;
           updateBreakEvenDisplay();
         }
       } else {
@@ -1386,12 +1555,45 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       }
     };
 
+    window.openModalForTicker = function (ticker) {
+      openModal();
+      const tickerInput = document.getElementById("form-ticker");
+      if (tickerInput) {
+        tickerInput.value = ticker;
+        onTickerInput(ticker);
+      }
+      expandedTickers.add(ticker);
+    };
+
     window.closeModal = function () {
       const modal = document.getElementById("modal-asset");
       if (modal) {
         modal.classList.add("hidden");
         modal.classList.remove("flex");
       }
+    };
+
+    window.onTickerInput = function (rawVal) {
+      const ticker = (rawVal || "").trim().toUpperCase();
+      const currentEditId = document.getElementById("form-id")?.value;
+      const hintBox = document.getElementById("form-existing-hint");
+
+      if (ticker.length >= 1 && !currentEditId) {
+        const existingCount = portfolio.filter(it => it.ticker === ticker).length;
+        if (existingCount > 0) {
+          if (hintBox) {
+            document.getElementById("form-hint-ticker").textContent = `${existingCount} compras existentes`;
+            hintBox.classList.remove("hidden");
+          }
+        } else {
+          if (hintBox) hintBox.classList.add("hidden");
+        }
+      } else {
+        if (hintBox) hintBox.classList.add("hidden");
+      }
+
+      debounceTickerLookup(ticker);
+      updateBreakEvenDisplay();
     };
 
     window.recalculateFormFees = function () {
@@ -1485,7 +1687,7 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
         return;
       }
       if (avgUSD <= 0) {
-        if (errBox) { errBox.textContent = "O preço médio deve ser superior a zero."; errBox.classList.remove("hidden"); }
+        if (errBox) { errBox.textContent = "O preço pago deve ser superior a zero."; errBox.classList.remove("hidden"); }
         return;
       }
 
@@ -1493,18 +1695,23 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
       if (currUSD <= 0) {
-        currUSD = TICKER_DIRECTORY[ticker] ? TICKER_DIRECTORY[ticker].price : avgUSD;
+        // If there's already another lot of this ticker, inherit its latest market price
+        const sibling = portfolio.find(it => it.ticker === ticker);
+        currUSD = sibling ? sibling.currUSD : (TICKER_DIRECTORY[ticker]?.price || avgUSD);
       }
 
       const feesUSD = parseNumericInput(document.getElementById("form-fees")?.value);
 
       if (id) {
+        // Edit existing lot
         const idx = portfolio.findIndex(it => String(it.id) === String(id));
         if (idx !== -1) {
           portfolio[idx] = { id: String(id), ticker, name, category, broker, buyDate, qty, avgUSD, currUSD, feesUSD };
         }
+        showToast(`Lote de ${ticker} atualizado com sucesso!`);
       } else {
-        const newAsset = {
+        // Add as a new distinct lot
+        const newLot = {
           id: Date.now().toString(),
           ticker,
           name,
@@ -1516,49 +1723,51 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
           currUSD,
           feesUSD
         };
-        portfolio.push(newAsset);
+        portfolio.push(newLot);
+        expandedTickers.add(ticker); // Automatically open the accordion for this ticker so user sees the new lot
+        showToast(`Nova compra de ${ticker} adicionada como lote independente!`);
       }
 
       saveLocalPortfolio();
       closeModal();
       renderAll();
       syncAllToSupabase();
-      showToast(`Ativo ${ticker} guardado com sucesso!`);
     };
 
     window.deleteAsset = function (id) {
-      const item = portfolio.find(it => String(it.id) === String(id));
-      const confirmDelete = window.confirm(`Eliminar ${item ? item.ticker : 'este ativo'} da carteira?`);
+      const lot = portfolio.find(it => String(it.id) === String(id));
+      const confirmDelete = window.confirm(`Eliminar esta compra de ${lot ? lot.ticker : 'ativo'} (${lot ? lot.qty : 0} ações em ${lot ? lot.buyDate : ''})?`);
       if (confirmDelete) {
         portfolio = portfolio.filter(it => String(it.id) !== String(id));
         saveLocalPortfolio();
         renderAll();
         deleteAssetFromSupabase(id);
-        showToast("Ativo removido da carteira.");
+        showToast("Lote de compra removido.");
       }
     };
 
     window.injectTestAsset = function () {
       const testItem = {
         id: Date.now().toString(),
-        ticker: "AMZN",
-        name: "Amazon.com Inc.",
+        ticker: "NVDA",
+        name: "NVIDIA Corporation",
         category: "Tecnologia",
         broker: "IBKR",
-        buyDate: "2024-06-15",
-        qty: 5,
-        avgUSD: 180.00,
-        currUSD: 258.45,
+        buyDate: "2024-07-20",
+        qty: 4,
+        avgUSD: 142.00,
+        currUSD: 227.38,
         feesUSD: 0.35
       };
+
       portfolio.push(testItem);
+      expandedTickers.add("NVDA");
       saveLocalPortfolio();
       renderAll();
       syncAllToSupabase();
-      showToast("Ação de teste (AMZN) inserida com sucesso!");
+      showToast("Nova compra de teste (#3 para NVDA) adicionada com sucesso!");
     };
 
-    // Category Filter Selection
     window.setCategoryFilter = function (cat) {
       currentFilter = cat;
       document.querySelectorAll(".cat-pill").forEach(btn => {
@@ -1571,7 +1780,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       renderAll();
     };
 
-    // Supabase Modal Helpers
     window.openSupabaseModal = function () {
       const modal = document.getElementById("modal-supabase");
       if (modal) {
@@ -1588,7 +1796,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       }
     };
 
-    // Master Render Function
     function renderAll() {
       const metrics = calculatePortfolioMetrics();
       renderKPIs(metrics);
@@ -1596,7 +1803,6 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       renderLineChart();
     }
 
-    // Window Resize Observer for Chart
     window.addEventListener("resize", () => {
       renderLineChart();
     });
@@ -1609,16 +1815,10 @@ create policy "Acesso Livre" on portfolio for all using (true) with check (true)
       setupChartInteractions();
       renderAll();
 
-      // 1. Atualiza taxa de câmbio EUR/USD
       await fetchLiveExchangeRate();
-
-      // 2. Sincroniza com Supabase
       await syncFromSupabase();
-
-      // 3. Atualiza cotações oficiais das ações
       await fetchLiveStockQuotes();
 
-      // Auto-refresh a cada 60 segundos
       setInterval(() => {
         fetchLiveStockQuotes();
       }, 60000);
