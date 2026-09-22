@@ -231,23 +231,31 @@
 
     </section>
 
-    <!-- GRÁFICO LINEAR DE EVOLUÇÃO PATRIMONIAL -->
+    <!-- GRÁFICO LINEAR DE EVOLUÇÃO / DESEMPENHO -->
     <section class="p-5 rounded-2xl card-clean space-y-4">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-surface-border pb-3">
         <div>
           <div class="flex items-center gap-2">
             <i data-lucide="line-chart" class="w-4 h-4 text-accent"></i>
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider">Evolução Patrimonial</h2>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider" id="chart-section-title">Evolução Patrimonial</h2>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">Histórico da carteira com cotações oficiais diárias do Google Finance</p>
+          <p class="text-xs text-slate-400 mt-0.5" id="chart-section-subtitle">Histórico da carteira com cotações oficiais diárias do Google Finance</p>
         </div>
         
-        <!-- BOTÕES DINÂMICOS 1M / 3M / YTD / TUDO -->
-        <div class="flex items-center gap-1.5 bg-surface-subtle p-1 rounded-xl border border-surface-border text-xs font-mono">
-          <button onclick="setChartRange('1M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="1M">1M</button>
-          <button onclick="setChartRange('3M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="3M">3M</button>
-          <button onclick="setChartRange('YTD')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="YTD">YTD</button>
-          <button onclick="setChartRange('ALL')" class="chart-range-btn active px-3 py-1 rounded-lg bg-accent text-slate-950 font-bold transition" data-range="ALL">TUDO</button>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- SELETOR DE MODO: EUROS (€) vs PERCENTAGEM (%) -->
+          <div class="flex items-center bg-surface-subtle p-1 rounded-xl border border-surface-border text-xs font-mono">
+            <button id="btn-chart-mode-eur" onclick="setChartMode('EUR')" class="px-2.5 py-1 rounded-lg bg-accent text-slate-950 font-bold transition">€</button>
+            <button id="btn-chart-mode-pct" onclick="setChartMode('PCT')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">%</button>
+          </div>
+
+          <!-- BOTÕES DINÂMICOS 1M / 3M / YTD / TUDO -->
+          <div class="flex items-center gap-1.5 bg-surface-subtle p-1 rounded-xl border border-surface-border text-xs font-mono">
+            <button onclick="setChartRange('1M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="1M">1M</button>
+            <button onclick="setChartRange('3M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="3M">3M</button>
+            <button onclick="setChartRange('YTD')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="YTD">YTD</button>
+            <button onclick="setChartRange('ALL')" class="chart-range-btn active px-3 py-1 rounded-lg bg-accent text-slate-950 font-bold transition" data-range="ALL">TUDO</button>
+          </div>
         </div>
       </div>
 
@@ -398,7 +406,7 @@
             </select>
           </div>
 
-          <!-- SELETOR DE DATA REFORMULADO COM ATALHOS -->
+          <!-- SELETOR DE DATA COM ATALHOS -->
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-300">Data da Compra *</label>
@@ -573,6 +581,7 @@
     let cachedHistoryData = null;
     let currentFilter = 'ALL';
     let currentChartRange = 'ALL';
+    let currentChartMode = 'EUR'; // 'EUR' (€) ou 'PCT' (%)
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
     let portfolioChartInstance = null;
@@ -689,6 +698,31 @@
         dateInput.value = yest.toISOString().split("T")[0];
       } else if (preset === 'jun1') {
         dateInput.value = `${now.getFullYear()}-06-01`;
+      }
+    };
+
+    // ALTERNAR MODO DO GRÁFICO (€ vs %)
+    window.setChartMode = function(mode) {
+      currentChartMode = mode;
+      const btnEur = document.getElementById("btn-chart-mode-eur");
+      const btnPct = document.getElementById("btn-chart-mode-pct");
+      const titleEl = document.getElementById("chart-section-title");
+      const subEl = document.getElementById("chart-section-subtitle");
+
+      if (mode === 'EUR') {
+        btnEur.className = "px-2.5 py-1 rounded-lg bg-accent text-slate-950 font-bold transition";
+        btnPct.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
+        if (titleEl) titleEl.textContent = "Evolução Patrimonial";
+        if (subEl) subEl.textContent = "Histórico da carteira com cotações oficiais diárias do Google Finance";
+      } else {
+        btnPct.className = "px-2.5 py-1 rounded-lg bg-accent text-slate-950 font-bold transition";
+        btnEur.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
+        if (titleEl) titleEl.textContent = "Rentabilidade da Carteira";
+        if (subEl) subEl.textContent = "Desempenho percentual puro (sem distorção de entradas de capital)";
+      }
+
+      if (cachedHistoryData) {
+        buildRealHistoryChart(cachedHistoryData);
       }
     };
 
@@ -1030,7 +1064,7 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-    // CONSTRUÇÃO DO GRÁFICO (RESTRINGIDO ESTRITAMENTE À MENOR DATA REAL)
+    // CONSTRUÇÃO DO GRÁFICO (SUPORTA MODO € E MODO %)
     function buildRealHistoryChart(history) {
       const canvas = document.getElementById("portfolioChart");
       if (!canvas) return;
@@ -1041,7 +1075,7 @@
         return;
       }
 
-      // Encontra a data real mais antiga (sanitizando anos desfasados)
+      // Encontra a data real mais antiga
       let earliestDate = "2026-06-01";
       portfolio.forEach(lot => {
         let d = (lot.buyDate || '').trim();
@@ -1075,13 +1109,13 @@
       const targetCutoffStr = targetCutoff.toISOString().split("T")[0];
       const finalStartStr = targetCutoffStr < earliestDate ? earliestDate : targetCutoffStr;
 
-      // Filtra estritamente as datas a partir da data de corte final
       const filteredDates = allDates.filter(d => d >= finalStartStr);
       if (filteredDates.length === 0) return;
 
       const labels = [];
-      const marketCurve = [];
-      const investedCurve = [];
+      const marketCurveEUR = [];
+      const investedCurveEUR = [];
+      const performanceCurvePCT = [];
 
       const lastKnownPrice = {};
       let lastKnownFx = EUR_USD;
@@ -1128,16 +1162,21 @@
         });
 
         if (hasBought && dayInvestedEUR > 0) {
+          const dayMarketEUR = dayMarketUSD / fxRate;
+          const returnPct = ((dayMarketEUR - dayInvestedEUR) / dayInvestedEUR) * 100;
+
           labels.push(dateStr.slice(5)); // MM-DD
-          investedCurve.push(Number(dayInvestedEUR.toFixed(2)));
-          marketCurve.push(Number((dayMarketUSD / fxRate).toFixed(2)));
+          investedCurveEUR.push(Number(dayInvestedEUR.toFixed(2)));
+          marketCurveEUR.push(Number(dayMarketEUR.toFixed(2)));
+          performanceCurvePCT.push(Number(returnPct.toFixed(2)));
         }
       });
 
       const metrics = calculatePortfolioMetrics();
-      if (marketCurve.length > 0) {
-        marketCurve[marketCurve.length - 1] = Number(metrics.totalCurrEUR.toFixed(2));
-        investedCurve[investedCurve.length - 1] = Number(metrics.totalInvEUR.toFixed(2));
+      if (marketCurveEUR.length > 0) {
+        marketCurveEUR[marketCurveEUR.length - 1] = Number(metrics.totalCurrEUR.toFixed(2));
+        investedCurveEUR[investedCurveEUR.length - 1] = Number(metrics.totalInvEUR.toFixed(2));
+        performanceCurvePCT[performanceCurvePCT.length - 1] = Number(metrics.totalPLPct.toFixed(2));
       }
 
       if (portfolioChartInstance) {
@@ -1148,36 +1187,59 @@
       gradient.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
       gradient.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
 
+      // Configuração dinâmica dos Datasets conforme o modo (€ ou %)
+      let chartDatasets = [];
+      if (currentChartMode === 'EUR') {
+        chartDatasets = [
+          {
+            label: 'Património Atual (€)',
+            data: marketCurveEUR,
+            borderColor: '#38BDF8',
+            borderWidth: 2,
+            fill: true,
+            backgroundColor: gradient,
+            tension: 0.2,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: '#38BDF8',
+            pointHoverBorderColor: '#FFFFFF',
+            pointHoverBorderWidth: 2
+          },
+          {
+            label: 'Investimento Real (€)',
+            data: investedCurveEUR,
+            borderColor: '#64748B',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            fill: false,
+            tension: 0,
+            pointRadius: 0
+          }
+        ];
+      } else {
+        chartDatasets = [
+          {
+            label: 'Rentabilidade Acumulada (%)',
+            data: performanceCurvePCT,
+            borderColor: '#38BDF8',
+            borderWidth: 2,
+            fill: true,
+            backgroundColor: gradient,
+            tension: 0.25,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: '#38BDF8',
+            pointHoverBorderColor: '#FFFFFF',
+            pointHoverBorderWidth: 2
+          }
+        ];
+      }
+
       portfolioChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [
-            {
-              label: 'Património Atual (€)',
-              data: marketCurve,
-              borderColor: '#38BDF8',
-              borderWidth: 2,
-              fill: true,
-              backgroundColor: gradient,
-              tension: 0.2,
-              pointRadius: 0,
-              pointHoverRadius: 5,
-              pointHoverBackgroundColor: '#38BDF8',
-              pointHoverBorderColor: '#FFFFFF',
-              pointHoverBorderWidth: 2
-            },
-            {
-              label: 'Investimento Real (€)',
-              data: investedCurve,
-              borderColor: '#64748B',
-              borderWidth: 1.5,
-              borderDash: [4, 4],
-              fill: false,
-              tension: 0,
-              pointRadius: 0
-            }
-          ]
+          datasets: chartDatasets
         },
         options: {
           responsive: true,
@@ -1198,7 +1260,13 @@
               borderWidth: 1,
               padding: 8,
               callbacks: {
-                label: (c) => ` ${c.dataset.label}: ${fmtEUR(c.parsed.y)}`
+                label: (c) => {
+                  if (currentChartMode === 'EUR') {
+                    return ` ${c.dataset.label}: ${fmtEUR(c.parsed.y)}`;
+                  } else {
+                    return ` Rentabilidade: ${c.parsed.y >= 0 ? '+' : ''}${c.parsed.y.toFixed(2)}%`;
+                  }
+                }
               }
             }
           },
@@ -1209,7 +1277,11 @@
             },
             y: {
               grid: { color: 'rgba(31, 44, 71, 0.3)' },
-              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, callback: v => v.toLocaleString('pt-PT') + ' €' }
+              ticks: {
+                color: '#64748B',
+                font: { family: '"JetBrains Mono"', size: 10 },
+                callback: v => currentChartMode === 'EUR' ? `${v.toLocaleString('pt-PT')} €` : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
+              }
             }
           }
         }
@@ -1473,7 +1545,7 @@
       const dateInput = document.getElementById("form-date");
       const todayStr = new Date().toISOString().split("T")[0];
       if (dateInput) {
-        dateInput.max = todayStr; // Impede datas futuras
+        dateInput.max = todayStr;
         dateInput.value = todayStr;
       }
 
@@ -1742,7 +1814,7 @@
       await syncFromSupabase();
       await fetchLiveMarketData();
 
-      // Atualização automática a cada 60 segundos
+      // Atualização periódica automática a cada 60 segundos
       setInterval(() => {
         fetchLiveMarketData();
       }, 60000);
