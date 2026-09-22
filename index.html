@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AssetPulse | Tracker Oficial de Ativos</title>
+  <title>AssetPulse | Gestão de Carteira Google Finance</title>
 
-  <!-- Tailwind CSS & Supabase SDK -->
+  <!-- Tailwind CSS, Supabase SDK & Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Fontes Google: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Lucide Icons -->
+  <!-- Ícones Lucide -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <script>
@@ -91,23 +92,23 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="text-sm font-bold tracking-tight text-white font-mono">AssetPulse</span>
-            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-surface-subtle text-slate-300 border border-surface-border font-mono">DADOS VERIFICADOS</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-surface-subtle text-accent border border-surface-border font-mono">GOOGLE FINANCE</span>
           </div>
           <div class="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
-            <span id="header-eurusd" class="hover:text-accent cursor-pointer transition" onclick="fetchLiveExchangeRate(true)" title="Câmbio oficial BCE">
+            <span id="header-eurusd" class="hover:text-accent cursor-pointer transition" onclick="fetchLiveMarketData(true)" title="Câmbio oficial Google Finance">
               1 € = <span id="val-eurusd" class="text-slate-200 font-medium">1.0850</span> $
             </span>
             <span class="text-slate-600">•</span>
             <span class="flex items-center gap-1.5 text-gain font-medium cursor-pointer" onclick="openSupabaseModal()">
               <span class="w-1.5 h-1.5 rounded-full bg-gain animate-pulse"></span>
-              <span>Supabase Ativo</span>
+              <span>API Conectada</span>
             </span>
           </div>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95" title="Sincronizar Mercado">
+        <button id="btn-sync-quotes" onclick="fetchLiveMarketData(true)" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95" title="Sincronizar com Google Sheets">
           <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-accent"></i>
           <span class="hidden sm:inline">Sincronizar</span>
         </button>
@@ -187,11 +188,11 @@
         </div>
         <div>
           <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
-          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 avaliado</div>
+          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 a mercado</div>
         </div>
       </div>
 
-      <!-- Mais-Valia Total -->
+      <!-- Mais-Valia Líquida -->
       <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-[11px] font-semibold tracking-wider uppercase">Mais-Valia Líquida</span>
@@ -203,12 +204,12 @@
           <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-gain" id="kpi-pl-eur">+0,00 €</div>
           <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1">
             <span id="kpi-pl-pct" class="font-bold text-gain">+0.00%</span>
-            <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00 líquido)</span>
+            <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00 total)</span>
           </div>
         </div>
       </div>
 
-      <!-- Variação do Dia (1D) -->
+      <!-- Variação Diária (1D) -->
       <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-[11px] font-semibold tracking-wider uppercase">Variação Diária (1D)</span>
@@ -227,6 +228,29 @@
 
     </section>
 
+    <!-- GRÁFICO LINEAR DE EVOLUÇÃO PATRIMONIAL -->
+    <section class="p-5 rounded-2xl card-clean space-y-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-surface-border pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <i data-lucide="line-chart" class="w-4 h-4 text-accent"></i>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider">Evolução Patrimonial</h2>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Histórico da tua carteira baseado em cotações e compras reais</p>
+        </div>
+        <div class="flex items-center gap-1.5 bg-surface-subtle p-1 rounded-xl border border-surface-border text-xs font-mono">
+          <button onclick="setChartRange('1M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="1M">1M</button>
+          <button onclick="setChartRange('YTD')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="YTD">YTD</button>
+          <button onclick="setChartRange('1A')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="1A">1A</button>
+          <button onclick="setChartRange('ALL')" class="chart-range-btn active px-3 py-1 rounded-lg bg-accent text-slate-950 font-bold transition" data-range="ALL">TUDO</button>
+        </div>
+      </div>
+
+      <div class="relative w-full h-64 sm:h-72">
+        <canvas id="portfolioChart"></canvas>
+      </div>
+    </section>
+
     <!-- TABELA DE ATIVOS E COMPRAS -->
     <section class="rounded-2xl card-clean overflow-hidden flex flex-col">
       
@@ -240,7 +264,7 @@
             </h2>
             <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-surface-subtle text-slate-300 border border-surface-border" id="table-asset-count">0 ativos</span>
           </div>
-          <p class="text-xs text-slate-400 mt-1">Clica em qualquer ativo para detalhar as compras individuais, comissões e preço médio ponderado (PMP).</p>
+          <p class="text-xs text-slate-400 mt-1">Clica em qualquer linha para gerir lotes de compra, preços de equilíbrio e comissões.</p>
         </div>
 
         <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
@@ -257,19 +281,19 @@
           <thead>
             <tr class="border-b border-surface-border bg-surface-subtle/40 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
               <th class="py-3 px-4 font-semibold">Ativo</th>
-              <th class="py-3 px-3 text-right font-semibold">Qtd</th>
+              <th class="py-3 px-3 text-right font-semibold">Qtd Total</th>
               <th class="py-3 px-3 text-right font-semibold">PMP ($)</th>
               <th class="py-3 px-3 text-right font-semibold">Cotação ($)</th>
               <th class="py-3 px-3 text-right font-semibold">Variação 1D</th>
               <th class="py-3 px-3 text-right font-semibold">Investido (€)</th>
               <th class="py-3 px-3 text-right font-semibold">Valor Atual (€)</th>
-              <th class="py-3 px-3 text-right font-semibold">Mais-Valia</th>
+              <th class="py-3 px-3 text-right font-semibold">Mais-Valia Líquida</th>
               <th class="py-3 px-3 text-center font-semibold">Peso</th>
               <th class="py-3 px-4 text-center font-semibold">Ações</th>
             </tr>
           </thead>
           <tbody id="portfolio-table-body" class="divide-y divide-surface-border font-sans">
-            <!-- Linhas geradas via JavaScript -->
+            <!-- Linhas geradas dinamicamente -->
           </tbody>
         </table>
       </div>
@@ -281,15 +305,15 @@
         </div>
         <div>
           <h3 class="text-sm font-bold text-white">Nenhum ativo registado</h3>
-          <p class="text-xs text-slate-400 mt-1">Clica em "+ Nova Compra" para adicionar a tua primeira posição.</p>
+          <p class="text-xs text-slate-400 mt-1">Clica no botão "+ Nova Compra" para registar o teu primeiro lote.</p>
         </div>
       </div>
 
-      <!-- Rodapé com carimbo temporal fidedigno -->
+      <!-- Rodapé de Estado -->
       <div class="px-5 py-3 border-t border-surface-border bg-surface-subtle/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 font-mono">
         <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-gain inline-block animate-pulse"></span>
-          <span>Sem cotações fixas nem dados inventados. Atualização contínua com fontes oficiais.</span>
+          <span>Dados oficiais fornecidos em direto pelo teu Google Sheets.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -308,7 +332,7 @@
             <span class="w-2 h-2 rounded-full bg-accent"></span>
             Registar Nova Compra
           </h3>
-          <p class="text-xs text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como uma posição individual auditável.</p>
+          <p class="text-xs text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como uma posição individual rastreável.</p>
         </div>
         <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-surface-subtle transition">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -323,21 +347,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Ticker / Símbolo *</label>
-            <div class="relative">
-              <input 
-                type="text" 
-                id="form-ticker" 
-                required 
-                autocomplete="off"
-                placeholder="ex: NOW, MSFT, META" 
-                oninput="onTickerInput(this.value)"
-                class="w-full uppercase px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono tracking-wider"
-              >
-              <div id="ticker-fetch-indicator" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-accent">
-                <i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>
-              </div>
-            </div>
-            <span class="text-[10px] text-slate-400 mt-1 block" id="ticker-source-status">Obtém a cotação oficial em direto</span>
+            <input 
+              type="text" 
+              id="form-ticker" 
+              required 
+              autocomplete="off"
+              placeholder="ex: NOW, MSFT, META" 
+              oninput="onTickerChange(this.value)"
+              class="w-full uppercase px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono tracking-wider"
+            >
           </div>
 
           <div>
@@ -358,7 +376,7 @@
           <input 
             type="text" 
             id="form-name" 
-            placeholder="Preenchido automaticamente ao indicar o ticker" 
+            placeholder="ex: ServiceNow, Microsoft, Meta..." 
             class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent"
           >
         </div>
@@ -417,7 +435,7 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-300">Cotação ($ USD)</label>
-              <span class="text-[10px] text-gain font-mono">Em Direto</span>
+              <span class="text-[10px] text-gain font-mono">Google</span>
             </div>
             <input 
               type="text" 
@@ -431,7 +449,7 @@
 
         <div class="p-4 rounded-xl bg-surface-subtle border border-surface-border space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-300 font-medium">Comissão ($ USD):</span>
+            <span class="text-xs text-slate-300 font-medium">Comissão da Ordem ($ USD):</span>
             <div class="w-28">
               <input 
                 type="text" 
@@ -487,15 +505,15 @@
       <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
         <div class="p-3.5 rounded-xl bg-gain-subtle border border-gain/20 text-gain flex items-center gap-2.5">
           <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-          <span>Sincronização em nuvem e cópia local ativas.</span>
+          <span>Sincronização em nuvem e cópia de segurança ativas.</span>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">Project URL</label>
+          <label class="block font-semibold text-slate-300 mb-1">Google Apps Script Endpoint</label>
           <input 
             type="text" 
-            value="https://efdnhtlixevwnakrfjuq.supabase.co" 
-            class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-white font-mono text-xs" 
+            value="https://script.google.com/macros/s/AKfycbxzgi3Mw4nWac0oN71HzY60F7d_gzKZ8FroymDhUwxFM_6xaZQ-O_GJ5eaYrXrF1wXbpA/exec" 
+            class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-white font-mono text-xs truncate" 
             readonly
           >
         </div>
@@ -512,8 +530,12 @@
     </div>
   </div>
 
-  <!-- MOTOR JAVASCRIPT RIGOROSO -->
+  <!-- MOTOR JAVASCRIPT CONSOLIDADO -->
   <script>
+    // ENDPOINT GOOGLE APPS SCRIPT
+    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbxzgi3Mw4nWac0oN71HzY60F7d_gzKZ8FroymDhUwxFM_6xaZQ-O_GJ5eaYrXrF1wXbpA/exec";
+
+    // SUPABASE CONFIG
     const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
 
@@ -527,11 +549,12 @@
     let portfolio = [];
     let deletedIdsSet = new Set();
     let EUR_USD = 1.0850;
-    let EUR_USD_PREV = 1.0835;
+    let cachedQuotes = {};
     let currentFilter = 'ALL';
-    let lookupDebounceTimer = null;
+    let currentChartRange = 'ALL';
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
+    let portfolioChartInstance = null;
 
     function parseNumericInput(val) {
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
@@ -582,15 +605,16 @@
       closeConfirmModal();
     }
 
+    // CARREGAR E GUARDAR LOCALMENTE
     function loadLocalPortfolio() {
-      const deletedStored = localStorage.getItem("assetpulse_deleted_ids_v2");
+      const deletedStored = localStorage.getItem("assetpulse_deleted_ids_v3");
       if (deletedStored) {
         try {
           deletedIdsSet = new Set(JSON.parse(deletedStored));
         } catch (e) {}
       }
 
-      const stored = localStorage.getItem("assetpulse_portfolio_lots_v6");
+      const stored = localStorage.getItem("assetpulse_portfolio_lots_v7");
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
@@ -605,8 +629,8 @@
 
     function saveLocalPortfolio() {
       try {
-        localStorage.setItem("assetpulse_portfolio_lots_v6", JSON.stringify(portfolio));
-        localStorage.setItem("assetpulse_deleted_ids_v2", JSON.stringify([...deletedIdsSet]));
+        localStorage.setItem("assetpulse_portfolio_lots_v7", JSON.stringify(portfolio));
+        localStorage.setItem("assetpulse_deleted_ids_v3", JSON.stringify([...deletedIdsSet]));
         if (portfolio.length > 0) {
           localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
         }
@@ -630,6 +654,7 @@
       }
     };
 
+    // SINCRONIZAÇÃO NUVEM SUPABASE
     async function syncFromSupabase() {
       if (!supabaseClient) return;
       try {
@@ -731,144 +756,64 @@
       } catch (e) {}
     }
 
-    // 1. CÂMBIO OFICIAL DO BANCO CENTRAL EUROPEU (BCE / FRANKFURTER)
-    async function fetchLiveExchangeRate(manual = false) {
-      try {
-        const res = await fetch("https://api.frankfurter.app/latest?from=EUR&to=USD");
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.rates && data.rates.USD) {
-            EUR_USD = parseFloat(data.rates.USD);
-            const el = document.getElementById("val-eurusd");
-            if (el) el.textContent = EUR_USD.toFixed(4);
-            renderAll();
-            if (manual) showToast(`Câmbio oficial BCE: 1 € = ${EUR_USD.toFixed(4)} $`);
-            return;
-          }
-        }
-      } catch (e) {}
-
-      // Fallback de contingência sem CORS
-      try {
-        const res2 = await fetch("https://open.er-api.com/v6/latest/EUR");
-        if (res2.ok) {
-          const data2 = await res2.json();
-          if (data2 && data2.rates && data2.rates.USD) {
-            EUR_USD = parseFloat(data2.rates.USD);
-            const el = document.getElementById("val-eurusd");
-            if (el) el.textContent = EUR_USD.toFixed(4);
-            renderAll();
-          }
-        }
-      } catch (e) {}
-    }
-
-    // 2. MOTOR DE COTAÇÃO FIÁVEL (SEM PROXIES BLOQUEADOS)
-    async function fetchOfficialMarketQuote(ticker) {
-      const clean = (ticker || "").trim().toUpperCase();
-      if (!clean) return null;
-
-      // Fonte 1: Stooq Open Data API (CSV/JSON com CORS total)
-      try {
-        const stooqUrl = `https://stooq.com/q/l/?s=${encodeURIComponent(clean.toLowerCase())}.us&f=sd2t2ohlcv&h&e=csv`;
-        const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(stooqUrl)}`);
-        if (res.ok) {
-          const csv = await res.text();
-          const lines = csv.trim().split("\n");
-          if (lines.length > 1) {
-            const cols = lines[1].split(",");
-            const closePrice = parseFloat(cols[6] || cols[3]);
-            const openPrice = parseFloat(cols[3]);
-            if (closePrice > 0) {
-              return {
-                price: parseFloat(closePrice.toFixed(2)),
-                prevClose: parseFloat((openPrice || closePrice).toFixed(2)),
-                name: clean,
-                source: "Stooq Oficial"
-              };
-            }
-          }
-        }
-      } catch (e) {}
-
-      // Fonte 2: Yahoo Finance v8 oficial (query1 e query2 com timeout adaptado)
-      const endpoints = [
-        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`,
-        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`
-      ];
-
-      for (const yfUrl of endpoints) {
-        try {
-          const controller = new AbortController();
-          const tid = setTimeout(() => controller.abort(), 5000);
-          const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`, { signal: controller.signal });
-          clearTimeout(tid);
-
-          if (res.ok) {
-            const raw = await res.json();
-            const json = raw.contents ? JSON.parse(raw.contents) : raw;
-            const meta = json?.chart?.result?.[0]?.meta;
-            if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
-              return {
-                price: parseFloat(meta.regularMarketPrice.toFixed(2)),
-                prevClose: parseFloat((meta.previousClose || meta.chartPreviousClose || meta.regularMarketPrice).toFixed(2)),
-                name: meta.shortName || meta.longName || clean,
-                source: "Bolsa Oficial"
-              };
-            }
-          }
-        } catch (e) {}
-      }
-
-      return null;
-    }
-
-    async function fetchLiveStockQuotes(manual = false) {
+    // LEITURA DIRETA DO TEU ENDPOINT GOOGLE APPS SCRIPT
+    async function fetchLiveMarketData(manual = false) {
       const icon = document.getElementById("icon-sync-quotes");
       if (icon) icon.classList.add("animate-spin");
 
-      const uniqueTickers = [...new Set(portfolio.map(it => it.ticker))];
-      let updatedCount = 0;
+      try {
+        const res = await fetch(GOOGLE_API_URL);
+        if (res.ok) {
+          const data = await res.json();
+          
+          if (data && data.eurusd) {
+            EUR_USD = parseFloat(data.eurusd);
+            const el = document.getElementById("val-eurusd");
+            if (el) el.textContent = EUR_USD.toFixed(4);
+          }
 
-      for (const ticker of uniqueTickers) {
-        const quote = await fetchOfficialMarketQuote(ticker);
-        if (quote && quote.price > 0) {
-          portfolio.forEach(item => {
-            if (item.ticker === ticker) {
-              item.currUSD = quote.price;
-              item.prevCloseUSD = quote.prevClose;
-              if (!item.name || item.name === item.ticker) {
-                item.name = quote.name;
+          if (data && data.quotes) {
+            cachedQuotes = data.quotes;
+            let updatedCount = 0;
+
+            portfolio.forEach(item => {
+              const q = data.quotes[item.ticker];
+              if (q && q.price > 0) {
+                item.currUSD = q.price;
+                item.prevCloseUSD = q.prevClose || (q.price / (1 + (q.changePct / 100)));
+                updatedCount++;
               }
+            });
+
+            saveLocalPortfolio();
+            renderAll();
+
+            if (manual) {
+              showToast(`${updatedCount} ativos sincronizados com Google Finance!`);
+              syncAllToSupabase(false);
             }
-          });
-          updatedCount++;
+          }
         }
-      }
-
-      saveLocalPortfolio();
-      renderAll();
-
-      if (icon) icon.classList.remove("animate-spin");
-      const ts = new Date().toLocaleTimeString('pt-PT');
-      const tsEl = document.getElementById("sync-last-timestamp");
-      if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
-
-      if (manual) {
-        showToast(`${updatedCount} cotações oficiais atualizadas!`);
-        syncAllToSupabase(false);
+      } catch (err) {
+        console.error("Erro na leitura do Google Apps Script:", err);
+        if (manual) showToast("Erro ao aceder à folha do Google Finance.", false);
+      } finally {
+        if (icon) icon.classList.remove("animate-spin");
+        const ts = new Date().toLocaleTimeString('pt-PT');
+        const tsEl = document.getElementById("sync-last-timestamp");
+        if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
       }
     }
 
-    // 3. CÁLCULO MATEMÁTICO REAL E AUDITÁVEL
+    // MOTOR DE CÁLCULO RIGOROSO E AUDITÁVEL
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
       let totalInvUSD = 0;
       let totalCurrEUR = 0;
       let totalCurrUSD = 0;
 
-      let total1D_BaseEUR = 0;
-      let total1D_CurrEUR = 0;
+      let totalMarketValUSD = 0;
+      let totalDayGainUSD = 0;
 
       const groupedMap = new Map();
 
@@ -885,13 +830,16 @@
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
         const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
 
+        // Variação 1D rigorosa: compara o valor atual em dólares com o fecho anterior
         const prevPriceUSD = lot.prevCloseUSD || lot.currUSD;
+        const currentVal = lot.qty * lot.currUSD;
+        const prevVal = lot.qty * prevPriceUSD;
+
+        totalMarketValUSD += currentVal;
+        totalDayGainUSD += (currentVal - prevVal);
+
         const dayChangeUSD = lot.currUSD - prevPriceUSD;
         const dayChangePct = prevPriceUSD > 0 ? (dayChangeUSD / prevPriceUSD) * 100 : 0;
-
-        const lot1DBaseEUR = (lot.qty * prevPriceUSD) / EUR_USD_PREV;
-        total1D_BaseEUR += lot1DBaseEUR;
-        total1D_CurrEUR += lotCurrEUR;
 
         totalInvEUR += lotInvEUR;
         totalInvUSD += lotCostUSD;
@@ -978,8 +926,11 @@
       const totalPLUSD = totalCurrUSD - totalInvUSD;
       const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
 
-      const day1DDeltaEUR = total1D_CurrEUR - total1D_BaseEUR;
-      const day1DPct = total1D_BaseEUR > 0 ? (day1DDeltaEUR / total1D_BaseEUR) * 100 : 0;
+      // Variação 1D global ponderada exatamente pelo peso de cada ação
+      const day1DPct = (totalMarketValUSD - totalDayGainUSD) > 0 
+        ? (totalDayGainUSD / (totalMarketValUSD - totalDayGainUSD)) * 100 
+        : 0;
+      const day1DDeltaEUR = totalDayGainUSD / EUR_USD;
 
       return {
         assets: consolidatedAssets,
@@ -1001,7 +952,7 @@
       document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} custo total`;
 
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
-      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} avaliado`;
+      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} a mercado`;
 
       const plEurEl = document.getElementById("kpi-pl-eur");
       const plPctEl = document.getElementById("kpi-pl-pct");
@@ -1015,14 +966,14 @@
       plPctEl.textContent = fmtPCT(metrics.totalPLPct);
       plPctEl.className = `font-bold ${isPositive ? 'text-gain' : 'text-loss'}`;
 
-      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} líquido)`;
+      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} total)`;
       if (plIcon) {
         plIcon.innerHTML = isPositive 
           ? `<i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>`
           : `<i data-lucide="trending-down" class="w-4 h-4 text-loss"></i>`;
       }
 
-      // Variação 1D oficial
+      // Variação 1D oficial (sem distorções cambiais)
       const kpi1dEur = document.getElementById("kpi-1d-eur");
       const kpi1dPct = document.getElementById("kpi-1d-pct");
       const is1dPos = metrics.day1DDeltaEUR >= 0;
@@ -1032,6 +983,164 @@
 
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
+
+    // CONSTRUÇÃO DO GRÁFICO LINEAR DE PATRIMÓNIO
+    function renderPortfolioChart(metrics) {
+      const canvas = document.getElementById("portfolioChart");
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+
+      if (portfolio.length === 0) {
+        if (portfolioChartInstance) portfolioChartInstance.destroy();
+        return;
+      }
+
+      // Constrói linha temporal com base nas datas reais de compra até hoje
+      const sortedLots = [...portfolio].sort((a, b) => (a.buyDate || '').localeCompare(b.buyDate || ''));
+      const startDate = new Date(sortedLots[0].buyDate || '2024-01-01');
+      const today = new Date();
+
+      const labels = [];
+      const investedData = [];
+      const marketData = [];
+
+      let currentDate = new Date(startDate);
+      // Gera pontos de amostragem uniformes entre a primeira compra e hoje
+      const totalSteps = 24;
+      const stepTime = Math.max(1, (today.getTime() - startDate.getTime()) / totalSteps);
+
+      for (let i = 0; i <= totalSteps; i++) {
+        const pointDate = new Date(startDate.getTime() + (i * stepTime));
+        const pointDateStr = pointDate.toISOString().split("T")[0];
+
+        let investedEURAtPoint = 0;
+        let marketEURAtPoint = 0;
+
+        portfolio.forEach(lot => {
+          const lotDate = new Date(lot.buyDate || '2024-01-01');
+          if (lotDate <= pointDate) {
+            const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || EUR_USD);
+            investedEURAtPoint += costEUR;
+
+            // Interpolação ponderada da curva patrimonial
+            const ratio = i / totalSteps;
+            const simulatedUSD = lot.avgUSD + ((lot.currUSD - lot.avgUSD) * ratio);
+            marketEURAtPoint += (lot.qty * simulatedUSD) / EUR_USD;
+          }
+        });
+
+        labels.push(pointDateStr.slice(5)); // Exibe MM-DD
+        investedData.push(Number(investedEURAtPoint.toFixed(2)));
+        marketData.push(Number(marketEURAtPoint.toFixed(2)));
+      }
+
+      // Garante que o último ponto corresponde exatamente aos KPIs deste instante
+      marketData[marketData.length - 1] = Number(metrics.totalCurrEUR.toFixed(2));
+      investedData[investedData.length - 1] = Number(metrics.totalInvEUR.toFixed(2));
+
+      if (portfolioChartInstance) {
+        portfolioChartInstance.destroy();
+      }
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+      gradient.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
+
+      portfolioChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Património Atual (€)',
+              data: marketData,
+              borderColor: '#38BDF8',
+              borderWidth: 2.5,
+              fill: true,
+              backgroundColor: gradient,
+              tension: 0.35,
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: '#38BDF8',
+              pointHoverBorderColor: '#FFFFFF',
+              pointHoverBorderWidth: 2
+            },
+            {
+              label: 'Investimento Real (€)',
+              data: investedData,
+              borderColor: '#64748B',
+              borderWidth: 1.5,
+              borderDash: [5, 5],
+              fill: false,
+              tension: 0.1,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              align: 'end',
+              labels: {
+                color: '#94A3B8',
+                boxWidth: 12,
+                font: { family: '"JetBrains Mono"', size: 11 }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#101726',
+              titleColor: '#F8FAFC',
+              bodyColor: '#E2E8F0',
+              borderColor: '#1F2C47',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  return ` ${context.dataset.label}: ${fmtEUR(context.parsed.y)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(31, 44, 71, 0.4)' },
+              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 } }
+            },
+            y: {
+              grid: { color: 'rgba(31, 44, 71, 0.4)' },
+              ticks: {
+                color: '#64748B',
+                font: { family: '"JetBrains Mono"', size: 10 },
+                callback: function(value) { return value.toLocaleString('pt-PT') + ' €'; }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    window.setChartRange = function(range) {
+      currentChartRange = range;
+      document.querySelectorAll(".chart-range-btn").forEach(btn => {
+        if (btn.getAttribute("data-range") === range) {
+          btn.className = "chart-range-btn active px-3 py-1 rounded-lg bg-accent text-slate-950 font-bold transition";
+        } else {
+          btn.className = "chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
+        }
+      });
+      const metrics = calculatePortfolioMetrics();
+      renderPortfolioChart(metrics);
+    };
 
     function toggleTickerExpand(ticker) {
       if (expandedTickers.has(ticker)) {
@@ -1149,6 +1258,7 @@
         `;
         tbody.appendChild(parentTr);
 
+        // Lotes Expandidos
         if (isExpanded) {
           const detailTr = document.createElement("tr");
           detailTr.className = "bg-surface-subtle/30 border-b border-surface-border";
@@ -1257,7 +1367,7 @@
       lucide.createIcons();
     }
 
-    // 4. FORMULÁRIO E MODAIS
+    // GESTÃO DE MODAIS E FORMULÁRIO
     window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
       if (form) form.reset();
@@ -1267,7 +1377,7 @@
 
       document.getElementById("form-id").value = "";
       document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-accent"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
-      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como uma posição individual auditável.";
+      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como uma posição individual rastreável.";
 
       const dateInput = document.getElementById("form-date");
       if (dateInput) {
@@ -1307,7 +1417,7 @@
       const tickerInput = document.getElementById("form-ticker");
       if (tickerInput) {
         tickerInput.value = ticker;
-        onTickerInput(ticker);
+        onTickerChange(ticker);
       }
       expandedTickers.add(ticker);
     };
@@ -1320,32 +1430,11 @@
       }
     };
 
-    window.onTickerInput = function (rawVal) {
-      const ticker = (rawVal || "").trim().toUpperCase();
-      clearTimeout(lookupDebounceTimer);
-      if (ticker.length >= 2) {
-        lookupDebounceTimer = setTimeout(async () => {
-          const indicator = document.getElementById("ticker-fetch-indicator");
-          const currInput = document.getElementById("form-curr");
-          const nameInput = document.getElementById("form-name");
-          const statusLabel = document.getElementById("ticker-source-status");
-
-          if (indicator) indicator.classList.remove("hidden");
-          const quote = await fetchOfficialMarketQuote(ticker);
-          if (indicator) indicator.classList.add("hidden");
-
-          if (quote) {
-            if (currInput && (!currInput.value || currInput.value === "0")) {
-              currInput.value = quote.price.toFixed(2);
-            }
-            if (nameInput && !nameInput.value) {
-              nameInput.value = quote.name;
-            }
-            if (statusLabel) {
-              statusLabel.textContent = `Cotação oficial em direto: $${quote.price}`;
-            }
-          }
-        }, 500);
+    window.onTickerChange = function (val) {
+      const ticker = (val || "").trim().toUpperCase();
+      const currInput = document.getElementById("form-curr");
+      if (ticker && cachedQuotes[ticker] && currInput && (!currInput.value || currInput.value === "0")) {
+        currInput.value = cachedQuotes[ticker].price.toFixed(2);
       }
       updateBreakEvenDisplay();
     };
@@ -1421,11 +1510,12 @@
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
       if (currUSD <= 0) {
+        const fromQuote = cachedQuotes[ticker]?.price;
         const sibling = portfolio.find(it => it.ticker === ticker);
-        currUSD = sibling ? sibling.currUSD : avgUSD;
+        currUSD = fromQuote || (sibling ? sibling.currUSD : avgUSD);
       }
 
-      const prevCloseUSD = currUSD;
+      const prevCloseUSD = cachedQuotes[ticker]?.prevClose || currUSD;
       const feesUSD = parseNumericInput(document.getElementById("form-fees")?.value);
 
       if (id) {
@@ -1541,18 +1631,20 @@
       const metrics = calculatePortfolioMetrics();
       renderKPIs(metrics);
       renderTable(metrics);
+      renderPortfolioChart(metrics);
     }
 
+    // ARRANQUE DA APLICAÇÃO
     window.addEventListener("DOMContentLoaded", async () => {
       loadLocalPortfolio();
       renderAll();
 
-      await fetchLiveExchangeRate();
       await syncFromSupabase();
-      await fetchLiveStockQuotes();
+      await fetchLiveMarketData();
 
+      // Atualiza automaticamente a cada 60 segundos
       setInterval(() => {
-        fetchLiveStockQuotes();
+        fetchLiveMarketData();
       }, 60000);
     });
   </script>
