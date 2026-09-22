@@ -254,7 +254,6 @@
     <!-- TABELA DE ATIVOS E COMPRAS -->
     <section class="rounded-2xl card-clean overflow-hidden flex flex-col">
       
-      <!-- Cabeçalho da Tabela e Filtros -->
       <div class="p-4 sm:p-5 border-b border-surface-border flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div>
           <div class="flex items-center gap-2">
@@ -550,6 +549,7 @@
     let deletedIdsSet = new Set();
     let EUR_USD = 1.0850;
     let cachedQuotes = {};
+    let cachedHistoryData = null;
     let currentFilter = 'ALL';
     let currentChartRange = 'ALL';
     let expandedTickers = new Set();
@@ -762,7 +762,7 @@
       if (icon) icon.classList.add("animate-spin");
 
       try {
-        const res = await fetch(GOOGLE_API_URL);
+        const res = await fetch(`${GOOGLE_API_URL}?history=true`);
         if (res.ok) {
           const data = await res.json();
           
@@ -788,8 +788,10 @@
             saveLocalPortfolio();
             renderAll();
 
-            // Atualiza o gráfico com dados históricos reais
-            fetchChartHistory();
+            if (data.history && Object.keys(data.history).length > 0) {
+              cachedHistoryData = data.history;
+              buildRealHistoryChart(cachedHistoryData);
+            }
 
             if (manual) {
               showToast(`${updatedCount} ativos sincronizados com Google Finance!`);
@@ -984,50 +986,63 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-    // OBTENÇÃO E RENDERIZAÇÃO REAL DO HISTÓRICO NO GRÁFICO (COM ALINHAMENTO FORWARD-FILL)
-    async function fetchChartHistory(days = null) {
-      if (!days) {
-        const daysMap = { '1M': 30, 'YTD': 180, '1A': 365, 'ALL': 730 };
-        days = daysMap[currentChartRange] || 90;
-      }
-
-      try {
-        const res = await fetch(`${GOOGLE_API_URL}?history=true&days=${days}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.history && Object.keys(data.history).length > 0) {
-            buildRealHistoryChart(data.history);
-          }
-        }
-      } catch (err) {
-        console.error("Erro ao carregar histórico diário:", err);
-      }
-    }
-
+    // CONSTRUÇÃO DO GRÁFICO COM FILTRAGEM RIGOROSA DE PERÍODOS
     function buildRealHistoryChart(history) {
       const canvas = document.getElementById("portfolioChart");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
 
-      // 1. Recolhe todas as datas de fecho disponíveis e ordena cronologicamente
+      // 1. Recolhe todas as datas de fecho disponíveis
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') {
           Object.keys(dict).forEach(d => dateSet.add(d));
         }
       });
-      const sortedDates = Array.from(dateSet).sort();
+      const allDates = Array.from(dateSet).sort();
+      if (allDates.length === 0) return;
 
+      // 2. Determina a data de corte conforme o período ativo
+      const now = new Date();
+      let cutoffDate = new Date();
+
+      if (currentChartRange === '1M') {
+        cutoffDate.setDate(now.getDate() - 30);
+      } else if (currentChartRange === 'YTD') {
+        cutoffDate = new Date(now.getFullYear(), 0, 1);
+      } else if (currentChartRange === '1A') {
+        cutoffDate.setDate(now.getDate() - 365);
+      } else {
+        cutoffDate = new Date('2000-01-01'); // TUDO
+      }
+
+      const cutoffStr = cutoffDate.toISOString().split("T")[0];
+      const sortedDates = allDates.filter(d => d >= cutoffStr);
       if (sortedDates.length === 0) return;
 
       const labels = [];
       const marketCurve = [];
       const investedCurve = [];
 
-      // Memória de fecho anterior por ativo para evitar picos em feriados
+      // Memória de fecho anterior por ativo para eliminar picos de feriados
       const lastKnownPrice = {};
       let lastKnownFx = EUR_USD;
 
+      // Popula o último preço conhecido até à data de corte para evitar saltos iniciais
+      allDates.forEach(dateStr => {
+        if (dateStr <= cutoffStr) {
+          if (history["EURUSD"] && history["EURUSD"][dateStr]) {
+            lastKnownFx = history["EURUSD"][dateStr];
+          }
+          portfolio.forEach(lot => {
+            if (history[lot.ticker] && history[lot.ticker][dateStr]) {
+              lastKnownPrice[lot.ticker] = history[lot.ticker][dateStr];
+            }
+          });
+        }
+      });
+
+      // 3. Monta as curvas dentro do período selecionado
       sortedDates.forEach(dateStr => {
         const pointDate = new Date(dateStr);
         let totalInvested = 0;
@@ -1064,6 +1079,7 @@
         }
       });
 
+      // Alinha o último ponto com os dados em tempo real da sessão
       const metrics = calculatePortfolioMetrics();
       if (marketCurve.length > 0) {
         marketCurve[marketCurve.length - 1] = Number(metrics.totalCurrEUR.toFixed(2));
@@ -1156,8 +1172,11 @@
         }
       });
 
-      const daysMap = { '1M': 30, 'YTD': 180, '1A': 365, 'ALL': 730 };
-      fetchChartHistory(daysMap[range] || 90);
+      if (cachedHistoryData) {
+        buildRealHistoryChart(cachedHistoryData);
+      } else {
+        fetchLiveMarketData();
+      }
     };
 
     function toggleTickerExpand(ticker) {
@@ -1578,7 +1597,7 @@
       closeModal();
       renderAll();
       syncAllToSupabase(false);
-      fetchChartHistory();
+      fetchLiveMarketData();
     };
 
     window.deleteAsset = function (id) {
@@ -1594,7 +1613,7 @@
           saveLocalPortfolio();
           renderAll();
           deleteAssetFromSupabase(id);
-          fetchChartHistory();
+          if (cachedHistoryData) buildRealHistoryChart(cachedHistoryData);
           showToast("Lote removido com sucesso.");
         }
       );
@@ -1614,7 +1633,7 @@
           saveLocalPortfolio();
           renderAll();
           deleteEntireAssetFromSupabase(ticker);
-          fetchChartHistory();
+          if (cachedHistoryData) buildRealHistoryChart(cachedHistoryData);
           showToast(`Ativo ${ticker} removido com sucesso.`);
         }
       );
@@ -1662,7 +1681,7 @@
       await syncFromSupabase();
       await fetchLiveMarketData();
 
-      // Atualiza automaticamente a cada 60 segundos
+      // Atualização automática periódica a cada 60 segundos
       setInterval(() => {
         fetchLiveMarketData();
       }, 60000);
