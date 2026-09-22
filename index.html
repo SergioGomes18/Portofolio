@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
@@ -72,6 +73,7 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
 
+  <!-- ==================== HEADER ==================== -->
   <header class="sticky top-0 z-30 glass-panel border-b border-slate-800/80">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
       
@@ -137,7 +139,7 @@
     <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
   </div>
 
-  <!-- Custom In-App Confirmation Modal -->
+  <!-- Confirmation Modal -->
   <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 hidden">
     <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4">
       <div class="flex items-center gap-3">
@@ -160,6 +162,7 @@
     </div>
   </div>
 
+  <!-- ==================== MAIN CONTENT ==================== -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 space-y-6">
 
     <!-- KPI Summary Dashboard -->
@@ -613,7 +616,8 @@
         qty: 10,
         avgUSD: 110.00,
         currUSD: 227.38,
-        feesUSD: 0.35
+        feesUSD: 0.35,
+        eurUsdRateAtBuy: 1.0920
       },
       {
         id: "1-b",
@@ -625,7 +629,8 @@
         qty: 5,
         avgUSD: 135.50,
         currUSD: 227.38,
-        feesUSD: 0.35
+        feesUSD: 0.35,
+        eurUsdRateAtBuy: 1.0780
       },
       {
         id: "2",
@@ -637,7 +642,8 @@
         qty: 6,
         avgUSD: 415.00,
         currUSD: 501.61,
-        feesUSD: 0.35
+        feesUSD: 0.35,
+        eurUsdRateAtBuy: 1.0820
       },
       {
         id: "3",
@@ -649,7 +655,8 @@
         qty: 8,
         avgUSD: 182.40,
         currUSD: 338.98,
-        feesUSD: 0.00
+        feesUSD: 0.00,
+        eurUsdRateAtBuy: 1.0940
       },
       {
         id: "4",
@@ -661,7 +668,8 @@
         qty: 12,
         avgUSD: 62.10,
         currUSD: 87.12,
-        feesUSD: 0.35
+        feesUSD: 0.35,
+        eurUsdRateAtBuy: 1.0830
       }
     ];
 
@@ -688,6 +696,8 @@
     let chartHoverIndex = -1;
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
+    let cachedChartPoints = [];
+    let isFetchingChart = false;
 
     // ==========================================
     // 2. UTILITY & FORMATTING FUNCTIONS
@@ -812,7 +822,8 @@
                 qty: parseFloat(item.qty),
                 avgUSD: parseFloat(item.avgUSD),
                 currUSD: parseFloat(item.currUSD),
-                feesUSD: parseFloat(item.feesUSD || 0)
+                feesUSD: parseFloat(item.feesUSD || 0),
+                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || item.eur_rate || EUR_USD)
               });
             });
 
@@ -1008,7 +1019,9 @@
         const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
         const lotCurrValUSD = lot.qty * lot.currUSD;
 
-        const lotInvEUR = lotCostUSD / EUR_USD;
+        // Câmbio histórico na compra para rigor contabilístico (P&L e capital real investido)
+        const buyRate = lot.eurUsdRateAtBuy || EUR_USD;
+        const lotInvEUR = lotCostUSD / buyRate;
         const lotCurrEUR = lotCurrValUSD / EUR_USD;
         const lotPLEUR = lotCurrEUR - lotInvEUR;
         const lotPLUSD = lotCurrValUSD - lotCostUSD;
@@ -1022,6 +1035,7 @@
 
         const calculatedLot = {
           ...lot,
+          eurUsdRateAtBuy: buyRate,
           costUSD: lotCostUSD,
           currValUSD: lotCurrValUSD,
           invEUR: lotInvEUR,
@@ -1379,12 +1393,10 @@
           btn.className = "chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
         }
       });
-      renderLineChart();
+      cachedChartPoints = [];
+      renderLineChart(true);
     }
 
-    // ------------------------------------------------------------------
-    // Histórico real de preços (Yahoo Finance, mesma fonte da cotação atual)
-    // ------------------------------------------------------------------
     let historicalDataCache = {};
 
     function timeframeToRangeInterval(tf) {
@@ -1394,7 +1406,7 @@
         case '1M': return { range: '1mo', interval: '1d' };
         case '3M': return { range: '3mo', interval: '1d' };
         case '1A': return { range: '1y', interval: '1d' };
-        default:   return { range: '2y', interval: '1wk' }; // TUDO
+        default:   return { range: '2y', interval: '1wk' };
       }
     }
 
@@ -1432,11 +1444,9 @@
           }
         } catch (e) {}
       }
-      // Sem histórico real disponível (proxy em baixo, ticker desconhecido, etc.)
       return null;
     }
 
-    // Preço mais próximo (sem ultrapassar) o instante pedido, dentro de uma série real
     function getPriceAtTime(series, targetTime) {
       let closest = series[0];
       for (const p of series) {
@@ -1469,7 +1479,7 @@
       } else if (tf === '1A') {
         startTime.setFullYear(startTime.getFullYear() - 1);
         numPoints = 55;
-      } else { // TUDO
+      } else {
         let oldest = new Date();
         portfolio.forEach(it => {
           if (it.buyDate) {
@@ -1484,7 +1494,6 @@
       const totalSpan = Math.max(1000 * 60 * 60, now.getTime() - startTime.getTime());
       const points = [];
 
-      // Vai buscar histórico real (uma vez por ticker, com cache) para este timeframe
       const uniqueTickers = [...new Set(portfolio.map(l => l.ticker))];
       const { range, interval } = timeframeToRangeInterval(tf);
       const seriesList = await Promise.all(uniqueTickers.map(t => fetchHistoricalSeries(t, range, interval)));
@@ -1504,10 +1513,10 @@
           const isOwned = (ptTime.getTime() >= buyTime) || (tf === '1D');
 
           if (isOwned) {
-            const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / EUR_USD;
+            const buyRate = lot.eurUsdRateAtBuy || EUR_USD;
+            const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / buyRate;
             investedAtPt += costEUR;
 
-            // Normalized progression strictly from 0 (at purchase) to 1 (now)
             let assetProgress = 0;
             if (tf === '1D') {
               assetProgress = ptProgress;
@@ -1523,11 +1532,8 @@
             const series = tickerSeriesMap[lot.ticker];
             let dynamicPrice;
             if (series && series.length > 1) {
-              // Cotação de fecho real mais próxima deste instante
               dynamicPrice = getPriceAtTime(series, ptTime);
             } else {
-              // Sem histórico real disponível: interpolação linear honesta
-              // entre o preço de compra e a cotação atual (sem inventar ruído de mercado)
               const assetCurrentUSD = lot.currUSD || lot.avgUSD;
               dynamicPrice = lot.avgUSD + ((assetCurrentUSD - lot.avgUSD) * assetProgress);
             }
@@ -1536,17 +1542,16 @@
           }
         });
 
-        // Exact anchoring at the last point to strictly match KPI numbers
         if (i === numPoints) {
           investedAtPt = metrics.totalInvEUR;
           valueAtPt = metrics.totalCurrEUR;
         }
 
-        // Clean anchoring if no asset was yet purchased at this time
         if (investedAtPt === 0 && points.length === 0) {
           const firstLot = [...portfolio].sort((a,b) => (a.buyDate||'').localeCompare(b.buyDate||''))[0];
           if (firstLot) {
-            investedAtPt = ((firstLot.qty * firstLot.avgUSD) + (firstLot.feesUSD || 0)) / EUR_USD;
+            const firstBuyRate = firstLot.eurUsdRateAtBuy || EUR_USD;
+            investedAtPt = ((firstLot.qty * firstLot.avgUSD) + (firstLot.feesUSD || 0)) / firstBuyRate;
             valueAtPt = investedAtPt;
           }
         } else if (investedAtPt === 0 && points.length > 0) {
@@ -1571,7 +1576,7 @@
 
     let chartRenderToken = 0;
 
-    async function renderLineChart() {
+    async function renderLineChart(forceRefresh = true) {
       const canvas = document.getElementById("equityLineChart");
       if (!canvas) return;
 
@@ -1579,17 +1584,32 @@
       const W = rect.width || canvas.parentElement?.clientWidth || 600;
       const H = rect.height || 260;
 
-      // Evita desenhar num canvas ainda sem layout (largura/altura 0 no arranque);
-      // o ResizeObserver volta a chamar assim que o contentor tiver tamanho real.
       if (W < 20 || H < 20) return;
 
-      const myToken = ++chartRenderToken;
       const metrics = calculatePortfolioMetrics();
-      const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
 
-      // Se entretanto o utilizador mudou de timeframe / os dados mudaram, descarta este render
-      if (myToken !== chartRenderToken) return;
-      if (points.length < 2) return;
+      if (forceRefresh || cachedChartPoints.length < 2) {
+        if (isFetchingChart) return;
+        isFetchingChart = true;
+        const myToken = ++chartRenderToken;
+        try {
+          const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
+          if (myToken !== chartRenderToken) return;
+          if (points && points.length >= 2) {
+            cachedChartPoints = points;
+          }
+        } finally {
+          isFetchingChart = false;
+        }
+      }
+
+      if (cachedChartPoints.length < 2) return;
+      drawChartFromPoints(cachedChartPoints, metrics, W, H);
+    }
+
+    function drawChartFromPoints(points, metrics, W, H) {
+      const canvas = document.getElementById("equityLineChart");
+      if (!canvas) return;
 
       const ctx = canvas.getContext("2d");
       const dpr = window.devicePixelRatio || 1;
@@ -1650,7 +1670,6 @@
         if (i === 0) {
           ctx.moveTo(x, y);
         } else {
-          // Stepped staircase interpolation for capital additions
           const prevY = getY(points[i - 1].invested);
           if (Math.abs(prevY - y) > 1) {
             ctx.lineTo(x, prevY);
@@ -1686,7 +1705,7 @@
       }
 
       // Gradient Fill under the Curve
-      const isPositive = metrics.totalPLEUR >= 0;
+      const isPositive = metrics ? metrics.totalPLEUR >= 0 : true;
       const grad = ctx.createLinearGradient(0, padTop, 0, H - padBottom);
       if (isPositive) {
         grad.addColorStop(0, "rgba(16, 185, 129, 0.28)");
@@ -1751,7 +1770,8 @@
       const canvas = document.getElementById("equityLineChart");
       if (!canvas) return;
 
-      const handleMove = async (clientX) => {
+      const handleMove = (clientX) => {
+        if (!cachedChartPoints || cachedChartPoints.length < 2) return;
         const rect = canvas.getBoundingClientRect();
         const x = clientX - rect.left;
         const padLeft = 12;
@@ -1760,16 +1780,18 @@
         if (widthUsable <= 0) return;
 
         const pct = Math.max(0, Math.min(1, (x - padLeft) / widthUsable));
+        chartHoverIndex = Math.round(pct * (cachedChartPoints.length - 1));
+        
+        const W = rect.width || canvas.parentElement?.clientWidth || 600;
+        const H = rect.height || 260;
         const metrics = calculatePortfolioMetrics();
-        const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
-        chartHoverIndex = Math.round(pct * (points.length - 1));
-        renderLineChart();
+        drawChartFromPoints(cachedChartPoints, metrics, W, H);
       };
 
       canvas.addEventListener("mousemove", (e) => handleMove(e.clientX));
       canvas.addEventListener("mouseleave", () => {
         chartHoverIndex = -1;
-        renderLineChart();
+        renderLineChart(false);
       });
 
       canvas.addEventListener("touchmove", (e) => {
@@ -1780,7 +1802,7 @@
 
       canvas.addEventListener("touchend", () => {
         chartHoverIndex = -1;
-        renderLineChart();
+        renderLineChart(false);
       });
     }
 
@@ -1970,6 +1992,12 @@
         return;
       }
 
+      const today = new Date().toISOString().split("T")[0];
+      if (buyDate > today) {
+        if (errBox) { errBox.textContent = "A data de compra não pode ser posterior à data atual."; errBox.classList.remove("hidden"); }
+        return;
+      }
+
       if (!name) name = TICKER_DIRECTORY[ticker]?.name || ticker;
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
@@ -1983,7 +2011,8 @@
       if (id) {
         const idx = portfolio.findIndex(it => String(it.id) === String(id));
         if (idx !== -1) {
-          portfolio[idx] = { id: String(id), ticker, name, category, broker, buyDate, qty, avgUSD, currUSD, feesUSD };
+          const currentBuyRate = portfolio[idx].eurUsdRateAtBuy || EUR_USD;
+          portfolio[idx] = { id: String(id), ticker, name, category, broker, buyDate, qty, avgUSD, currUSD, feesUSD, eurUsdRateAtBuy: currentBuyRate };
         }
         showToast(`Lote de ${ticker} atualizado com sucesso!`);
       } else {
@@ -1997,13 +2026,15 @@
           qty,
           avgUSD,
           currUSD,
-          feesUSD
+          feesUSD,
+          eurUsdRateAtBuy: EUR_USD
         };
         portfolio.push(newLot);
         expandedTickers.add(ticker);
         showToast(`Nova compra de ${ticker} adicionada e guardada!`);
       }
 
+      cachedChartPoints = [];
       saveLocalPortfolio();
       closeModal();
       renderAll();
@@ -2019,6 +2050,7 @@
         `Tens a certeza de que desejas remover permanentemente esta compra de ${label}?`,
         () => {
           portfolio = portfolio.filter(it => String(it.id) !== String(id));
+          cachedChartPoints = [];
           saveLocalPortfolio();
           renderAll();
           deleteAssetFromSupabase(id);
@@ -2041,6 +2073,7 @@
         () => {
           portfolio = portfolio.filter(it => it.ticker !== ticker);
           expandedTickers.delete(ticker);
+          cachedChartPoints = [];
           saveLocalPortfolio();
           renderAll();
           deleteEntireAssetFromSupabase(ticker);
@@ -2060,11 +2093,13 @@
         qty: 4,
         avgUSD: 142.00,
         currUSD: 227.38,
-        feesUSD: 0.35
+        feesUSD: 0.35,
+        eurUsdRateAtBuy: EUR_USD
       };
 
       portfolio.push(testItem);
       expandedTickers.add("NVDA");
+      cachedChartPoints = [];
       saveLocalPortfolio();
       renderAll();
       syncAllToSupabase(false);
@@ -2107,15 +2142,13 @@
     }
 
     window.addEventListener("resize", () => {
-      renderLineChart();
+      renderLineChart(false);
     });
 
-    // Garante que o gráfico é desenhado assim que o contentor tiver o tamanho
-    // real (o canvas pode arrancar com 0px durante o primeiro layout).
     function setupChartResizeObserver() {
       const canvas = document.getElementById("equityLineChart");
       if (!canvas || !canvas.parentElement || typeof ResizeObserver === 'undefined') return;
-      const ro = new ResizeObserver(() => renderLineChart());
+      const ro = new ResizeObserver(() => renderLineChart(false));
       ro.observe(canvas.parentElement);
     }
 
