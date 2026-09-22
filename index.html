@@ -560,7 +560,7 @@
 
   <!-- MOTOR JAVASCRIPT CONSOLIDADO -->
   <script>
-    // ENDPOINT ATUALIZADO DO GOOGLE APPS SCRIPT
+    // ENDPOINT DO GOOGLE APPS SCRIPT
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec";
 
     // SUPABASE CONFIG
@@ -834,47 +834,51 @@
       } catch (e) {}
     }
 
-    // LEITURA DIRETA DO ENDPOINT GOOGLE APPS SCRIPT
+    // LEITURA DIRETA DO ENDPOINT GOOGLE APPS SCRIPT (URL LIMPO E ESTÁVEL)
     async function fetchLiveMarketData(manual = false) {
       const icon = document.getElementById("icon-sync-quotes");
       if (icon) icon.classList.add("animate-spin");
 
       try {
-        const res = await fetch(`${GOOGLE_API_URL}?history=true`);
-        if (res.ok) {
-          const data = await res.json();
-          
-          if (data && data.eurusd) {
-            EUR_USD = parseFloat(data.eurusd);
-            const el = document.getElementById("val-eurusd");
-            if (el) el.textContent = EUR_USD.toFixed(4);
+        // Pedido universal: devolve cotações em direto e histórico no mesmo JSON
+        const res = await fetch(GOOGLE_API_URL);
+        if (!res.ok) throw new Error("Falha HTTP na ligação ao Google Script");
+
+        const data = await res.json();
+        
+        // 1. Atualiza Câmbio EUR/USD
+        if (data && data.eurusd) {
+          EUR_USD = parseFloat(data.eurusd);
+          const el = document.getElementById("val-eurusd");
+          if (el) el.textContent = EUR_USD.toFixed(4);
+        }
+
+        // 2. Atualiza Cotações dos Ativos
+        if (data && data.quotes) {
+          cachedQuotes = data.quotes;
+          let updatedCount = 0;
+
+          portfolio.forEach(item => {
+            const q = data.quotes[item.ticker];
+            if (q && q.price > 0) {
+              item.currUSD = q.price;
+              item.prevCloseUSD = q.prevClose || (q.price / (1 + (q.changePct / 100)));
+              updatedCount++;
+            }
+          });
+
+          saveLocalPortfolio();
+          renderAll();
+
+          // 3. Atualiza Gráfico se o histórico vier no payload
+          if (data.history && Object.keys(data.history).length > 0) {
+            cachedHistoryData = data.history;
+            buildRealHistoryChart(cachedHistoryData);
           }
 
-          if (data && data.quotes) {
-            cachedQuotes = data.quotes;
-            let updatedCount = 0;
-
-            portfolio.forEach(item => {
-              const q = data.quotes[item.ticker];
-              if (q && q.price > 0) {
-                item.currUSD = q.price;
-                item.prevCloseUSD = q.prevClose || (q.price / (1 + (q.changePct / 100)));
-                updatedCount++;
-              }
-            });
-
-            saveLocalPortfolio();
-            renderAll();
-
-            if (data.history && Object.keys(data.history).length > 0) {
-              cachedHistoryData = data.history;
-              buildRealHistoryChart(cachedHistoryData);
-            }
-
-            if (manual) {
-              showToast(`${updatedCount} ativos sincronizados com Google Finance!`);
-              syncAllToSupabase(false);
-            }
+          if (manual) {
+            showToast(`${updatedCount} ativos sincronizados com Google Finance!`);
+            syncAllToSupabase(false);
           }
         }
       } catch (err) {
