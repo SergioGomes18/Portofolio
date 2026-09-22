@@ -512,7 +512,7 @@
           <label class="block font-semibold text-slate-300 mb-1">Google Apps Script Endpoint</label>
           <input 
             type="text" 
-            value="https://script.google.com/macros/s/AKfycbzDvfEPJCR61TgmYbf8vsu4iGQR2R7MNmHfew6Gn8tUn8qPamsHoD9gYov_caRw17Yw/exec" 
+            value="https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec" 
             class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-white font-mono text-xs truncate" 
             readonly
           >
@@ -532,8 +532,8 @@
 
   <!-- MOTOR JAVASCRIPT CONSOLIDADO -->
   <script>
-    // ENDPOINT NOVO DO GOOGLE APPS SCRIPT COM HISTÓRICO
-    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbzDvfEPJCR61TgmYbf8vsu4iGQR2R7MNmHfew6Gn8tUn8qPamsHoD9gYov_caRw17Yw/exec";
+    // ENDPOINT ATUALIZADO DO GOOGLE APPS SCRIPT
+    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec";
 
     // SUPABASE CONFIG
     const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
@@ -808,7 +808,7 @@
       }
     }
 
-    // MOTOR DE CÁLCULO RIGOROSO E AUDITÁVEL
+    // MOTOR DE CÁLCULO
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
       let totalInvUSD = 0;
@@ -833,7 +833,6 @@
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
         const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
 
-        // Variação 1D comparando em dólares com o fecho anterior
         const prevPriceUSD = lot.prevCloseUSD || lot.currUSD;
         const currentVal = lot.qty * lot.currUSD;
         const prevVal = lot.qty * prevPriceUSD;
@@ -929,7 +928,6 @@
       const totalPLUSD = totalCurrUSD - totalInvUSD;
       const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
 
-      // Variação 1D global ponderada diretamente
       const day1DPct = (totalMarketValUSD - totalDayGainUSD) > 0 
         ? (totalDayGainUSD / (totalMarketValUSD - totalDayGainUSD)) * 100 
         : 0;
@@ -976,7 +974,6 @@
           : `<i data-lucide="trending-down" class="w-4 h-4 text-loss"></i>`;
       }
 
-      // Variação 1D oficial
       const kpi1dEur = document.getElementById("kpi-1d-eur");
       const kpi1dPct = document.getElementById("kpi-1d-pct");
       const is1dPos = metrics.day1DDeltaEUR >= 0;
@@ -1012,7 +1009,6 @@
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
 
-      // Recolhe todas as datas de negociação disponíveis
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') {
