@@ -192,111 +192,119 @@
         <div class="text-[10px] sm:text-xs text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 (em tempo real)</div>
       </div>
 
-      <!-- Total Net Profit/Loss -->
-      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden">
+      <!-- Total Net Profit/Loss (%) -->
+      <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden border border-emerald-500/20">
         <div class="flex items-center justify-between text-slate-400 mb-1.5">
-          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Mais-Valia Líquida</span>
-          <div class="p-1.5 rounded-lg bg-slate-800/80" id="kpi-pl-icon-container">
-            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+          <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-emerald-300">Retorno Total (%)</span>
+          <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400" id="kpi-pl-icon-container">
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
           </div>
         </div>
-        <div class="text-lg sm:text-2xl font-bold font-mono tracking-tight text-emerald-400" id="kpi-pl-eur">+0,00 €</div>
-        <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-mono font-semibold mt-1" id="kpi-pl-pct-container">
-          <span id="kpi-pl-pct" class="text-emerald-400">+0.00%</span>
-          <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00 líquido)</span>
+        <div class="text-xl sm:text-3xl font-extrabold font-mono tracking-tight text-emerald-400" id="kpi-pl-pct">+0.00%</div>
+        <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1 font-medium" id="kpi-pl-eur-container">
+          <span id="kpi-pl-eur" class="text-emerald-400">+0,00 €</span>
+          <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00)</span>
         </div>
       </div>
 
-      <!-- Portfolio Best Performer -->
+      <!-- Portfolio Best / Worst Performer -->
       <div class="p-4 sm:p-5 rounded-2xl glass-panel relative overflow-hidden flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-1">
-          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Destaque de Performance</span>
+          <span class="text-[11px] sm:text-xs font-medium uppercase tracking-wider">Top Rentabilidades</span>
           <div class="p-1.5 rounded-lg bg-slate-800/80 text-amber-400">
             <i data-lucide="award" class="w-4 h-4"></i>
           </div>
         </div>
-        <div class="space-y-1">
+        <div class="space-y-1.5">
           <div class="flex justify-between items-center text-xs font-mono">
-            <span class="text-slate-400">Melhor:</span>
-            <span class="font-medium text-emerald-400" id="kpi-best-asset">-</span>
+            <span class="text-slate-400">Maior ganho:</span>
+            <span class="font-bold text-emerald-400" id="kpi-best-asset">-</span>
           </div>
           <div class="flex justify-between items-center text-xs font-mono">
-            <span class="text-slate-400">Menor:</span>
-            <span class="font-medium text-rose-400" id="kpi-worst-asset">-</span>
+            <span class="text-slate-400">Menor ganho:</span>
+            <span class="font-bold text-rose-400" id="kpi-worst-asset">-</span>
           </div>
         </div>
       </div>
 
     </section>
 
-    <!-- Historical Chart Section -->
-    <section class="p-4 sm:p-6 rounded-2xl glass-panel flex flex-col space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
-        <div>
+    <!-- PERCENTAGE PERFORMANCE DASHBOARD (Decomposição Cambial & Heatmap) -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <!-- FX vs Asset Return Breakdown -->
+      <div class="p-5 rounded-2xl glass-panel space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
           <div class="flex items-center gap-2">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Curva de Património da Carteira
-            </h2>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-              <i data-lucide="check" class="w-3 h-3"></i>
-              Yahoo Finance Oficial
-            </span>
+            <div class="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+              <i data-lucide="scale" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Decomposição do Retorno</h3>
+              <p class="text-[10px] text-slate-400">Origem da tua valorização percentual</p>
+            </div>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5" id="chart-subtitle">Série cronológica calculada estritamente com velas de fecho históricas reais</p>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">EUR vs USD</span>
         </div>
 
-        <!-- Scrubber Inspection Header -->
-        <div class="flex items-center justify-between sm:justify-end gap-3 font-mono">
-          <div class="text-left sm:text-right">
-            <div class="text-sm sm:text-base font-bold text-white" id="chart-scrub-val">0,00 €</div>
-            <div class="text-[11px] text-emerald-400" id="chart-scrub-delta">+0,00 € (+0.00%)</div>
+        <div class="space-y-3 font-mono">
+          <!-- Stock Real Appreciation in USD -->
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">Subida Real dos Ativos ($ USD):</span>
+              <span class="font-bold text-white" id="perf-asset-usd-pct">+0.00%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="bar-perf-asset" class="h-full bg-indigo-500 rounded-full transition-all" style="width: 50%"></div>
+            </div>
+            <span class="text-[10px] text-slate-500 block">Desempenho puro de Wall Street sem efeito da taxa de câmbio</span>
           </div>
-          <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800" id="chart-scrub-date">Hoje</span>
+
+          <!-- FX Currency Impact -->
+          <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-400">Impacto Cambial EUR/USD:</span>
+              <span class="font-bold text-sky-400" id="perf-fx-impact-pct">+0.00%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div id="bar-perf-fx" class="h-full bg-sky-400 rounded-full transition-all" style="width: 50%"></div>
+            </div>
+            <span class="text-[10px] text-slate-500 block">Variação da moeda entre o dia da compra e a cotação atual</span>
+          </div>
+
+          <!-- Total Real Return in EUR -->
+          <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+            <span class="text-xs text-emerald-300 font-semibold">Rentabilidade Efetiva em Euros:</span>
+            <span class="text-base font-extrabold text-emerald-400 font-mono" id="perf-total-eur-pct">+0.00%</span>
+          </div>
         </div>
       </div>
 
-      <!-- Timeframe Selector Tabs -->
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-mono">
-          <button onclick="setChartTimeframe('1D')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1D">1D</button>
-          <button onclick="setChartTimeframe('1S')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1S">1S</button>
-          <button onclick="setChartTimeframe('1M')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1M">1M</button>
-          <button onclick="setChartTimeframe('3M')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="3M">3M</button>
-          <button onclick="setChartTimeframe('1A')" class="chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-tf="1A">1A</button>
-          <button onclick="setChartTimeframe('TUDO')" class="chart-tf-btn active px-2.5 py-1 rounded-lg bg-sky-600 text-white font-semibold transition" data-tf="TUDO">TUDO</button>
+      <!-- Relative Ranking Bar Heatmap -->
+      <div class="p-5 rounded-2xl glass-panel space-y-3 lg:col-span-2 flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2">
+            <div class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+              <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-white uppercase tracking-wider font-mono">Ranking de Rentabilidade (%)</h3>
+              <p class="text-[10px] text-slate-400">Comparação percentual direta entre todas as tuas posições</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400">Ordenado por % de ganho</span>
         </div>
 
-        <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-          <span class="flex items-center gap-1">
-            <span class="w-3 h-0.5 bg-emerald-400 inline-block"></span> Património Real
-          </span>
-          <span class="flex items-center gap-1">
-            <span class="w-3 h-0.5 border-b border-dashed border-slate-500 inline-block"></span> Capital Investido
-          </span>
+        <div id="ranking-bars-container" class="space-y-2.5 py-1">
+          <!-- Dynamic Ranking Bars -->
+        </div>
+
+        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+          <span>* Considera o Preço Médio Ponderado e todas as comissões pagas.</span>
+          <span class="text-sky-400">100% em Tempo Real</span>
         </div>
       </div>
 
-      <!-- Canvas Chart Container with Loading & Error States -->
-      <div class="relative w-full h-64 sm:h-72 touch-none">
-        <canvas id="equityLineChart" class="w-full h-full block"></canvas>
-        
-        <!-- Loading Overlay -->
-        <div id="chart-loader" class="hidden absolute inset-0 bg-slate-950/70 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center gap-2 z-10">
-          <i data-lucide="refresh-cw" class="w-6 h-6 text-sky-400 animate-spin"></i>
-          <span class="text-xs font-mono text-slate-300">A obter velas históricas do Yahoo Finance...</span>
-        </div>
-
-        <!-- Strict Error State (No invented fallback) -->
-        <div id="chart-error-banner" class="hidden absolute inset-0 bg-slate-950/90 rounded-xl flex flex-col items-center justify-center p-6 text-center z-10 space-y-2 border border-rose-500/20">
-          <i data-lucide="alert-circle" class="w-8 h-8 text-rose-400"></i>
-          <div class="text-xs font-semibold text-white" id="chart-error-msg">Não foi possível descarregar dados de mercado autênticos.</div>
-          <p class="text-[11px] text-slate-400 max-w-sm">Para manter a integridade contabilística e não exibir números artificiais, o gráfico apenas é desenhado com dados oficiais do Yahoo Finance.</p>
-          <button onclick="setChartTimeframe(currentChartTimeframe)" class="mt-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 font-mono text-xs rounded-lg border border-slate-700 transition">
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
     </section>
 
     <!-- Consolidated Assets Section -->
@@ -312,7 +320,7 @@
             </h2>
             <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300" id="table-asset-count">0 ativos</span>
           </div>
-          <p class="text-[11px] text-slate-400 mt-0.5">Clica em qualquer linha para expandir e ver todas as tuas compras individuais e respetivas percentagens.</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Clica em qualquer linha para expandir e ver as percentagens individuais de cada compra.</p>
         </div>
 
         <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
@@ -334,7 +342,7 @@
               <th class="py-3 px-3 text-right">Cotação ($)</th>
               <th class="py-3 px-3 text-right">Investido (€)</th>
               <th class="py-3 px-3 text-right">Valor Atual (€)</th>
-              <th class="py-3 px-3 text-right">Mais-Valia Total</th>
+              <th class="py-3 px-3 text-right">Valorização (%)</th>
               <th class="py-3 px-3 text-center">Peso</th>
               <th class="py-3 px-3 text-center">Ações</th>
             </tr>
@@ -358,7 +366,7 @@
       <div class="px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-1.5 font-mono">
         <span class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-          <span>Clica num ativo para detalhar lotes, histórico de compras e rentabilidade individual.</span>
+          <span>Clica num ativo para ver a valorização de cada compra e o impacto cambial.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -693,30 +701,26 @@
     ];
 
     const TICKER_DIRECTORY = {
-      "NVDA": { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia", vol: 0.42 },
-      "MSFT": { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia", vol: 0.24 },
-      "AAPL": { name: "Apple Inc.", price: 338.98, category: "Tecnologia", vol: 0.22 },
-      "KO":   { name: "The Coca-Cola Company", price: 87.12, category: "Consumo", vol: 0.12 },
-      "AMZN": { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia", vol: 0.32 },
-      "GOOGL":{ name: "Alphabet Inc.", price: 354.97, category: "Tecnologia", vol: 0.26 },
-      "META": { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia", vol: 0.36 },
-      "TSLA": { name: "Tesla Inc.", price: 375.30, category: "Tecnologia", vol: 0.50 },
-      "VOO":  { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF", vol: 0.15 },
-      "SPY":  { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF", vol: 0.15 },
-      "QQQ":  { name: "Invesco QQQ Trust", price: 512.40, category: "ETF", vol: 0.22 }
+      "NVDA": { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
+      "MSFT": { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
+      "AAPL": { name: "Apple Inc.", price: 338.98, category: "Tecnologia" },
+      "KO":   { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
+      "AMZN": { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia" },
+      "GOOGL":{ name: "Alphabet Inc.", price: 354.97, category: "Tecnologia" },
+      "META": { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia" },
+      "TSLA": { name: "Tesla Inc.", price: 375.30, category: "Tecnologia" },
+      "VOO":  { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF" },
+      "SPY":  { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF" },
+      "QQQ":  { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" }
     };
 
     // State Variables
     let portfolio = [];
     let EUR_USD = 1.0850;
     let currentFilter = 'ALL';
-    let currentChartTimeframe = 'TUDO';
     let lookupDebounceTimer = null;
-    let chartHoverIndex = -1;
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
-    let cachedChartPoints = [];
-    let isFetchingChart = false;
 
     // ==========================================
     // 2. UTILITY & FORMATTING FUNCTIONS
@@ -967,8 +971,7 @@
             if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
               return {
                 price: parseFloat(meta.regularMarketPrice.toFixed(2)),
-                name: meta.shortName || clean,
-                source: "Yahoo Finance"
+                name: meta.shortName || clean
               };
             }
           }
@@ -978,8 +981,7 @@
       if (TICKER_DIRECTORY[clean]) {
         return {
           price: TICKER_DIRECTORY[clean].price,
-          name: TICKER_DIRECTORY[clean].name,
-          source: "Diretório Oficial"
+          name: TICKER_DIRECTORY[clean].name
         };
       }
 
@@ -1017,13 +1019,13 @@
       if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
 
       if (manual) {
-        showToast(`${updatedCount} cotações atualizadas em tempo real!`);
+        showToast(`${updatedCount} cotações atualizadas com sucesso!`);
         syncAllToSupabase(false);
       }
     }
 
     // ==========================================
-    // 5. CONSOLIDATED POSITIONS & LOT CALCULATIONS
+    // 5. CALCULATIONS & PERFORMANCE DECOMPOSITION
     // ==========================================
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
@@ -1038,13 +1040,17 @@
         const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
         const lotCurrValUSD = lot.qty * lot.currUSD;
 
-        // Câmbio histórico na compra para rigor contabilístico (P&L e capital real investido)
+        // Câmbio histórico do dia de compra para preservar o valor real em Euros
         const buyRate = lot.eurUsdRateAtBuy || EUR_USD;
         const lotInvEUR = lotCostUSD / buyRate;
         const lotCurrEUR = lotCurrValUSD / EUR_USD;
         const lotPLEUR = lotCurrEUR - lotInvEUR;
         const lotPLUSD = lotCurrValUSD - lotCostUSD;
-        const lotPLPct = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
+
+        // Percentagens individuais do lote
+        const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
+        const lotStockPctUSD = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
+        const lotFxPct = lotPLPct - lotStockPctUSD; // Contributo cambial
         const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
 
         totalInvEUR += lotInvEUR;
@@ -1062,6 +1068,8 @@
           plEUR: lotPLEUR,
           plUSD: lotPLUSD,
           plPct: lotPLPct,
+          stockPctUSD: lotStockPctUSD,
+          fxPct: lotFxPct,
           breakEvenUSD: lotBreakEvenUSD
         };
 
@@ -1102,6 +1110,10 @@
         const plUSD = totalValUSD - (totalCostBasisUSD + totalFeesUSD);
         const plPct = totalInvEUR_asset > 0 ? (plEUR / totalInvEUR_asset) * 100 : 0;
 
+        const totalCostUSD = totalCostBasisUSD + totalFeesUSD;
+        const stockPctUSD = totalCostUSD > 0 ? (plUSD / totalCostUSD) * 100 : 0;
+        const fxPct = plPct - stockPctUSD;
+
         asset.lots = asset.lots.map(lot => ({
           ...lot,
           lotPositionWeight: totalQty > 0 ? (lot.qty / totalQty) * 100 : 0
@@ -1113,19 +1125,23 @@
           pmpUSD,
           breakEvenUSD,
           totalFeesUSD,
-          totalCostUSD: totalCostBasisUSD + totalFeesUSD,
+          totalCostUSD,
           totalValUSD,
           totalInvEUR: totalInvEUR_asset,
           totalCurrEUR: totalCurrEUR_asset,
           plEUR,
           plUSD,
-          plPct
+          plPct,
+          stockPctUSD,
+          fxPct
         };
       });
 
       const totalPLEUR = totalCurrEUR - totalInvEUR;
       const totalPLUSD = totalCurrUSD - totalInvUSD;
       const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
+      const totalStockPctUSD = totalInvUSD > 0 ? (totalPLUSD / totalInvUSD) * 100 : 0;
+      const totalFxPct = totalPLPct - totalStockPctUSD;
 
       return {
         assets: consolidatedAssets,
@@ -1136,10 +1152,15 @@
         totalCurrUSD,
         totalPLEUR,
         totalPLUSD,
-        totalPLPct
+        totalPLPct,
+        totalStockPctUSD,
+        totalFxPct
       };
     }
 
+    // ==========================================
+    // 6. DASHBOARDS & RENDERING ENGINE
+    // ==========================================
     function renderKPIs(metrics) {
       document.getElementById("kpi-total-invested").textContent = fmtEUR(metrics.totalInvEUR);
       document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} (custo total)`;
@@ -1147,22 +1168,22 @@
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
       document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} (em tempo real)`;
 
-      const plEurEl = document.getElementById("kpi-pl-eur");
       const plPctEl = document.getElementById("kpi-pl-pct");
+      const plEurEl = document.getElementById("kpi-pl-eur");
       const plUsdEl = document.getElementById("kpi-pl-usd");
       const plIcon = document.getElementById("kpi-pl-icon-container");
 
       const isPositive = metrics.totalPLEUR >= 0;
-      plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
-      plEurEl.className = `text-lg sm:text-2xl font-bold font-mono tracking-tight ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`;
-      
       plPctEl.textContent = fmtPCT(metrics.totalPLPct);
-      plPctEl.className = isPositive ? 'text-emerald-400' : 'text-rose-400';
+      plPctEl.className = `text-xl sm:text-3xl font-extrabold font-mono tracking-tight ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`;
 
-      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} líquido)`;
+      plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
+      plEurEl.className = isPositive ? 'text-emerald-400' : 'text-rose-400';
+      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)})`;
+
       if (plIcon) {
         plIcon.innerHTML = isPositive 
-          ? `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>`
+          ? `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>` 
           : `<i data-lucide="trending-down" class="w-4 h-4 text-rose-400"></i>`;
       }
 
@@ -1179,6 +1200,78 @@
       }
 
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
+    }
+
+    function renderPerformanceDashboard(metrics) {
+      // Decomposição cambial vs ações
+      const elStockPct = document.getElementById("perf-asset-usd-pct");
+      const elFxPct = document.getElementById("perf-fx-impact-pct");
+      const elTotalPct = document.getElementById("perf-total-eur-pct");
+
+      const stockPos = metrics.totalStockPctUSD >= 0;
+      const fxPos = metrics.totalFxPct >= 0;
+      const totalPos = metrics.totalPLPct >= 0;
+
+      elStockPct.textContent = fmtPCT(metrics.totalStockPctUSD);
+      elStockPct.className = `font-bold ${stockPos ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      elFxPct.textContent = fmtPCT(metrics.totalFxPct);
+      elFxPct.className = `font-bold ${fxPos ? 'text-sky-400' : 'text-amber-400'}`;
+
+      elTotalPct.textContent = fmtPCT(metrics.totalPLPct);
+      elTotalPct.className = `text-base font-extrabold font-mono ${totalPos ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      // Barras de progresso proporcionais
+      const barStock = document.getElementById("bar-perf-asset");
+      const barFx = document.getElementById("bar-perf-fx");
+      if (barStock) {
+        const wStock = Math.min(100, Math.max(8, Math.abs(metrics.totalStockPctUSD)));
+        barStock.style.width = `${wStock}%`;
+        barStock.className = `h-full rounded-full transition-all ${stockPos ? 'bg-emerald-500' : 'bg-rose-500'}`;
+      }
+      if (barFx) {
+        const wFx = Math.min(100, Math.max(8, Math.abs(metrics.totalFxPct) * 3));
+        barFx.style.width = `${wFx}%`;
+        barFx.className = `h-full rounded-full transition-all ${fxPos ? 'bg-sky-400' : 'bg-amber-400'}`;
+      }
+
+      // Ranking de Rentabilidade Visual
+      const container = document.getElementById("ranking-bars-container");
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (metrics.assets.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 py-3 text-center">Nenhum ativo registado para apresentar percentagens.</div>`;
+        return;
+      }
+
+      const sortedAssets = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
+      const maxAbsPct = Math.max(...sortedAssets.map(a => Math.abs(a.plPct)), 1);
+
+      sortedAssets.forEach(asset => {
+        const isPos = asset.plPct >= 0;
+        const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
+        const bgBarClass = isPos ? 'bg-emerald-500' : 'bg-rose-500';
+        const barWidth = Math.min(100, Math.max(6, (Math.abs(asset.plPct) / maxAbsPct) * 100));
+
+        const row = document.createElement("div");
+        row.className = "flex items-center gap-3 text-xs font-mono";
+        row.innerHTML = `
+          <div class="w-16 shrink-0 flex items-center gap-1.5 font-bold text-white">
+            <span class="w-2 h-2 rounded-full ${isPos ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+            ${asset.ticker}
+          </div>
+          <div class="flex-1">
+            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden p-0.5 border border-slate-800">
+              <div class="h-full ${bgBarClass} rounded-full transition-all" style="width: ${barWidth}%"></div>
+            </div>
+          </div>
+          <div class="w-20 text-right font-extrabold ${colorClass} shrink-0">
+            ${fmtPCT(asset.plPct)}
+          </div>
+        `;
+        container.appendChild(row);
+      });
     }
 
     function toggleTickerExpand(ticker) {
@@ -1210,7 +1303,7 @@
         const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
         const isPos = asset.plEUR >= 0;
         const colorClass = isPos ? 'text-emerald-400' : 'text-rose-400';
-        const badgeBg = isPos ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        const badgeBg = isPos ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
         const isExpanded = expandedTickers.has(asset.ticker);
 
         const parentTr = document.createElement("tr");
@@ -1263,10 +1356,8 @@
           </td>
 
           <td class="py-3 px-3 text-right font-mono">
-            <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
-            <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5 font-bold">
-              ${fmtPCT(asset.plPct)}
-            </div>
+            <div class="text-xs sm:text-sm font-extrabold ${colorClass}">${fmtPCT(asset.plPct)}</div>
+            <div class="text-[10px] text-slate-400 font-medium">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
           </td>
 
           <td class="py-3 px-3 text-center">
@@ -1314,7 +1405,7 @@
                   </div>
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-200">
-                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} ações
+                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtUSD(lot.avgUSD)}
@@ -1327,12 +1418,12 @@
                   ${fmtEUR(lot.currEUR)}
                 </td>
                 <td class="py-2.5 px-3 text-right">
-                  <span class="font-bold ${lotColor}">${lotIsPos ? '+' : ''}${fmtEUR(lot.plEUR)}</span>
-                  <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${lotBadgeBg}">${fmtPCT(lot.plPct)}</span>
+                  <div class="font-extrabold ${lotColor}">${fmtPCT(lot.plPct)}</div>
+                  <div class="text-[9px] text-slate-400">Ativo: ${fmtPCT(lot.stockPctUSD)} | FX: ${fmtPCT(lot.fxPct)}</div>
                 </td>
                 <td class="py-2.5 px-3 text-center">
                   <span class="px-2 py-0.5 rounded-full bg-slate-800 text-sky-300 text-[10px]" title="Percentagem desta compra no total do ativo">
-                    ${lot.lotPositionWeight.toFixed(1)}% do ativo
+                    ${lot.lotPositionWeight.toFixed(1)}%
                   </span>
                 </td>
                 <td class="py-2.5 px-3 text-center">
@@ -1356,13 +1447,13 @@
                   <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-sky-400"></span>
                     <h4 class="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Todas as Posições & Compras de ${asset.ticker} (${asset.lots.length} Lotes)
+                      Lotes & Percentagens de ${asset.ticker} (${asset.lots.length} Compras)
                     </h4>
                   </div>
                   <div class="flex items-center gap-3">
                     <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-semibold text-sky-400 hover:text-sky-300 flex items-center gap-1 transition">
                       <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                      + Registar Nova Compra de ${asset.ticker}
+                      + Registar Nova Compra
                     </button>
                     <button onclick="deleteEntireAsset('${asset.ticker}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -1380,7 +1471,7 @@
                         <th class="py-1.5 px-3 text-right">Preço Pago ($)</th>
                         <th class="py-1.5 px-3 text-right">Custo (€)</th>
                         <th class="py-1.5 px-3 text-right">Valor Atual (€)</th>
-                        <th class="py-1.5 px-3 text-right">Rentabilidade do Lote</th>
+                        <th class="py-1.5 px-3 text-right">Valorização (%) [Ativo | FX]</th>
                         <th class="py-1.5 px-3 text-center">Peso no Ativo</th>
                         <th class="py-1.5 px-3 text-center">Ações</th>
                       </tr>
@@ -1398,506 +1489,6 @@
       });
 
       lucide.createIcons();
-    }
-
-    // ------------------------------------------------------------------
-    // Histórico real de preços (Yahoo Finance, mesma fonte da cotação atual)
-    // ------------------------------------------------------------------
-    let historicalDataCache = {};
-
-    function setChartTimeframe(tf) {
-      currentChartTimeframe = tf;
-      document.querySelectorAll(".chart-tf-btn").forEach(btn => {
-        if (btn.getAttribute("data-tf") === tf) {
-          btn.className = "chart-tf-btn active px-2.5 py-1 rounded-lg bg-sky-600 text-white font-semibold transition";
-        } else {
-          btn.className = "chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
-        }
-      });
-      cachedChartPoints = [];
-      renderLineChart(true);
-    }
-
-    function timeframeToRangeInterval(tf) {
-      switch (tf) {
-        case '1D': return { range: '1d', interval: '5m' };
-        case '1S': return { range: '5d', interval: '15m' };
-        case '1M': return { range: '1mo', interval: '1d' };
-        case '3M': return { range: '3mo', interval: '1d' };
-        case '1A': return { range: '1y', interval: '1d' };
-        default: {
-          let oldestYear = new Date().getFullYear();
-          portfolio.forEach(it => {
-            if (it.buyDate) {
-              const y = parseInt(it.buyDate.split('-')[0], 10);
-              if (!isNaN(y) && y < oldestYear) oldestYear = y;
-            }
-          });
-          const yearsDiff = Math.max(1, new Date().getFullYear() - oldestYear + 1);
-          return { range: `${Math.min(yearsDiff, 5)}y`, interval: yearsDiff > 2 ? '1wk' : '1d' };
-        }
-      }
-    }
-
-    async function fetchHistoricalSeries(ticker, range, interval) {
-      const cacheKey = `${ticker}_${range}_${interval}`;
-      if (historicalDataCache[cacheKey]) return historicalDataCache[cacheKey];
-
-      try {
-        const stored = sessionStorage.getItem(`ap_hist_${cacheKey}`);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 1) {
-            historicalDataCache[cacheKey] = parsed;
-            return parsed;
-          }
-        }
-      } catch (e) {}
-
-      const targetUrls = [
-        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`,
-        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`
-      ];
-
-      for (const yfUrl of targetUrls) {
-        const proxyList = [
-          `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
-          `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`,
-          `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrl)}`
-        ];
-
-        for (const pUrl of proxyList) {
-          try {
-            const controller = new AbortController();
-            const tid = setTimeout(() => controller.abort(), 7500);
-            const res = await fetch(pUrl, { signal: controller.signal });
-            clearTimeout(tid);
-
-            if (res.ok) {
-              const raw = await res.json();
-              let json = raw;
-              if (raw && typeof raw.contents === 'string') {
-                try {
-                  json = JSON.parse(raw.contents);
-                } catch (pe) {
-                  continue;
-                }
-              }
-
-              const result = json?.chart?.result?.[0];
-              const timestamps = result?.timestamp;
-              const closes = result?.indicators?.quote?.[0]?.close;
-
-              if (Array.isArray(timestamps) && Array.isArray(closes) && timestamps.length > 0) {
-                const series = [];
-                for (let i = 0; i < timestamps.length; i++) {
-                  const c = closes[i];
-                  if (typeof c === 'number' && !isNaN(c) && c > 0) {
-                    series.push({
-                      time: timestamps[i] * 1000,
-                      close: c
-                    });
-                  }
-                }
-
-                if (series.length > 1) {
-                  historicalDataCache[cacheKey] = series;
-                  try {
-                    sessionStorage.setItem(`ap_hist_${cacheKey}`, JSON.stringify(series));
-                  } catch (e) {}
-                  return series;
-                }
-              }
-            }
-          } catch (e) {}
-        }
-      }
-
-      return null;
-    }
-
-    function getExactOrPrecedingPrice(series, targetTime) {
-      if (!series || series.length === 0) return null;
-      let selected = null;
-      for (let i = 0; i < series.length; i++) {
-        if (series[i].time <= targetTime) {
-          selected = series[i].close;
-        } else {
-          break;
-        }
-      }
-      return selected !== null ? selected : series[0].close;
-    }
-
-    async function generateDateDrivenPoints(metrics, tf) {
-      const loader = document.getElementById("chart-loader");
-      const errBanner = document.getElementById("chart-error-banner");
-      const errMsg = document.getElementById("chart-error-msg");
-      
-      if (loader) loader.classList.remove("hidden");
-      if (errBanner) errBanner.classList.add("hidden");
-
-      try {
-        if (!portfolio || portfolio.length === 0) {
-          return [];
-        }
-
-        const uniqueTickers = [...new Set(portfolio.map(l => l.ticker))];
-        const { range, interval } = timeframeToRangeInterval(tf);
-
-        // Descarrega sequencialmente com ligeiro intervalo para evitar 429 Rate-Limit em proxies móveis
-        const tickerSeriesMap = {};
-        const missingTickers = [];
-
-        for (const t of uniqueTickers) {
-          const series = await fetchHistoricalSeries(t, range, interval);
-          if (series && series.length > 0) {
-            tickerSeriesMap[t] = series;
-          } else {
-            missingTickers.push(t);
-          }
-          // Pequena pausa de 60ms entre pedidos para proteger a ligação móvel
-          await new Promise(r => setTimeout(r, 60));
-        }
-
-        // Obtém também a série do EUR/USD real ou utiliza a taxa cambial live verificada no cabeçalho
-        let eurusdSeries = await fetchHistoricalSeries("EURUSD=X", range, interval);
-
-        // Se algum ticker falhar nas redes externas, apresenta diagnóstico específico
-        if (missingTickers.length > 0) {
-          if (errBanner && errMsg) {
-            errMsg.textContent = `A aguardar resposta do Yahoo Finance para: ${missingTickers.join(', ')}`;
-            errBanner.classList.remove("hidden");
-          }
-          return [];
-        }
-
-        // Construir uma linha temporal baseada exclusivamente nos carimbos de data/hora oficiais da bolsa
-        const allTimestampsSet = new Set();
-        uniqueTickers.forEach(t => {
-          tickerSeriesMap[t].forEach(pt => allTimestampsSet.add(pt.time));
-        });
-
-        let sortedTimestamps = Array.from(allTimestampsSet).sort((a, b) => a - b);
-        if (sortedTimestamps.length === 0) return [];
-
-        // Para períodos longos (TUDO / 1A), encontrar a data do lote mais antigo
-        let oldestBuyDate = new Date();
-        portfolio.forEach(it => {
-          if (it.buyDate) {
-            const d = new Date(it.buyDate);
-            if (!isNaN(d.getTime()) && d < oldestBuyDate) oldestBuyDate = d;
-          }
-        });
-
-        // Filtrar apenas pontos a partir da data de início do timeframe ou da primeira compra
-        const now = new Date().getTime();
-        let startTimeLimit = 0;
-        if (tf === '1D') startTimeLimit = now - (24 * 60 * 60 * 1000);
-        else if (tf === '1S') startTimeLimit = now - (7 * 24 * 60 * 60 * 1000);
-        else if (tf === '1M') startTimeLimit = now - (31 * 24 * 60 * 60 * 1000);
-        else if (tf === '3M') startTimeLimit = now - (92 * 24 * 60 * 60 * 1000);
-        else if (tf === '1A') startTimeLimit = now - (366 * 24 * 60 * 60 * 1000);
-        else startTimeLimit = oldestBuyDate.getTime();
-
-        sortedTimestamps = sortedTimestamps.filter(t => t >= startTimeLimit);
-        if (sortedTimestamps.length < 2) {
-          const fullUnion = Array.from(allTimestampsSet).sort((a, b) => a - b);
-          sortedTimestamps = fullUnion.slice(-Math.min(30, fullUnion.length));
-        }
-
-        const points = [];
-
-        for (let idx = 0; idx < sortedTimestamps.length; idx++) {
-          const t = sortedTimestamps[idx];
-          const ptDate = new Date(t);
-
-          // Obter a taxa de câmbio histórica EUR/USD exata desse dia fornecida pelo Yahoo Finance
-          let liveFxRate = EUR_USD;
-          if (eurusdSeries && eurusdSeries.length > 0) {
-            const fx = getExactOrPrecedingPrice(eurusdSeries, t);
-            if (fx && fx > 0.5 && fx < 2.0) liveFxRate = fx;
-          }
-
-          let investedAtPt = 0;
-          let valueAtPt = 0;
-          let anyLotActive = false;
-
-          portfolio.forEach(lot => {
-            const buyTime = new Date(lot.buyDate || '2024-01-01').getTime();
-            if (t >= buyTime || tf === '1D') {
-              anyLotActive = true;
-              const buyRate = lot.eurUsdRateAtBuy || liveFxRate;
-              const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / buyRate;
-              investedAtPt += costEUR;
-
-              const series = tickerSeriesMap[lot.ticker];
-              const realPriceUSD = getExactOrPrecedingPrice(series, t);
-
-              if (realPriceUSD !== null) {
-                valueAtPt += (lot.qty * realPriceUSD) / liveFxRate;
-              }
-            }
-          });
-
-          if (anyLotActive && investedAtPt > 0) {
-            points.push({
-              time: ptDate,
-              dateLabel: ptDate.toLocaleDateString('pt-PT', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: tf === '1A' || tf === 'TUDO' ? '2-digit' : undefined,
-                hour: tf === '1D' || tf === '1S' ? '2-digit' : undefined,
-                minute: tf === '1D' || tf === '1S' ? '2-digit' : undefined
-              }),
-              invested: investedAtPt,
-              value: valueAtPt
-            });
-          }
-        }
-
-        // Ancorar o último ponto exatamente à cotação mais recente em tempo real
-        if (points.length > 0) {
-          const last = points[points.length - 1];
-          last.invested = metrics.totalInvEUR;
-          last.value = metrics.totalCurrEUR;
-        }
-
-        return points;
-      } finally {
-        if (loader) loader.classList.add("hidden");
-        lucide.createIcons();
-      }
-    }
-
-    let chartRenderToken = 0;
-
-    async function renderLineChart(forceRefresh = true) {
-      const canvas = document.getElementById("equityLineChart");
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const W = rect.width || canvas.parentElement?.clientWidth || 600;
-      const H = rect.height || 260;
-
-      if (W < 20 || H < 20) return;
-
-      const metrics = calculatePortfolioMetrics();
-
-      if (forceRefresh || cachedChartPoints.length < 2) {
-        if (isFetchingChart) return;
-        isFetchingChart = true;
-        const myToken = ++chartRenderToken;
-        try {
-          const points = await generateDateDrivenPoints(metrics, currentChartTimeframe);
-          if (myToken !== chartRenderToken) return;
-          cachedChartPoints = points || [];
-        } finally {
-          isFetchingChart = false;
-        }
-      }
-
-      if (cachedChartPoints.length < 2) return;
-      drawChartFromPoints(cachedChartPoints, metrics, W, H);
-    }
-
-    function drawChartFromPoints(points, metrics, W, H) {
-      const canvas = document.getElementById("equityLineChart");
-      if (!canvas) return;
-
-      const ctx = canvas.getContext("2d");
-      const dpr = window.devicePixelRatio || 1;
-
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      ctx.scale(dpr, dpr);
-
-      const padLeft = 12;
-      const padRight = 55;
-      const padTop = 18;
-      const padBottom = 24;
-
-      const vals = points.map(p => p.value).concat(points.map(p => p.invested));
-      let minVal = Math.min(...vals);
-      let maxVal = Math.max(...vals);
-
-      if (maxVal === minVal || !isFinite(minVal) || !isFinite(maxVal)) {
-        maxVal = (maxVal || 1000) * 1.1;
-        minVal = (minVal || 1000) * 0.9;
-      } else {
-        const span = maxVal - minVal;
-        minVal = Math.max(0, minVal - (span * 0.08));
-        maxVal = maxVal + (span * 0.08);
-      }
-
-      const getX = (idx) => padLeft + (idx / (points.length - 1)) * (W - padLeft - padRight);
-      const getY = (val) => H - padBottom - ((val - minVal) / (maxVal - minVal)) * (H - padTop - padBottom);
-
-      ctx.clearRect(0, 0, W, H);
-
-      // Grid Lines & Y-axis labels
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-      ctx.lineWidth = 1;
-      ctx.fillStyle = "rgba(148, 163, 184, 0.6)";
-      ctx.font = "10px JetBrains Mono, monospace";
-      ctx.textAlign = "left";
-
-      for (let g = 0; g <= 3; g++) {
-        const gy = padTop + (g / 3) * (H - padTop - padBottom);
-        ctx.beginPath();
-        ctx.moveTo(padLeft, gy);
-        ctx.lineTo(W - padRight, gy);
-        ctx.stroke();
-
-        const gridVal = maxVal - (g / 3) * (maxVal - minVal);
-        ctx.fillText(Math.round(gridVal) + '€', W - padRight + 6, gy + 3);
-      }
-
-      // Stepped Cost Baseline Curve (Capital Injected Staircase)
-      ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      points.forEach((pt, i) => {
-        const x = getX(i);
-        const y = getY(pt.invested);
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          const prevY = getY(points[i - 1].invested);
-          if (Math.abs(prevY - y) > 1) {
-            ctx.lineTo(x, prevY);
-          }
-          ctx.lineTo(x, y);
-        }
-      });
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Smooth Bezier Curve Path Builder
-      function buildSmoothPath() {
-        ctx.beginPath();
-        ctx.moveTo(getX(0), getY(points[0].value));
-
-        for (let i = 0; i < points.length - 1; i++) {
-          const x0 = i > 0 ? getX(i - 1) : getX(i);
-          const y0 = i > 0 ? getY(points[i - 1].value) : getY(points[i].value);
-          const x1 = getX(i);
-          const y1 = getY(points[i].value);
-          const x2 = getX(i + 1);
-          const y2 = getY(points[i + 1].value);
-          const x3 = i != points.length - 2 ? getX(i + 2) : x2;
-          const y3 = i != points.length - 2 ? getY(points[i + 2].value) : y2;
-
-          const cp1x = x1 + (x2 - x0) / 6;
-          const cp1y = y1 + (y2 - y0) / 6;
-          const cp2x = x2 - (x3 - x1) / 6;
-          const cp2y = y2 - (y3 - y1) / 6;
-
-          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x2, y2);
-        }
-      }
-
-      // Gradient Fill under the Curve
-      const isPositive = metrics ? metrics.totalPLEUR >= 0 : true;
-      const grad = ctx.createLinearGradient(0, padTop, 0, H - padBottom);
-      if (isPositive) {
-        grad.addColorStop(0, "rgba(16, 185, 129, 0.28)");
-        grad.addColorStop(1, "rgba(16, 185, 129, 0.0)");
-      } else {
-        grad.addColorStop(0, "rgba(244, 63, 94, 0.28)");
-        grad.addColorStop(1, "rgba(244, 63, 94, 0.0)");
-      }
-
-      buildSmoothPath();
-      ctx.lineTo(getX(points.length - 1), H - padBottom);
-      ctx.lineTo(getX(0), H - padBottom);
-      ctx.closePath();
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // Main Smooth Portfolio Equity Line
-      buildSmoothPath();
-      ctx.strokeStyle = isPositive ? "#10b981" : "#f43f5e";
-      ctx.lineWidth = 2.5;
-      ctx.lineJoin = "round";
-      ctx.stroke();
-
-      // Scrubber Pin & Crosshair
-      const activeIdx = (chartHoverIndex >= 0 && chartHoverIndex < points.length) ? chartHoverIndex : (points.length - 1);
-      const activePt = points[activeIdx];
-      const hx = getX(activeIdx);
-      const hy = getY(activePt.value);
-
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 2]);
-      ctx.beginPath();
-      ctx.moveTo(hx, padTop);
-      ctx.lineTo(hx, H - padBottom);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.fillStyle = isPositive ? "#10b981" : "#f43f5e";
-      ctx.beginPath();
-      ctx.arc(hx, hy, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      const scrubValEl = document.getElementById("chart-scrub-val");
-      const scrubDeltaEl = document.getElementById("chart-scrub-delta");
-      const scrubDateEl = document.getElementById("chart-scrub-date");
-
-      if (scrubValEl) scrubValEl.textContent = fmtEUR(activePt.value);
-      if (scrubDeltaEl) {
-        const delta = activePt.value - activePt.invested;
-        const deltaPct = activePt.invested > 0 ? (delta / activePt.invested) * 100 : 0;
-        scrubDeltaEl.textContent = `${delta >= 0 ? '+' : ''}${fmtEUR(delta)} (${fmtPCT(deltaPct)})`;
-        scrubDeltaEl.className = delta >= 0 ? "text-[11px] text-emerald-400 font-mono" : "text-[11px] text-rose-400 font-mono";
-      }
-      if (scrubDateEl) scrubDateEl.textContent = activePt.dateLabel;
-    }
-
-    function setupChartInteractions() {
-      const canvas = document.getElementById("equityLineChart");
-      if (!canvas) return;
-
-      const handleMove = (clientX) => {
-        if (!cachedChartPoints || cachedChartPoints.length < 2) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = clientX - rect.left;
-        const padLeft = 12;
-        const padRight = 55;
-        const widthUsable = rect.width - padLeft - padRight;
-        if (widthUsable <= 0) return;
-
-        const pct = Math.max(0, Math.min(1, (x - padLeft) / widthUsable));
-        chartHoverIndex = Math.round(pct * (cachedChartPoints.length - 1));
-        
-        const W = rect.width || canvas.parentElement?.clientWidth || 600;
-        const H = rect.height || 260;
-        const metrics = calculatePortfolioMetrics();
-        drawChartFromPoints(cachedChartPoints, metrics, W, H);
-      };
-
-      canvas.addEventListener("mousemove", (e) => handleMove(e.clientX));
-      canvas.addEventListener("mouseleave", () => {
-        chartHoverIndex = -1;
-        renderLineChart(false);
-      });
-
-      canvas.addEventListener("touchmove", (e) => {
-        if (e.touches && e.touches[0]) {
-          handleMove(e.touches[0].clientX);
-        }
-      }, { passive: true });
-
-      canvas.addEventListener("touchend", () => {
-        chartHoverIndex = -1;
-        renderLineChart(false);
-      });
     }
 
     // ==========================================
@@ -2125,10 +1716,9 @@
         };
         portfolio.push(newLot);
         expandedTickers.add(ticker);
-        showToast(`Nova compra de ${ticker} adicionada e guardada!`);
+        showToast(`Nova compra de ${ticker} adicionada com sucesso!`);
       }
 
-      cachedChartPoints = [];
       saveLocalPortfolio();
       closeModal();
       renderAll();
@@ -2144,7 +1734,6 @@
         `Tens a certeza de que desejas remover permanentemente esta compra de ${label}?`,
         () => {
           portfolio = portfolio.filter(it => String(it.id) !== String(id));
-          cachedChartPoints = [];
           saveLocalPortfolio();
           renderAll();
           deleteAssetFromSupabase(id);
@@ -2167,7 +1756,6 @@
         () => {
           portfolio = portfolio.filter(it => it.ticker !== ticker);
           expandedTickers.delete(ticker);
-          cachedChartPoints = [];
           saveLocalPortfolio();
           renderAll();
           deleteEntireAssetFromSupabase(ticker);
@@ -2193,7 +1781,6 @@
 
       portfolio.push(testItem);
       expandedTickers.add("NVDA");
-      cachedChartPoints = [];
       saveLocalPortfolio();
       renderAll();
       syncAllToSupabase(false);
@@ -2231,19 +1818,8 @@
     function renderAll() {
       const metrics = calculatePortfolioMetrics();
       renderKPIs(metrics);
+      renderPerformanceDashboard(metrics);
       renderTable(metrics);
-      renderLineChart();
-    }
-
-    window.addEventListener("resize", () => {
-      renderLineChart(false);
-    });
-
-    function setupChartResizeObserver() {
-      const canvas = document.getElementById("equityLineChart");
-      if (!canvas || !canvas.parentElement || typeof ResizeObserver === 'undefined') return;
-      const ro = new ResizeObserver(() => renderLineChart(false));
-      ro.observe(canvas.parentElement);
     }
 
     // ==========================================
@@ -2251,8 +1827,6 @@
     // ==========================================
     window.addEventListener("DOMContentLoaded", async () => {
       loadLocalPortfolio();
-      setupChartInteractions();
-      setupChartResizeObserver();
       renderAll();
 
       await fetchLiveExchangeRate();
