@@ -1371,51 +1371,9 @@
                   </div>
                 </div>
 
-                <div class="overflow-x-auto custom-scrollbar">
-                  <table class="w-full text-left border-collapse">
-                    <thead>
-                      <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-slate-800">
-                        <th class="py-1.5 px-3">Lote / Data</th>
-                        <th class="py-1.5 px-3 text-right">Qtd</th>
-                        <th class="py-1.5 px-3 text-right">Preço Pago ($)</th>
-                        <th class="py-1.5 px-3 text-right">Custo (€)</th>
-                        <th class="py-1.5 px-3 text-right">Valor Atual (€)</th>
-                        <th class="py-1.5 px-3 text-right">Rentabilidade do Lote</th>
-                        <th class="py-1.5 px-3 text-center">Peso no Ativo</th>
-                        <th class="py-1.5 px-3 text-center">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/40">
-                      ${lotsRowsHtml}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(detailTr);
-        }
-      });
-
-      lucide.createIcons();
-    }
-
-    // ==========================================
-    // 6. DATE-DRIVEN BROKER LINE CHART ENGINE
-    // ==========================================
-    function setChartTimeframe(tf) {
-      currentChartTimeframe = tf;
-      document.querySelectorAll(".chart-tf-btn").forEach(btn => {
-        if (btn.getAttribute("data-tf") === tf) {
-          btn.className = "chart-tf-btn active px-2.5 py-1 rounded-lg bg-sky-600 text-white font-semibold transition";
-        } else {
-          btn.className = "chart-tf-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
-        }
-      });
-      cachedChartPoints = [];
-      renderLineChart(true);
-    }
-
+    // ------------------------------------------------------------------
+    // Histórico real de preços (Yahoo Finance, mesma fonte da cotação atual)
+    // ------------------------------------------------------------------
     let historicalDataCache = {};
 
     function timeframeToRangeInterval(tf) {
@@ -1425,7 +1383,18 @@
         case '1M': return { range: '1mo', interval: '1d' };
         case '3M': return { range: '3mo', interval: '1d' };
         case '1A': return { range: '1y', interval: '1d' };
-        default:   return { range: '5y', interval: '1d' };
+        default: {
+          // Para "TUDO", ajusta dinamicamente ao ano da compra mais antiga
+          let oldestYear = new Date().getFullYear();
+          portfolio.forEach(it => {
+            if (it.buyDate) {
+              const y = parseInt(it.buyDate.split('-')[0], 10);
+              if (!isNaN(y) && y < oldestYear) oldestYear = y;
+            }
+          });
+          const yearsDiff = Math.max(1, new Date().getFullYear() - oldestYear + 1);
+          return { range: `${Math.min(yearsDiff, 5)}y`, interval: yearsDiff > 2 ? '1wk' : '1d' };
+        }
       }
     }
 
@@ -1433,46 +1402,84 @@
       const cacheKey = `${ticker}_${range}_${interval}`;
       if (historicalDataCache[cacheKey]) return historicalDataCache[cacheKey];
 
-      const yfUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`;
-      const proxyList = [
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(yfUrl)}`,
-        `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrl)}`
+      // Tenta recuperar da cache local da sessão para carregamento instantâneo
+      try {
+        const stored = sessionStorage.getItem(`ap_hist_${cacheKey}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 1) {
+            historicalDataCache[cacheKey] = parsed;
+            return parsed;
+          }
+        }
+      } catch (e) {}
+
+      // URLs do Yahoo Finance: query2 é prioritário por ser mais resiliente a bots/CORS
+      const targetUrls = [
+        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`,
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=${interval}`
       ];
 
-      for (const pUrl of proxyList) {
-        try {
-          const controller = new AbortController();
-          const tid = setTimeout(() => controller.abort(), 6000);
-          const res = await fetch(pUrl, { signal: controller.signal });
-          clearTimeout(tid);
-          if (res.ok) {
-            const json = await res.json();
-            const result = json?.chart?.result?.[0];
-            const timestamps = result?.timestamp;
-            const closes = result?.indicators?.quote?.[0]?.close;
+      for (const yfUrl of targetUrls) {
+        const proxyList = [
+          // AllOrigins com /get (retorna envelope JSON e não bloqueia em mobile)
+          `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
+          // CorsProxy oficial
+          `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`,
+          // CodeTabs proxy
+          `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrl)}`
+        ];
 
-            if (Array.isArray(timestamps) && Array.isArray(closes) && timestamps.length > 0) {
-              const series = [];
-              for (let i = 0; i < timestamps.length; i++) {
-                const c = closes[i];
-                if (typeof c === 'number' && !isNaN(c) && c > 0) {
-                  series.push({
-                    time: timestamps[i] * 1000,
-                    close: c
-                  });
+        for (const pUrl of proxyList) {
+          try {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 9000); // 9s para ligações móveis
+            const res = await fetch(pUrl, { signal: controller.signal });
+            clearTimeout(tid);
+
+            if (res.ok) {
+              const raw = await res.json();
+              // Desempacota quer venha direto quer venha envolvido em { contents: "..." }
+              let json = raw;
+              if (raw && typeof raw.contents === 'string') {
+                try {
+                  json = JSON.parse(raw.contents);
+                } catch (pe) {
+                  continue;
                 }
               }
-              if (series.length > 1) {
-                historicalDataCache[cacheKey] = series;
-                return series;
+
+              const result = json?.chart?.result?.[0];
+              const timestamps = result?.timestamp;
+              const closes = result?.indicators?.quote?.[0]?.close;
+
+              if (Array.isArray(timestamps) && Array.isArray(closes) && timestamps.length > 0) {
+                const series = [];
+                for (let i = 0; i < timestamps.length; i++) {
+                  const c = closes[i];
+                  if (typeof c === 'number' && !isNaN(c) && c > 0) {
+                    series.push({
+                      time: timestamps[i] * 1000,
+                      close: c
+                    });
+                  }
+                }
+
+                if (series.length > 1) {
+                  historicalDataCache[cacheKey] = series;
+                  try {
+                    sessionStorage.setItem(`ap_hist_${cacheKey}`, JSON.stringify(series));
+                  } catch (e) {}
+                  return series;
+                }
               }
             }
+          } catch (e) {
+            // Segue para a próxima rota sem bloquear a execução
           }
-        } catch (e) {
-          // Continua para o próximo proxy sem inventar dados
         }
       }
+
       return null;
     }
 
@@ -1505,31 +1512,28 @@
         const uniqueTickers = [...new Set(portfolio.map(l => l.ticker))];
         const { range, interval } = timeframeToRangeInterval(tf);
 
-        // Pedir séries reais para todos os ativos e também a taxa histórica EUR/USD (EURUSD=X)
-        const fetchPromises = [
-          ...uniqueTickers.map(t => fetchHistoricalSeries(t, range, interval)),
-          fetchHistoricalSeries("EURUSD=X", range, interval)
-        ];
-
-        const results = await Promise.all(fetchPromises);
-        const eurusdSeries = results[results.length - 1];
-
+        // Descarrega sequencialmente com ligeiro intervalo para evitar 429 Rate-Limit em proxies móveis
         const tickerSeriesMap = {};
         const missingTickers = [];
 
-        uniqueTickers.forEach((t, i) => {
-          const series = results[i];
+        for (const t of uniqueTickers) {
+          const series = await fetchHistoricalSeries(t, range, interval);
           if (series && series.length > 0) {
             tickerSeriesMap[t] = series;
           } else {
             missingTickers.push(t);
           }
-        });
+          // Pequena pausa de 60ms entre pedidos para proteger a ligação móvel
+          await new Promise(r => setTimeout(r, 60));
+        }
 
-        // REQUISITO ESTRITO: se o Yahoo Finance falhar para algum ticker, NÃO inventar dados
+        // Obtém também a série do EUR/USD real ou utiliza a taxa cambial live verificada no cabeçalho
+        let eurusdSeries = await fetchHistoricalSeries("EURUSD=X", range, interval);
+
+        // Se algum ticker falhar nas redes externas, apresenta diagnóstico específico
         if (missingTickers.length > 0) {
           if (errBanner && errMsg) {
-            errMsg.textContent = `Impossível obter dados reais do Yahoo Finance para: ${missingTickers.join(', ')}`;
+            errMsg.textContent = `A aguardar resposta do Yahoo Finance para: ${missingTickers.join(', ')}`;
             errBanner.classList.remove("hidden");
           }
           return [];
@@ -1565,7 +1569,6 @@
 
         sortedTimestamps = sortedTimestamps.filter(t => t >= startTimeLimit);
         if (sortedTimestamps.length < 2) {
-          // Se o filtro temporal limitou em demasia, manter pelo menos as últimas velas reais
           const fullUnion = Array.from(allTimestampsSet).sort((a, b) => a - b);
           sortedTimestamps = fullUnion.slice(-Math.min(30, fullUnion.length));
         }
@@ -1589,7 +1592,6 @@
 
           portfolio.forEach(lot => {
             const buyTime = new Date(lot.buyDate || '2024-01-01').getTime();
-            // Um lote só contribui após ter sido efetivamente adquirido
             if (t >= buyTime || tf === '1D') {
               anyLotActive = true;
               const buyRate = lot.eurUsdRateAtBuy || liveFxRate;
@@ -1605,7 +1607,6 @@
             }
           });
 
-          // Se a carteira já detinha ativos nesta data de mercado, adicionar o ponto oficial
           if (anyLotActive && investedAtPt > 0) {
             points.push({
               time: ptDate,
