@@ -1,19 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="pt-PT" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AssetPulse | Gestão de Carteira & Rentabilidade</title>
+  <title>AssetPulse | Gestão Inteligente de Carteira</title>
 
   <!-- Tailwind CSS & Supabase SDK -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Tipografia de Alta Legibilidade: Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -24,24 +23,31 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
             surface: {
-              base: '#0B0F17',     // Fundo principal suave e repousante
-              card: '#111726',     // Cartões de leitura confortável
-              elevated: '#172033', // Elementos destacados e modais
-              border: '#1F2B42',   // Linhas e separadores finos
-              subtle: '#283754'
+              DEFAULT: '#0B0F17',
+              card: '#111726',
+              cardHover: '#161F33',
+              subtle: '#1C263D',
+              border: '#1E293B',
+              borderSubtle: '#151D2C',
             },
             accent: {
-              DEFAULT: '#3B82F6',
-              light: '#60A5FA',
-              glow: 'rgba(59, 130, 246, 0.15)'
+              DEFAULT: '#38BDF8',
+              hover: '#0284C7',
+              subtle: 'rgba(56, 189, 248, 0.12)',
             },
-            profit: '#10B981',     // Verde esmeralda suave (não ofuscante)
-            loss: '#F43F5E'        // Rosa coral legível
+            gain: {
+              DEFAULT: '#10B981',
+              subtle: 'rgba(16, 185, 129, 0.12)',
+            },
+            loss: {
+              DEFAULT: '#F43F5E',
+              subtle: 'rgba(244, 63, 94, 0.12)',
+            }
           }
         }
       }
@@ -50,9 +56,9 @@
 
   <style>
     body {
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       background-color: #0B0F17;
       color: #E2E8F0;
+      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
     }
@@ -61,75 +67,65 @@
       width: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
+      background: #0B0F17;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #283754;
+      background: #1E293B;
       border-radius: 9999px;
     }
-    .app-card {
-      background: #111726;
-      border: 1px solid #1F2B42;
-      border-radius: 1rem;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #334155;
     }
-    .app-card:hover {
-      border-color: #283754;
+    .card-clean {
+      background: #111726;
+      border: 1px solid #1E293B;
+      border-radius: 1rem;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+<body class="min-h-screen flex flex-col">
 
-  <!-- ==================== HEADER LIMPO & RESPONSIVO ==================== -->
+  <!-- CABEÇALHO -->
   <header class="sticky top-0 z-30 bg-[#0B0F17]/90 backdrop-blur-md border-b border-surface-border">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
       
-      <!-- Marca & Indicadores rápidos -->
-      <div class="flex items-center gap-3 shrink-0">
-        <div class="w-8 h-8 rounded-lg bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-          <i data-lucide="line-chart" class="w-4 h-4"></i>
+      <!-- Logótipo e Câmbio -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-accent-subtle border border-accent/20 flex items-center justify-center text-accent shadow-sm">
+          <i data-lucide="wallet-cards" class="w-5 h-5"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="font-bold text-white tracking-tight text-sm sm:text-base font-sans">AssetPulse</span>
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-surface-elevated text-slate-400 border border-surface-border font-mono">MULTI-LOTES</span>
+            <span class="text-sm font-bold tracking-tight text-white font-mono">AssetPulse</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-surface-subtle text-slate-300 border border-surface-border font-mono">MULTI-LOTES</span>
           </div>
           <div class="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
-            <button onclick="fetchLiveExchangeRate(true)" class="hover:text-white transition flex items-center gap-1" title="Atualizar câmbio EUR/USD">
-              <span>1€ = <strong id="val-eurusd" class="text-slate-200">1.0850</strong>$</span>
-            </button>
+            <span id="header-eurusd" class="hover:text-accent cursor-pointer transition" onclick="fetchLiveExchangeRate(true)" title="Clique para atualizar taxa de câmbio">
+              1 € = <span id="val-eurusd" class="text-slate-200 font-medium">1.0850</span> $
+            </span>
             <span class="text-slate-600">•</span>
-            <span class="inline-flex items-center gap-1.5 text-emerald-400 text-[10px] cursor-pointer" onclick="openSupabaseModal()" title="Sincronização Cloud">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span id="cloud-status-text">Cloud</span>
+            <span class="flex items-center gap-1.5 text-gain font-medium cursor-pointer" onclick="openSupabaseModal()" title="Estado do Supabase">
+              <span class="w-1.5 h-1.5 rounded-full bg-gain animate-pulse"></span>
+              <span>Nuvem Ativa</span>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Barra de Ações Rápidas -->
+      <!-- Barra de Ações -->
       <div class="flex items-center gap-2">
-        <!-- Atualizar Cotações -->
-        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="p-2 sm:px-3 sm:py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-elevated border border-surface-border rounded-lg transition active:scale-95 flex items-center gap-1.5" title="Atualizar Cotações de Mercado">
-          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span class="hidden sm:inline">Cotações</span>
+        <button id="btn-sync-quotes" onclick="fetchLiveStockQuotes(true)" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95" title="Atualizar Cotações de Mercado">
+          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-accent"></i>
+          <span class="hidden sm:inline">Atualizar</span>
         </button>
 
-        <!-- Testar Compra (NOW) -->
-        <button onclick="injectTestAsset()" class="p-2 sm:px-3 sm:py-1.5 text-xs font-medium text-amber-300 hover:text-amber-200 bg-surface-card hover:bg-surface-elevated border border-surface-border rounded-lg transition active:scale-95 flex items-center gap-1.5" title="Adicionar Compra de Teste (NOW)">
-          <i data-lucide="flask-conical" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span class="hidden md:inline">Testar Compra</span>
+        <button onclick="openSupabaseModal()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-cardHover border border-surface-border rounded-xl transition active:scale-95">
+          <i data-lucide="database" class="w-3.5 h-3.5 text-gain"></i>
+          <span class="hidden md:inline">Nuvem</span>
         </button>
 
-        <!-- Base de Dados / Nuvem -->
-        <button onclick="openSupabaseModal()" class="p-2 sm:px-3 sm:py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-card hover:bg-surface-elevated border border-surface-border rounded-lg transition active:scale-95 flex items-center gap-1.5" title="Opções da Base de Dados">
-          <i data-lucide="database" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span class="hidden sm:inline">Nuvem</span>
-        </button>
-
-        <!-- Botão Principal: Nova Compra -->
-        <button onclick="openModal()" class="px-3.5 py-1.5 text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-sm transition active:scale-95 flex items-center gap-1.5 shrink-0">
-          <i data-lucide="plus" class="w-4 h-4"></i>
+        <button onclick="openModal()" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl shadow transition active:scale-95">
+          <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
           <span>Nova Compra</span>
         </button>
       </div>
@@ -137,91 +133,103 @@
     </div>
   </header>
 
-  <!-- Notificação Toast Flutuante -->
-  <div id="status-toast" class="hidden fixed bottom-5 right-5 z-50 p-3.5 rounded-xl bg-surface-elevated border border-surface-border shadow-xl flex items-center gap-3 transition-all max-w-sm">
-    <div id="toast-icon" class="text-blue-400 shrink-0">
-      <i data-lucide="info" class="w-4 h-4"></i>
+  <!-- NOTIFICAÇÕES (TOAST) -->
+  <div id="status-toast" class="hidden fixed bottom-5 right-5 z-50 p-4 rounded-xl card-clean shadow-2xl flex items-center gap-3 transition-all max-w-sm">
+    <div id="toast-icon" class="text-accent shrink-0">
+      <i data-lucide="info" class="w-5 h-5"></i>
     </div>
-    <div class="text-xs text-slate-200 font-medium" id="toast-message">Notificação</div>
+    <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
   </div>
 
-  <!-- Modal de Confirmação Suave -->
-  <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden">
-    <div class="bg-surface-card border border-surface-border w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4">
-      <div class="flex items-start gap-3">
-        <div class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
-          <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+  <!-- MODAL DE CONFIRMAÇÃO DE ELIMINAÇÃO -->
+  <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
+    <div class="card-clean bg-[#111726] border border-surface-border w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-loss-subtle border border-loss/20 flex items-center justify-center text-loss shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
         </div>
         <div>
           <h3 class="text-sm font-bold text-white" id="confirm-modal-title">Confirmar Eliminação</h3>
-          <p class="text-xs text-slate-400 mt-1 leading-relaxed" id="confirm-modal-message">Tens a certeza de que desejas avançar com esta ação?</p>
+          <p class="text-xs text-slate-400 mt-0.5 leading-relaxed" id="confirm-modal-message">Tens a certeza de que desejas avançar com esta ação?</p>
         </div>
       </div>
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-border/60">
-        <button type="button" onclick="closeConfirmModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-elevated rounded-lg transition">
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button type="button" onclick="closeConfirmModal()" class="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 rounded-xl transition">
           Cancelar
         </button>
-        <button type="button" id="confirm-modal-action-btn" onclick="executeConfirmedAction()" class="px-4 py-1.5 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition active:scale-95">
+        <button type="button" onclick="executeConfirmedAction()" class="px-4 py-2 text-xs font-semibold text-white bg-loss hover:bg-rose-500 rounded-xl shadow transition active:scale-95">
           Eliminar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== CONTEÚDO PRINCIPAL ==================== -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- KPI PRINCIPAIS: Cartões Arejados e de Rápida Consulta -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+    <!-- CARTÕES PRINCIPAIS (KPIs) -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       
+      <!-- Total Investido -->
+      <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-[11px] font-semibold tracking-wider uppercase">Investimento Total</span>
+          <div class="p-1.5 rounded-lg bg-surface-subtle text-slate-400">
+            <i data-lucide="wallet" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div>
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
+          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-total-invested-usd">$0.00 custo</div>
+        </div>
+      </div>
+
       <!-- Património Atual -->
-      <div class="app-card p-4 sm:p-5 flex flex-col justify-between">
-        <div class="flex items-center justify-between text-slate-400 mb-1">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Património Atual</span>
-          <i data-lucide="wallet" class="w-4 h-4 text-blue-400"></i>
-        </div>
-        <div class="text-xl sm:text-2xl font-bold font-mono text-white tracking-tight" id="kpi-current-value">0,00 €</div>
-        <div class="text-[11px] text-slate-400 font-mono mt-1" id="kpi-current-value-usd">$0.00 em tempo real</div>
-      </div>
-
-      <!-- Investimento Total -->
-      <div class="app-card p-4 sm:p-5 flex flex-col justify-between">
-        <div class="flex items-center justify-between text-slate-400 mb-1">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Capital Investido</span>
-          <i data-lucide="arrow-down-left" class="w-4 h-4 text-slate-400"></i>
-        </div>
-        <div class="text-xl sm:text-2xl font-bold font-mono text-slate-200 tracking-tight" id="kpi-total-invested">0,00 €</div>
-        <div class="text-[11px] text-slate-400 font-mono mt-1" id="kpi-total-invested-usd">$0.00 de custo base</div>
-      </div>
-
-      <!-- Retorno Global (%) e Valor Líquido -->
-      <div class="app-card p-4 sm:p-5 flex flex-col justify-between border-profit/20 bg-gradient-to-b from-profit/[0.04] to-transparent">
-        <div class="flex items-center justify-between text-slate-400 mb-1">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Retorno Total</span>
-          <div id="kpi-pl-icon-container" class="text-profit">
-            <i data-lucide="trending-up" class="w-4 h-4"></i>
+      <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-[11px] font-semibold tracking-wider uppercase">Património Atual</span>
+          <div class="p-1.5 rounded-lg bg-surface-subtle text-accent">
+            <i data-lucide="coins" class="w-4 h-4"></i>
           </div>
         </div>
-        <div class="text-2xl sm:text-3xl font-extrabold font-mono text-profit tracking-tight" id="kpi-pl-pct">+0.00%</div>
-        <div class="flex items-center gap-1.5 text-xs font-mono font-medium mt-1">
-          <span id="kpi-pl-eur" class="text-profit">+0,00 €</span>
-          <span class="text-slate-400 font-normal" id="kpi-pl-usd">($0.00)</span>
+        <div>
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
+          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 a mercado</div>
         </div>
       </div>
 
-      <!-- Melhores e Menores Ganhos -->
-      <div class="app-card p-4 sm:p-5 flex flex-col justify-between">
-        <div class="flex items-center justify-between text-slate-400 mb-1">
-          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Destaques</span>
-          <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
-        </div>
-        <div class="space-y-1.5 py-0.5">
-          <div class="flex justify-between items-center text-xs font-mono">
-            <span class="text-slate-400">Topo:</span>
-            <span class="font-bold text-profit" id="kpi-best-asset">-</span>
+      <!-- Mais-Valia Total -->
+      <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-[11px] font-semibold tracking-wider uppercase">Mais-Valia Líquida</span>
+          <div class="p-1.5 rounded-lg bg-surface-subtle" id="kpi-pl-icon-container">
+            <i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>
           </div>
-          <div class="flex justify-between items-center text-xs font-mono">
-            <span class="text-slate-400">Base:</span>
+        </div>
+        <div>
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-gain" id="kpi-pl-eur">+0,00 €</div>
+          <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1" id="kpi-pl-pct-container">
+            <span id="kpi-pl-pct" class="font-bold text-gain">+0.00%</span>
+            <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00 líquido)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Destaque de Desempenho -->
+      <div class="p-5 rounded-2xl card-clean flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-[11px] font-semibold tracking-wider uppercase">Destaques</span>
+          <div class="p-1.5 rounded-lg bg-surface-subtle text-amber-400">
+            <i data-lucide="award" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="space-y-1.5 text-xs font-mono">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Melhor:</span>
+            <span class="font-bold text-gain" id="kpi-best-asset">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Menor:</span>
             <span class="font-bold text-loss" id="kpi-worst-asset">-</span>
           </div>
         </div>
@@ -229,148 +237,130 @@
 
     </section>
 
-    <!-- PAINEL DE VALORIZAÇÃO LIMPO: Decomposição Cambial & Ranking -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-
-      <!-- Decomposição: Ação vs Moeda (EUR/USD) -->
-      <div class="app-card p-5 lg:col-span-5 space-y-4">
+    <!-- PAINEL DE ANÁLISE DE RENTABILIDADE PERCENTUAL -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      
+      <!-- Decomposição de Retorno: Ações vs Câmbio EUR/USD -->
+      <div class="p-5 rounded-2xl card-clean space-y-4 flex flex-col justify-between">
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-            <i data-lucide="sliders" class="w-3.5 h-3.5 text-blue-400"></i>
-            Origem da Rentabilidade
-          </h3>
-          <p class="text-xs text-slate-400 mt-0.5">Separação entre a valorização das ações e a variação do Dólar.</p>
+          <div class="flex items-center gap-2 mb-1">
+            <i data-lucide="scale" class="w-4 h-4 text-accent"></i>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider">Origem do Retorno</h2>
+          </div>
+          <p class="text-xs text-slate-400">Distingue os ganhos gerados pelas empresas em dólares dos ganhos cambiais em euros.</p>
         </div>
 
         <div class="space-y-3 font-mono">
-          <!-- Subida em USD -->
-          <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
-            <div class="flex justify-between text-xs mb-1.5">
-              <span class="text-slate-300">Desempenho das Ações ($ USD)</span>
-              <span class="font-bold text-white" id="perf-asset-usd-pct">+0.00%</span>
+          <div class="p-3.5 rounded-xl bg-surface-subtle border border-surface-border">
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span class="text-slate-300">Valorização dos Ativos ($ USD):</span>
+              <span class="font-bold text-gain" id="decomp-stock-return">+0.00%</span>
             </div>
-            <div class="w-full h-1.5 bg-surface-elevated rounded-full overflow-hidden">
-              <div id="bar-perf-asset" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 50%"></div>
-            </div>
-            <span class="text-[10px] text-slate-400 mt-1 block">Subida ou descida pura de mercado em Wall Street</span>
+            <div class="text-[11px] text-slate-400" id="decomp-stock-val">Lucro no mercado americano</div>
           </div>
 
-          <!-- Impacto Cambial EUR/USD -->
-          <div class="p-3 rounded-xl bg-surface-base border border-surface-border">
-            <div class="flex justify-between text-xs mb-1.5">
-              <span class="text-slate-300">Efeito Cambial EUR / USD</span>
-              <span class="font-bold text-blue-400" id="perf-fx-impact-pct">+0.00%</span>
+          <div class="p-3.5 rounded-xl bg-surface-subtle border border-surface-border">
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span class="text-slate-300">Impacto Cambial (EUR/USD):</span>
+              <span class="font-bold text-accent" id="decomp-fx-return">+0.00%</span>
             </div>
-            <div class="w-full h-1.5 bg-surface-elevated rounded-full overflow-hidden">
-              <div id="bar-perf-fx" class="h-full bg-blue-400 rounded-full transition-all duration-500" style="width: 50%"></div>
-            </div>
-            <span class="text-[10px] text-slate-400 mt-1 block">Variação cambial desde as datas de aquisição até hoje</span>
+            <div class="text-[11px] text-slate-400" id="decomp-fx-val">Flutuação do Dólar face ao Euro</div>
           </div>
+        </div>
 
-          <!-- Resultado Final Consolidado em Euros -->
-          <div class="p-3 rounded-xl bg-profit/10 border border-profit/20 flex items-center justify-between">
-            <span class="text-xs text-profit font-semibold">Rentabilidade Efetiva em Euros:</span>
-            <span class="text-base font-extrabold text-profit" id="perf-total-eur-pct">+0.00%</span>
-          </div>
+        <div class="p-3 rounded-xl bg-accent-subtle/50 border border-accent/20 text-[11px] text-slate-300 leading-relaxed">
+          <span class="font-semibold text-accent">Retorno Líquido Real:</span> <span id="decomp-total-text" class="font-mono font-bold text-white">+0.00%</span> em Euros para a carteira consolidada.
         </div>
       </div>
 
-      <!-- Ranking Visual por % de Retorno -->
-      <div class="app-card p-5 lg:col-span-7 flex flex-col justify-between space-y-4">
-        <div class="flex items-center justify-between">
+      <!-- Comparativo Percentual por Ativo (Barras de Valorização) -->
+      <div class="p-5 rounded-2xl card-clean lg:col-span-2 space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-border pb-3">
           <div>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-profit"></i>
-              Ranking de Rentabilidade (%)
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Comparação percentual direta das posições da carteira.</p>
+            <div class="flex items-center gap-2">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-accent"></i>
+              <h2 class="text-xs font-bold text-white uppercase tracking-wider">Classificação de Rentabilidade (%)</h2>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Comparação visual do ganho percentual líquido por empresa/ETF</p>
           </div>
-          <span class="text-[11px] font-mono text-slate-400 bg-surface-base px-2 py-0.5 rounded border border-surface-border">100% Real</span>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-subtle text-slate-300 border border-surface-border">Em Euros</span>
         </div>
 
-        <div id="ranking-bars-container" class="space-y-3 my-auto py-1">
-          <!-- Preenchido dinamicamente via JS -->
-        </div>
-
-        <div class="text-[11px] text-slate-400 border-t border-surface-border/60 pt-2 flex items-center justify-between font-mono">
-          <span>* Inclui o preço médio ponderado e todas as comissões pagas.</span>
-          <span id="ranking-count-label">0 posições</span>
+        <div id="performance-bars-container" class="space-y-3 pt-1">
+          <!-- Linhas de barras geradas dinamicamente -->
         </div>
       </div>
 
     </section>
 
-    <!-- LISTA CONSOLIDADA DE ATIVOS (Limpa, legível em telemóvel e computador) -->
-    <section class="app-card overflow-hidden">
+    <!-- TABELA DE ATIVOS E COMPRAS -->
+    <section class="rounded-2xl card-clean overflow-hidden flex flex-col">
       
-      <!-- Cabeçalho da Tabela e Filtros por Categoria -->
-      <div class="p-4 sm:p-5 border-b border-surface-border flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      <!-- Cabeçalho da Tabela e Filtros -->
+      <div class="p-4 sm:p-5 border-b border-surface-border flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
-              <i data-lucide="briefcase" class="w-4 h-4 text-blue-400"></i>
-              Ativos & Posições Consolidadas
+            <h2 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-4 h-4 text-accent"></i>
+              Ativos Consolidados & Posições
             </h2>
-            <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-surface-elevated text-slate-300 border border-surface-border" id="table-asset-count">0 ativos</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-surface-subtle text-slate-300 border border-surface-border" id="table-asset-count">0 ativos</span>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">Toca ou clica em qualquer ativo para expandir e ver os lotes e o efeito cambial individual.</p>
+          <p class="text-xs text-slate-400 mt-1">Clica numa linha para ver todos os lotes de compra, preços de equilíbrio e taxas.</p>
         </div>
 
-        <!-- Filtros Rápidos -->
-        <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
-          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-blue-600 text-white transition whitespace-nowrap" data-cat="ALL">Todos</button>
-          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
-          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
-          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap" data-cat="ETF">ETFs</button>
+        <!-- Filtros de Categoria -->
+        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
+          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-accent text-slate-950 transition whitespace-nowrap" data-cat="ALL">Todos</button>
+          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
+          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
+          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap" data-cat="ETF">ETFs</button>
         </div>
       </div>
 
-      <!-- Tabela com Espaçamento Amplo e Confortável -->
+      <!-- Tabela Responsiva -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-surface-border text-slate-400 font-mono text-[11px] uppercase tracking-wider bg-surface-base/50">
-              <th class="py-3 px-4">Ativo</th>
-              <th class="py-3 px-3 text-right">Qtd</th>
-              <th class="py-3 px-3 text-right">Preço Médio ($)</th>
-              <th class="py-3 px-3 text-right">Cotação ($)</th>
-              <th class="py-3 px-3 text-right">Investido (€)</th>
-              <th class="py-3 px-3 text-right">Valor Atual (€)</th>
-              <th class="py-3 px-4 text-right">Rentabilidade (%)</th>
-              <th class="py-3 px-3 text-center">Peso</th>
-              <th class="py-3 px-3 text-center">Ações</th>
+            <tr class="border-b border-surface-border bg-surface-subtle/40 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
+              <th class="py-3 px-4 font-semibold">Ativo</th>
+              <th class="py-3 px-3 text-right font-semibold">Qtd Total</th>
+              <th class="py-3 px-3 text-right font-semibold">PMP ($)</th>
+              <th class="py-3 px-3 text-right font-semibold">Cotação ($)</th>
+              <th class="py-3 px-3 text-right font-semibold">Investido (€)</th>
+              <th class="py-3 px-3 text-right font-semibold">Valor Atual (€)</th>
+              <th class="py-3 px-3 text-right font-semibold">Mais-Valia Líquida</th>
+              <th class="py-3 px-3 text-center font-semibold">Peso</th>
+              <th class="py-3 px-4 text-center font-semibold">Ações</th>
             </tr>
           </thead>
-          <tbody id="portfolio-table-body" class="divide-y divide-surface-border/60">
-            <!-- Linhas Inseridas Dinamicamente -->
+          <tbody id="portfolio-table-body" class="divide-y divide-surface-border font-sans">
+            <!-- Linhas dinâmicas -->
           </tbody>
         </table>
       </div>
 
-      <!-- Estado Vazio Amigável -->
+      <!-- Estado Vazio -->
       <div id="table-empty-state" class="hidden p-12 text-center space-y-3">
-        <div class="w-12 h-12 rounded-full bg-surface-elevated border border-surface-border flex items-center justify-center mx-auto text-slate-400">
+        <div class="w-12 h-12 rounded-2xl bg-surface-subtle border border-surface-border flex items-center justify-center mx-auto text-slate-400">
           <i data-lucide="inbox" class="w-6 h-6"></i>
         </div>
         <div>
-          <h3 class="text-sm font-semibold text-slate-200">A tua carteira está vazia</h3>
-          <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Regista a tua primeira compra para começares a acompanhar a tua rentabilidade em tempo real.</p>
+          <h3 class="text-sm font-bold text-white">Nenhum ativo na tua carteira</h3>
+          <p class="text-xs text-slate-400 mt-1">Regista a tua primeira compra com o botão "+ Nova Compra".</p>
         </div>
-        <div class="pt-2 flex items-center justify-center gap-3">
-          <button onclick="openModal()" class="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow transition">
-            + Registar Nova Compra
-          </button>
-          <button onclick="resetToDemoPortfolio()" class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-elevated hover:bg-surface-border rounded-xl transition">
-            Repor Ativos de Teste
+        <div class="pt-2">
+          <button onclick="restoreDemoAssets()" class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 rounded-xl border border-surface-border transition">
+            Repor Ativos de Demonstração
           </button>
         </div>
       </div>
 
-      <!-- Rodapé da Tabela -->
-      <div class="px-4 py-3 border-t border-surface-border bg-surface-base/40 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-1.5 font-mono">
+      <!-- Rodapé de Estado -->
+      <div class="px-5 py-3 border-t border-surface-border bg-surface-subtle/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 font-mono">
         <span class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-profit inline-block animate-pulse"></span>
-          <span>Clica em qualquer ativo para expandir os lotes e o efeito cambial individual.</span>
+          <span class="w-2 h-2 rounded-full bg-gain inline-block animate-pulse"></span>
+          <span>Clica em qualquer linha para expandir e gerir compras e comissões.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -379,42 +369,42 @@
 
   </main>
 
-  <!-- ==================== MODAL DE COMPRA / EDIÇÃO COM AUTOCOMPLETE ==================== -->
-  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
-    <div class="bg-surface-card border border-surface-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  <!-- MODAL DE COMPRA / EDIÇÃO DE LOTE -->
+  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 hidden">
+    <div class="card-clean bg-[#111726] border border-surface-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
       <!-- Cabeçalho do Modal -->
       <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between shrink-0">
         <div>
           <h3 class="text-sm font-bold text-white flex items-center gap-2" id="modal-title">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span class="w-2 h-2 rounded-full bg-accent"></span>
             Registar Nova Compra
           </h3>
-          <p class="text-xs text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como um lote independente rastreável.</p>
+          <p class="text-xs text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como uma posição individual rastreável.</p>
         </div>
-        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-elevated transition">
+        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-surface-subtle transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Formulário de Registo -->
+      <!-- Formulário -->
       <form id="asset-form" onsubmit="saveAsset(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar">
         <input type="hidden" id="form-id" value="">
 
         <!-- Mensagem de Erro -->
-        <div id="form-error-feedback" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs"></div>
+        <div id="form-error-feedback" class="hidden p-3 rounded-xl bg-loss-subtle border border-loss/20 text-loss text-xs"></div>
 
-        <!-- Aviso de Lote Adicional (Reforço) -->
-        <div id="form-existing-hint" class="hidden p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs flex items-center justify-between">
-          <div class="flex items-center gap-2 text-blue-300">
-            <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0"></i>
-            <span>Já possuis compras deste ativo. Esta compra será adicionada como um novo lote.</span>
+        <!-- Alerta de Posição Existente -->
+        <div id="form-existing-hint" class="hidden p-3 rounded-xl bg-accent-subtle border border-accent/20 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2 text-accent">
+            <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
+            <span>Já tens compras deste ativo. Este lote será adicionado ao total.</span>
           </div>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono font-bold" id="form-hint-ticker">NVDA</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-accent/20 text-accent font-mono font-bold" id="form-hint-ticker">NVDA</span>
         </div>
 
-        <!-- Ticker com Autocomplete Rápido & Categoria -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
+        <!-- Ticker e Categoria -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="relative">
             <label class="block text-xs font-semibold text-slate-300 mb-1">Ticker / Símbolo *</label>
             <div class="relative">
@@ -423,28 +413,25 @@
                 id="form-ticker" 
                 required 
                 autocomplete="off"
-                placeholder="ex: NOW, NVDA, AAPL" 
+                placeholder="ex: NOW, MSFT, NVDA" 
                 oninput="onTickerInput(this.value)"
-                class="w-full uppercase px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono tracking-wider"
+                class="w-full uppercase px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono tracking-wider"
               >
-              <div id="ticker-fetch-indicator" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-blue-400">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i>
+              <div id="ticker-fetch-indicator" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-accent">
+                <i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>
               </div>
             </div>
 
-            <!-- Lista Suspensa de Sugestões (Autocomplete) -->
-            <div id="ticker-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 z-50 bg-surface-elevated border border-surface-border rounded-xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar backdrop-blur-md">
+            <!-- Menu de Sugestões Rápidas -->
+            <div id="ticker-suggestions" class="hidden absolute left-0 right-0 top-full mt-1.5 z-50 bg-[#161F33] border border-surface-border rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
               <!-- Sugestões injetadas dinamicamente -->
             </div>
-
-            <span id="ticker-status-label" class="text-[10px] text-slate-400 mt-1 block font-mono">
-              Pesquisa automática de cotação e empresa
-            </span>
+            <span class="text-[10px] text-slate-400 mt-1 block" id="ticker-source-status">Procura cotação e preenche a empresa</span>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
-            <select id="form-category" class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+            <select id="form-category" class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
               <option value="Tecnologia">Tecnologia</option>
               <option value="Consumo">Consumo Defensivo</option>
               <option value="Financeiro">Financeiro / Bancos</option>
@@ -456,26 +443,28 @@
           </div>
         </div>
 
-        <!-- Nome da Empresa (Preenchimento Automático) -->
+        <!-- Nome da Empresa -->
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa (Opcional)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa</label>
           <input 
             type="text" 
             id="form-name" 
-            placeholder="Preenchido automaticamente ao introduzir o ticker" 
-            class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            placeholder="Preenchido automaticamente ao digitar o ticker" 
+            class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent"
           >
         </div>
 
-        <!-- Corretora & Data de Compra -->
+        <!-- Corretora e Data de Compra -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora *</label>
-            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-blue-500">
+            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
               <option value="IBKR">Interactive Brokers (Tiered $0.35)</option>
               <option value="IBKR_FIXED">Interactive Brokers (Fixed $1.00)</option>
               <option value="XTB">XTB (Conta USD - 0% Comissão)</option>
               <option value="XTB_FX">XTB (Conta EUR - 0.50% Câmbio)</option>
+              <option value="REVOLUT">Revolut</option>
+              <option value="TRADE_REPUBLIC">Trade Republic</option>
               <option value="OTHER">Outra Corretora</option>
             </select>
           </div>
@@ -486,7 +475,7 @@
               type="date" 
               id="form-date" 
               required
-              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+              class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent font-mono"
             >
           </div>
         </div>
@@ -500,9 +489,9 @@
               inputmode="decimal"
               id="form-qty" 
               required 
-              placeholder="ex: 5" 
+              placeholder="ex: 10" 
               oninput="recalculateFormFees()"
-              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+              class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
           </div>
 
@@ -513,29 +502,29 @@
               inputmode="decimal"
               id="form-avg" 
               required 
-              placeholder="ex: 137.50" 
+              placeholder="ex: 125.50" 
               oninput="recalculateFormFees()"
-              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+              class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
           </div>
 
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-300">Cotação ($ USD)</label>
-              <span id="form-curr-badge" class="text-[10px] text-profit font-mono">Auto</span>
+              <span class="text-[10px] text-gain font-mono">Tempo Real</span>
             </div>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-curr" 
               placeholder="Auto / Vazio" 
-              class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono"
+              class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
           </div>
         </div>
 
-        <!-- Comissões & Preço de Equilíbrio (Break-Even) -->
-        <div class="p-3 rounded-xl bg-surface-base border border-surface-border space-y-2">
+        <!-- Comissão e Break-Even -->
+        <div class="p-4 rounded-xl bg-surface-subtle border border-surface-border space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs text-slate-300 font-medium">Comissão da Ordem ($ USD):</span>
             <div class="w-28">
@@ -545,13 +534,13 @@
                 id="form-fees" 
                 value="0.35" 
                 oninput="updateBreakEvenDisplay()"
-                class="w-full px-2.5 py-1 text-right bg-surface-card border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-blue-500"
+                class="w-full px-2.5 py-1 text-right bg-[#111726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
               >
             </div>
           </div>
-          <div class="flex items-center justify-between text-xs pt-1 border-t border-surface-border/60">
+          <div class="flex items-center justify-between text-xs pt-1.5 border-t border-surface-border/60">
             <span class="text-slate-400">Preço de Equilíbrio (Break-Even deste lote):</span>
-            <span class="font-mono font-bold text-blue-400" id="form-be-display">$0.00</span>
+            <span class="font-mono font-bold text-accent" id="form-be-display">$0.00</span>
           </div>
           <p class="text-[10px] text-slate-400" id="form-fee-note">IBKR Tiered: $0.0035 por ação (Mínimo: $0.35).</p>
         </div>
@@ -561,14 +550,14 @@
           <button 
             type="button" 
             onclick="closeModal()" 
-            class="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-surface-elevated hover:bg-surface-border rounded-xl transition"
+            class="px-4 py-2.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 rounded-xl transition"
           >
             Cancelar
           </button>
           <button 
             type="submit" 
             id="form-submit-btn"
-            class="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow transition active:scale-95"
+            class="px-5 py-2.5 text-xs font-semibold text-slate-950 bg-sky-500 hover:bg-sky-400 rounded-xl shadow transition active:scale-95"
           >
             Guardar Compra
           </button>
@@ -578,62 +567,60 @@
     </div>
   </div>
 
-  <!-- ==================== MODAL DE BASE DE DADOS (SUPABASE) ==================== -->
-  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
-    <div class="bg-surface-card border border-surface-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  <!-- MODAL SUPABASE -->
+  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 hidden">
+    <div class="card-clean bg-[#111726] border border-surface-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
       <div class="px-5 py-4 border-b border-surface-border flex items-center justify-between">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="database" class="w-4 h-4 text-profit"></i>
-          Sincronização em Nuvem (Supabase)
+          <i data-lucide="database" class="w-4 h-4 text-gain"></i>
+          Base de Dados Supabase (Nuvem Ativa)
         </h3>
-        <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-elevated transition">
+        <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-surface-subtle transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
-        <div class="p-3 rounded-xl bg-profit/10 border border-profit/20 text-profit flex items-center gap-2">
+        <div class="p-3.5 rounded-xl bg-gain-subtle border border-gain/20 text-gain flex items-center gap-2.5">
           <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-          <span>Os teus dados estão protegidos localmente e sincronizados com a nuvem.</span>
+          <span>A sincronização em nuvem e a proteção de dados locais estão ativas.</span>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">URL do Projeto</label>
+          <label class="block font-semibold text-slate-300 mb-1">Project URL</label>
           <input 
             type="text" 
             value="https://efdnhtlixevwnakrfjuq.supabase.co" 
-            class="w-full px-3 py-2 bg-surface-base border border-surface-border rounded-xl text-slate-300 font-mono text-[11px]" 
+            class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-white font-mono text-xs" 
             readonly
           >
         </div>
 
-        <div class="p-3 rounded-xl bg-surface-base border border-surface-border space-y-1.5">
-          <div class="font-semibold text-slate-300 flex items-center gap-1.5">
-            <i data-lucide="terminal" class="w-3.5 h-3.5 text-blue-400"></i>
-            <span>Garantir coluna de data de compra no Supabase:</span>
+        <div class="p-3.5 rounded-xl bg-surface-subtle border border-surface-border space-y-2">
+          <div class="font-semibold text-slate-300 flex items-center gap-2">
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-accent"></i>
+            <span>Garantir suporte à coluna de Data no Supabase:</span>
           </div>
-          <p class="text-[11px] text-slate-400">Caso configures uma nova tabela no teu Supabase, corre este comando no SQL Editor:</p>
-          <code class="block bg-surface-card p-2 rounded text-[10px] text-blue-300 font-mono select-all">alter table portfolio add column if not exists buy_date text;</code>
+          <p class="text-xs text-slate-400 leading-relaxed">No SQL Editor do teu Supabase podes correr esta instrução simples se quiseres guardar a data de cada lote na nuvem:</p>
+          <code class="block bg-[#0B0F17] p-2.5 rounded-lg text-[11px] text-accent font-mono select-all border border-surface-border">alter table portfolio add column if not exists buy_date text;</code>
         </div>
 
-        <!-- Ações do Supabase -->
-        <div class="pt-2 border-t border-surface-border/60 flex items-center justify-between">
-          <button onclick="restoreFromSafetyBackup()" class="px-3.5 py-1.5 bg-surface-elevated hover:bg-surface-border text-amber-300 font-medium rounded-lg text-xs transition active:scale-95" title="Recupera a última cópia antes da sincronização">
-            Restaurar Cópia Local
+        <div class="pt-2 border-t border-surface-border flex items-center justify-between">
+          <button onclick="restoreFromSafetyBackup()" class="px-3.5 py-2 bg-surface-subtle hover:bg-slate-700/60 text-amber-300 font-medium rounded-xl text-xs transition active:scale-95" title="Recupera a última cópia antes da sincronização">
+            Recuperar Cópia Local
           </button>
-          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-profit hover:bg-emerald-600 text-slate-950 font-bold rounded-xl shadow transition active:scale-95">
-            Sincronizar Agora
+          <button onclick="syncAllToSupabase()" class="px-4 py-2 bg-gain hover:bg-emerald-500 text-slate-950 font-semibold rounded-xl shadow transition active:scale-95">
+            Forçar Envio Agora
           </button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- MOTOR JAVASCRIPT -->
   <script>
-    // ==========================================
-    // 1. SUPABASE & CONFIGURAÇÃO INICIAL
-    // ==========================================
+    // 1. CONFIGURAÇÃO SUPABASE
     const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmZG5odGxpeGV2d25ha3JmanVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjExMjMsImV4cCI6MjEwNTU5NzEyM30.day66gB8E8MzkkmuBU2VZ0-IZn7ICw2R67AImWT2izg";
 
@@ -646,118 +633,81 @@
       console.warn("Supabase init guard:", e);
     }
 
-    const INITIAL_PORTFOLIO = [
+    // 2. DIRETÓRIO DE ATIVOS PRÉ-CARREGADOS (INCLUINDO NOW)
+    const TICKER_DIRECTORY = {
+      "NOW":   { name: "ServiceNow, Inc.", price: 928.40, category: "Tecnologia" },
+      "MSFT":  { name: "Microsoft Corporation", price: 448.50, category: "Tecnologia" },
+      "NVDA":  { name: "NVIDIA Corporation", price: 128.80, category: "Tecnologia" },
+      "AAPL":  { name: "Apple Inc.", price: 228.30, category: "Tecnologia" },
+      "AMZN":  { name: "Amazon.com Inc.", price: 194.20, category: "Tecnologia" },
+      "GOOGL": { name: "Alphabet Inc.", price: 182.10, category: "Tecnologia" },
+      "META":  { name: "Meta Platforms Inc.", price: 585.30, category: "Tecnologia" },
+      "CRM":   { name: "Salesforce Inc.", price: 298.50, category: "Tecnologia" },
+      "PLTR":  { name: "Palantir Technologies", price: 37.40, category: "Tecnologia" },
+      "ADBE":  { name: "Adobe Inc.", price: 520.10, category: "Tecnologia" },
+      "KO":    { name: "The Coca-Cola Company", price: 68.90, category: "Consumo" },
+      "PEP":   { name: "PepsiCo Inc.", price: 172.40, category: "Consumo" },
+      "PG":    { name: "Procter & Gamble", price: 174.10, category: "Consumo" },
+      "SXR8":  { name: "iShares Core S&P 500 UCITS ETF", price: 545.20, category: "ETF" },
+      "CSPX":  { name: "iShares Core S&P 500 ETF (USD)", price: 592.10, category: "ETF" },
+      "SXRV":  { name: "iShares NASDAQ 100 UCITS ETF", price: 985.40, category: "ETF" },
+      "VWCE":  { name: "Vanguard FTSE All-World UCITS ETF", price: 126.80, category: "ETF" },
+      "VOO":   { name: "Vanguard S&P 500 ETF", price: 535.40, category: "ETF" },
+      "QQQ":   { name: "Invesco QQQ Trust", price: 486.20, category: "ETF" }
+    };
+
+    const INITIAL_DEMO_PORTFOLIO = [
       {
-        id: "1",
-        ticker: "NVDA",
-        name: "NVIDIA Corporation",
+        id: "demo-now",
+        ticker: "NOW",
+        name: "ServiceNow, Inc.",
         category: "Tecnologia",
         broker: "IBKR",
-        buyDate: "2024-01-15",
-        qty: 10,
-        avgUSD: 110.00,
-        currUSD: 227.38,
+        buyDate: "2024-03-15",
+        qty: 2,
+        avgUSD: 760.00,
+        currUSD: 928.40,
         feesUSD: 0.35,
-        eurUsdRateAtBuy: 1.0920
+        eurUsdRateAtBuy: 1.0850
       },
       {
-        id: "1-b",
-        ticker: "NVDA",
-        name: "NVIDIA Corporation",
-        category: "Tecnologia",
-        broker: "IBKR",
-        buyDate: "2024-05-10",
-        qty: 5,
-        avgUSD: 135.50,
-        currUSD: 227.38,
-        feesUSD: 0.35,
-        eurUsdRateAtBuy: 1.0780
-      },
-      {
-        id: "2",
+        id: "demo-msft",
         ticker: "MSFT",
         name: "Microsoft Corporation",
         category: "Tecnologia",
         broker: "IBKR",
-        buyDate: "2024-02-20",
-        qty: 6,
-        avgUSD: 415.00,
-        currUSD: 501.61,
+        buyDate: "2024-02-10",
+        qty: 4,
+        avgUSD: 405.00,
+        currUSD: 448.50,
         feesUSD: 0.35,
         eurUsdRateAtBuy: 1.0820
       },
       {
-        id: "3",
-        ticker: "AAPL",
-        name: "Apple Inc.",
+        id: "demo-nvda",
+        ticker: "NVDA",
+        name: "NVIDIA Corporation",
         category: "Tecnologia",
-        broker: "XTB",
-        buyDate: "2024-03-10",
-        qty: 8,
-        avgUSD: 182.40,
-        currUSD: 338.98,
-        feesUSD: 0.00,
-        eurUsdRateAtBuy: 1.0940
-      },
-      {
-        id: "4",
-        ticker: "KO",
-        name: "The Coca-Cola Company",
-        category: "Consumo",
         broker: "IBKR",
-        buyDate: "2024-04-05",
-        qty: 12,
-        avgUSD: 62.10,
-        currUSD: 87.12,
+        buyDate: "2024-01-20",
+        qty: 10,
+        avgUSD: 85.00,
+        currUSD: 128.80,
         feesUSD: 0.35,
-        eurUsdRateAtBuy: 1.0830
+        eurUsdRateAtBuy: 1.0900
       }
     ];
 
-    // Catálogo Integrado Rico (Inclui NOW - ServiceNow)
-    const TICKER_DIRECTORY = {
-      "NOW":   { name: "ServiceNow, Inc.", price: 137.50, category: "Tecnologia" },
-      "NVDA":  { name: "NVIDIA Corporation", price: 227.38, category: "Tecnologia" },
-      "MSFT":  { name: "Microsoft Corporation", price: 501.61, category: "Tecnologia" },
-      "AAPL":  { name: "Apple Inc.", price: 338.98, category: "Tecnologia" },
-      "AMZN":  { name: "Amazon.com Inc.", price: 258.45, category: "Tecnologia" },
-      "GOOGL": { name: "Alphabet Inc. (Class A)", price: 354.97, category: "Tecnologia" },
-      "GOOG":  { name: "Alphabet Inc. (Class C)", price: 355.20, category: "Tecnologia" },
-      "META":  { name: "Meta Platforms Inc.", price: 741.25, category: "Tecnologia" },
-      "TSLA":  { name: "Tesla Inc.", price: 375.30, category: "Tecnologia" },
-      "CRM":   { name: "Salesforce, Inc.", price: 238.50, category: "Tecnologia" },
-      "ADBE":  { name: "Adobe Inc.", price: 249.20, category: "Tecnologia" },
-      "ORCL":  { name: "Oracle Corporation", price: 148.00, category: "Tecnologia" },
-      "PLTR":  { name: "Palantir Technologies Inc.", price: 62.40, category: "Tecnologia" },
-      "SNOW":  { name: "Snowflake Inc.", price: 331.00, category: "Tecnologia" },
-      "AMD":   { name: "Advanced Micro Devices", price: 156.80, category: "Tecnologia" },
-      "AVGO":  { name: "Broadcom Inc.", price: 172.50, category: "Tecnologia" },
-      "NFLX":  { name: "Netflix, Inc.", price: 692.00, category: "Tecnologia" },
-      "KO":    { name: "The Coca-Cola Company", price: 87.12, category: "Consumo" },
-      "PEP":   { name: "PepsiCo, Inc.", price: 174.50, category: "Consumo" },
-      "MCD":   { name: "McDonald's Corporation", price: 295.40, category: "Consumo" },
-      "COST":  { name: "Costco Wholesale Corporation", price: 885.00, category: "Consumo" },
-      "JPM":   { name: "JPMorgan Chase & Co.", price: 215.40, category: "Financeiro" },
-      "V":     { name: "Visa Inc.", price: 278.30, category: "Financeiro" },
-      "LLY":   { name: "Eli Lilly and Company", price: 915.00, category: "Saúde" },
-      "VOO":   { name: "Vanguard S&P 500 ETF", price: 542.10, category: "ETF" },
-      "SPY":   { name: "SPDR S&P 500 ETF Trust", price: 590.20, category: "ETF" },
-      "QQQ":   { name: "Invesco QQQ Trust", price: 512.40, category: "ETF" },
-      "VWCE":  { name: "Vanguard FTSE All-World UCITS", price: 122.40, category: "ETF" }
-    };
-
     // Variáveis de Estado
     let portfolio = [];
+    let deletedIdsSet = new Set();
     let EUR_USD = 1.0850;
     let currentFilter = 'ALL';
     let lookupDebounceTimer = null;
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
-    let deletedIdsSet = new Set();
 
-    // ==========================================
-    // 2. FUNÇÕES UTILITÁRIAS E FORMATAÇÃO
-    // ==========================================
+    // 3. UTILITÁRIOS
     function parseNumericInput(val) {
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
       if (!val) return 0;
@@ -778,8 +728,8 @@
 
       text.textContent = msg;
       icon.innerHTML = isSuccess 
-        ? `<i data-lucide="check-circle" class="w-4 h-4 text-profit"></i>` 
-        : `<i data-lucide="alert-circle" class="w-4 h-4 text-loss"></i>`;
+        ? `<i data-lucide="check-circle" class="w-5 h-5 text-gain"></i>` 
+        : `<i data-lucide="alert-circle" class="w-5 h-5 text-loss"></i>`;
       lucide.createIcons();
 
       toast.classList.remove("hidden");
@@ -807,67 +757,56 @@
       closeConfirmModal();
     }
 
-    // ==========================================
-    // 3. ARMAZENAMENTO E RESILIÊNCIA DA BASE DE DADOS
-    // ==========================================
-    function loadDeletedIds() {
-      try {
-        const stored = localStorage.getItem("assetpulse_deleted_ids_v1");
-        if (stored) {
-          deletedIdsSet = new Set(JSON.parse(stored));
-        }
-      } catch (e) {
-        deletedIdsSet = new Set();
-      }
-    }
-
-    function saveDeletedIds() {
-      try {
-        localStorage.setItem("assetpulse_deleted_ids_v1", JSON.stringify(Array.from(deletedIdsSet)));
-      } catch (e) {}
-    }
-
+    // 4. PERSISTÊNCIA LOCAL E NUVEM
     function loadLocalPortfolio() {
-      loadDeletedIds();
-      const hasInitialized = localStorage.getItem("assetpulse_has_initialized_v5");
-
-      if (hasInitialized) {
-        const stored = localStorage.getItem("assetpulse_portfolio_lots_v4");
-        if (stored !== null) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed)) {
-              portfolio = parsed;
-              return;
-            }
-          } catch (e) {
-            console.warn("Parse error:", e);
-          }
-        }
+      const deletedStored = localStorage.getItem("assetpulse_deleted_ids_v1");
+      if (deletedStored) {
+        try {
+          deletedIdsSet = new Set(JSON.parse(deletedStored));
+        } catch (e) {}
       }
 
-      // Demonstração inicial na primeira visita
-      portfolio = [...INITIAL_PORTFOLIO];
-      localStorage.setItem("assetpulse_has_initialized_v5", "true");
-      saveLocalPortfolio();
+      const hasInitialized = localStorage.getItem("assetpulse_has_initialized_v5");
+      const stored = localStorage.getItem("assetpulse_portfolio_lots_v5");
+
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            portfolio = parsed.filter(item => !deletedIdsSet.has(String(item.id)));
+            return;
+          }
+        } catch (e) {}
+      }
+
+      if (!hasInitialized) {
+        portfolio = [...INITIAL_DEMO_PORTFOLIO];
+        localStorage.setItem("assetpulse_has_initialized_v5", "true");
+        saveLocalPortfolio();
+      } else {
+        portfolio = [];
+      }
     }
 
     function saveLocalPortfolio() {
       try {
-        localStorage.setItem("assetpulse_portfolio_lots_v4", JSON.stringify(portfolio));
-        localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
+        localStorage.setItem("assetpulse_portfolio_lots_v5", JSON.stringify(portfolio));
+        localStorage.setItem("assetpulse_has_initialized_v5", "true");
+        localStorage.setItem("assetpulse_deleted_ids_v1", JSON.stringify([...deletedIdsSet]));
+        if (portfolio.length > 0) {
+          localStorage.setItem("assetpulse_portfolio_safety_snapshot", JSON.stringify(portfolio));
+        }
       } catch (e) {
-        console.warn("Local storage write error:", e);
+        console.warn("Erro ao gravar dados locais:", e);
       }
     }
 
-    window.resetToDemoPortfolio = function() {
+    window.restoreDemoAssets = function() {
       deletedIdsSet.clear();
-      saveDeletedIds();
-      portfolio = [...INITIAL_PORTFOLIO];
+      portfolio = [...INITIAL_DEMO_PORTFOLIO];
       saveLocalPortfolio();
       renderAll();
-      showToast("Ativos de teste repostos com sucesso!");
+      showToast("Ativos de demonstração repostos!");
       syncAllToSupabase();
     };
 
@@ -884,7 +823,7 @@
           showToast("Erro ao ler cópia de segurança.", false);
         }
       } else {
-        showToast("Nenhuma cópia de segurança encontrada.", false);
+        showToast("Nenhuma cópia encontrada.", false);
       }
     };
 
@@ -893,22 +832,22 @@
       try {
         const { data, error } = await supabaseClient.from('portfolio').select('*');
         if (!error && Array.isArray(data)) {
-          const remoteValidItems = data.filter(item => !deletedIdsSet.has(String(item.id)));
-
-          if (portfolio.length === 0) {
-            for (const item of data) {
-              if (deletedIdsSet.has(String(item.id))) {
-                await deleteAssetFromSupabase(item.id);
-              }
-            }
+          if (data.length === 0 && portfolio.length > 0) {
+            await syncAllToSupabase();
             return;
           }
 
-          if (remoteValidItems.length > 0) {
+          if (data.length > 0) {
             const remoteMap = new Map();
-            remoteValidItems.forEach(item => {
-              remoteMap.set(String(item.id), {
-                id: String(item.id),
+            data.forEach(item => {
+              const strId = String(item.id);
+              if (deletedIdsSet.has(strId)) {
+                deleteAssetFromSupabase(strId);
+                return;
+              }
+
+              remoteMap.set(strId, {
+                id: strId,
                 ticker: item.ticker,
                 name: item.name,
                 category: item.category,
@@ -918,7 +857,7 @@
                 avgUSD: parseFloat(item.avgUSD),
                 currUSD: parseFloat(item.currUSD),
                 feesUSD: parseFloat(item.feesUSD || 0),
-                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || item.eur_rate || EUR_USD)
+                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || EUR_USD)
               });
             });
 
@@ -933,7 +872,7 @@
             });
 
             remoteMap.forEach((remoteItem, id) => {
-              if (!processedIds.has(id) && !deletedIdsSet.has(id)) {
+              if (!processedIds.has(id)) {
                 merged.push(remoteItem);
                 processedIds.add(id);
               }
@@ -945,20 +884,13 @@
           }
         }
       } catch (err) {
-        console.warn("Supabase fetch guard:", err);
+        console.warn("Supabase sync guard:", err);
       }
     }
 
-    async function syncAllToSupabase(showFeedback = true) {
-      if (!supabaseClient) return;
+    async function syncAllToSupabase(showFeedback = false) {
+      if (!supabaseClient || portfolio.length === 0) return;
       
-      if (portfolio.length === 0) {
-        for (const deletedId of deletedIdsSet) {
-          await deleteAssetFromSupabase(deletedId);
-        }
-        return;
-      }
-
       const payloadWithDate = portfolio.map(item => ({
         id: String(item.id),
         ticker: item.ticker,
@@ -978,9 +910,7 @@
         if (error) {
           const payloadWithoutDate = payloadWithDate.map(({ buy_date, ...rest }) => rest);
           const { error: err2 } = await supabaseClient.from('portfolio').upsert(payloadWithoutDate, { onConflict: 'id' });
-          if (!err2 && showFeedback) {
-            showToast("Dados guardados na nuvem Supabase!");
-          }
+          if (!err2 && showFeedback) showToast("Dados guardados na nuvem Supabase!");
         } else if (showFeedback) {
           showToast("Dados guardados na nuvem Supabase!");
         }
@@ -1007,9 +937,7 @@
       }
     }
 
-    // ==========================================
-    // 4. TAXAS DE CÂMBIO E COTAÇÕES REAIS
-    // ==========================================
+    // 5. CÂMBIO E COTAÇÕES EM TEMPO REAL
     async function fetchLiveExchangeRate(manual = false) {
       try {
         const res = await fetch("https://open.er-api.com/v6/latest/EUR");
@@ -1020,7 +948,7 @@
             const el = document.getElementById("val-eurusd");
             if (el) el.textContent = EUR_USD.toFixed(4);
             renderAll();
-            if (manual) showToast(`Câmbio atualizado: 1€ = ${EUR_USD.toFixed(4)}$`);
+            if (manual) showToast(`Câmbio atualizado: 1 € = ${EUR_USD.toFixed(4)} $`);
           }
         }
       } catch (e) {
@@ -1032,41 +960,44 @@
       const clean = (ticker || "").trim().toUpperCase();
       if (!clean) return null;
 
-      const dirEntry = TICKER_DIRECTORY[clean];
-
-      const yfUrlChart = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`;
-      const proxyAttempts = [
-        `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrlChart)}`,
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yfUrlChart)}`,
-        `https://cors.lol/?url=${encodeURIComponent(yfUrlChart)}`
+      const endpoints = [
+        `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`,
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(clean)}?range=1d&interval=1d`
       ];
 
-      for (const pUrl of proxyAttempts) {
-        try {
-          const controller = new AbortController();
-          const tid = setTimeout(() => controller.abort(), 6500);
-          const res = await fetch(pUrl, { signal: controller.signal });
-          clearTimeout(tid);
+      for (const yfUrl of endpoints) {
+        const proxyList = [
+          `https://api.allorigins.win/get?url=${encodeURIComponent(yfUrl)}`,
+          `https://corsproxy.io/?url=${encodeURIComponent(yfUrl)}`
+        ];
 
-          if (res.ok) {
-            const raw = await res.json();
-            const json = raw.contents ? JSON.parse(raw.contents) : raw;
-            const meta = json?.chart?.result?.[0]?.meta;
-            if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
-              const price = parseFloat(meta.regularMarketPrice.toFixed(2));
-              const name = meta.shortName || meta.longName || (dirEntry ? dirEntry.name : clean);
-              const category = dirEntry ? dirEntry.category : "Tecnologia";
-              return { price, name, category, source: "Yahoo Finance (Tempo Real)" };
+        for (const pUrl of proxyList) {
+          try {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 6000);
+            const res = await fetch(pUrl, { signal: controller.signal });
+            clearTimeout(tid);
+
+            if (res.ok) {
+              const raw = await res.json();
+              const json = raw.contents ? JSON.parse(raw.contents) : raw;
+              const meta = json?.chart?.result?.[0]?.meta;
+              if (meta && meta.regularMarketPrice && meta.regularMarketPrice > 0) {
+                return {
+                  price: parseFloat(meta.regularMarketPrice.toFixed(2)),
+                  name: meta.shortName || meta.longName || clean,
+                  source: "Yahoo Finance"
+                };
+              }
             }
-          }
-        } catch (e) {}
+          } catch (e) {}
+        }
       }
 
-      if (dirEntry) {
+      if (TICKER_DIRECTORY[clean]) {
         return {
-          price: dirEntry.price,
-          name: dirEntry.name,
-          category: dirEntry.category,
+          price: TICKER_DIRECTORY[clean].price,
+          name: TICKER_DIRECTORY[clean].name,
           source: "Catálogo Integrado"
         };
       }
@@ -1075,8 +1006,6 @@
     }
 
     async function fetchLiveStockQuotes(manual = false) {
-      if (portfolio.length === 0) return;
-
       const icon = document.getElementById("icon-sync-quotes");
       if (icon) icon.classList.add("animate-spin");
 
@@ -1107,14 +1036,12 @@
       if (tsEl) tsEl.textContent = `Sincronizado: ${ts}`;
 
       if (manual) {
-        showToast(`${updatedCount} cotações atualizadas!`);
+        showToast(`${updatedCount} cotações atualizadas com sucesso!`);
         syncAllToSupabase(false);
       }
     }
 
-    // ==========================================
-    // 5. CÁLCULOS E DECOMPOSIÇÃO DE RENTABILIDADE
-    // ==========================================
+    // 6. CÁLCULO E RENDERIZAÇÃO DE MÉTRICAS
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
       let totalInvUSD = 0;
@@ -1124,19 +1051,17 @@
       const groupedMap = new Map();
 
       portfolio.forEach(lot => {
+        const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
         const orderVolUSD = lot.qty * lot.avgUSD;
         const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
         const lotCurrValUSD = lot.qty * lot.currUSD;
 
-        const buyRate = lot.eurUsdRateAtBuy || EUR_USD;
-        const lotInvEUR = lotCostUSD / buyRate;
+        const lotInvEUR = lotCostUSD / rateAtBuy;
         const lotCurrEUR = lotCurrValUSD / EUR_USD;
         const lotPLEUR = lotCurrEUR - lotInvEUR;
         const lotPLUSD = lotCurrValUSD - lotCostUSD;
-
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
-        const lotStockPctUSD = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
-        const lotFxPct = lotPLPct - lotStockPctUSD;
+        const lotStockOnlyPLPct = lotCostUSD > 0 ? (lotPLUSD / lotCostUSD) * 100 : 0;
         const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
 
         totalInvEUR += lotInvEUR;
@@ -1146,7 +1071,6 @@
 
         const calculatedLot = {
           ...lot,
-          eurUsdRateAtBuy: buyRate,
           costUSD: lotCostUSD,
           currValUSD: lotCurrValUSD,
           invEUR: lotInvEUR,
@@ -1154,8 +1078,7 @@
           plEUR: lotPLEUR,
           plUSD: lotPLUSD,
           plPct: lotPLPct,
-          stockPctUSD: lotStockPctUSD,
-          fxPct: lotFxPct,
+          stockOnlyPLPct: lotStockOnlyPLPct,
           breakEvenUSD: lotBreakEvenUSD
         };
 
@@ -1195,10 +1118,7 @@
         const plEUR = totalCurrEUR_asset - totalInvEUR_asset;
         const plUSD = totalValUSD - (totalCostBasisUSD + totalFeesUSD);
         const plPct = totalInvEUR_asset > 0 ? (plEUR / totalInvEUR_asset) * 100 : 0;
-
-        const totalCostUSD = totalCostBasisUSD + totalFeesUSD;
-        const stockPctUSD = totalCostUSD > 0 ? (plUSD / totalCostUSD) * 100 : 0;
-        const fxPct = plPct - stockPctUSD;
+        const stockOnlyPLPct = (totalCostBasisUSD + totalFeesUSD) > 0 ? (plUSD / (totalCostBasisUSD + totalFeesUSD)) * 100 : 0;
 
         asset.lots = asset.lots.map(lot => ({
           ...lot,
@@ -1211,23 +1131,22 @@
           pmpUSD,
           breakEvenUSD,
           totalFeesUSD,
-          totalCostUSD,
+          totalCostUSD: totalCostBasisUSD + totalFeesUSD,
           totalValUSD,
           totalInvEUR: totalInvEUR_asset,
           totalCurrEUR: totalCurrEUR_asset,
           plEUR,
           plUSD,
           plPct,
-          stockPctUSD,
-          fxPct
+          stockOnlyPLPct
         };
       });
 
       const totalPLEUR = totalCurrEUR - totalInvEUR;
       const totalPLUSD = totalCurrUSD - totalInvUSD;
       const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
-      const totalStockPctUSD = totalInvUSD > 0 ? (totalPLUSD / totalInvUSD) * 100 : 0;
-      const totalFxPct = totalPLPct - totalStockPctUSD;
+      const totalStockPLPct = totalInvUSD > 0 ? (totalPLUSD / totalInvUSD) * 100 : 0;
+      const fxImpactPct = totalPLPct - totalStockPLPct;
 
       return {
         assets: consolidatedAssets,
@@ -1239,39 +1158,35 @@
         totalPLEUR,
         totalPLUSD,
         totalPLPct,
-        totalStockPctUSD,
-        totalFxPct
+        totalStockPLPct,
+        fxImpactPct
       };
     }
 
-    // ==========================================
-    // 6. RENDERIZAÇÃO DA INTERFACE LIMPA
-    // ==========================================
     function renderKPIs(metrics) {
       document.getElementById("kpi-total-invested").textContent = fmtEUR(metrics.totalInvEUR);
-      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} custo base`;
+      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} custo`;
 
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
-      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} em tempo real`;
+      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} a mercado`;
 
-      const plPctEl = document.getElementById("kpi-pl-pct");
       const plEurEl = document.getElementById("kpi-pl-eur");
+      const plPctEl = document.getElementById("kpi-pl-pct");
       const plUsdEl = document.getElementById("kpi-pl-usd");
       const plIcon = document.getElementById("kpi-pl-icon-container");
 
       const isPositive = metrics.totalPLEUR >= 0;
-      plPctEl.textContent = fmtPCT(metrics.totalPLPct);
-      plPctEl.className = `text-2xl sm:text-3xl font-extrabold font-mono tracking-tight ${isPositive ? 'text-profit' : 'text-loss'}`;
-
       plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
-      plEurEl.className = isPositive ? 'text-profit' : 'text-loss';
-      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)})`;
+      plEurEl.className = `text-xl sm:text-2xl font-bold font-mono tracking-tight ${isPositive ? 'text-gain' : 'text-loss'}`;
+      
+      plPctEl.textContent = fmtPCT(metrics.totalPLPct);
+      plPctEl.className = `font-bold ${isPositive ? 'text-gain' : 'text-loss'}`;
 
+      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} líquido)`;
       if (plIcon) {
-        plIcon.className = isPositive ? 'text-profit' : 'text-loss';
         plIcon.innerHTML = isPositive 
-          ? `<i data-lucide="trending-up" class="w-4 h-4"></i>` 
-          : `<i data-lucide="trending-down" class="w-4 h-4"></i>`;
+          ? `<i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>`
+          : `<i data-lucide="trending-down" class="w-4 h-4 text-loss"></i>`;
       }
 
       if (metrics.assets.length > 0) {
@@ -1280,80 +1195,63 @@
         const worst = sorted[sorted.length - 1];
 
         document.getElementById("kpi-best-asset").textContent = `${best.ticker} (${fmtPCT(best.plPct)})`;
+        document.getElementById("kpi-best-asset").className = `font-bold ${best.plPct >= 0 ? 'text-gain' : 'text-loss'}`;
+
         document.getElementById("kpi-worst-asset").textContent = `${worst.ticker} (${fmtPCT(worst.plPct)})`;
+        document.getElementById("kpi-worst-asset").className = `font-bold ${worst.plPct >= 0 ? 'text-gain' : 'text-loss'}`;
       } else {
         document.getElementById("kpi-best-asset").textContent = "-";
         document.getElementById("kpi-worst-asset").textContent = "-";
       }
 
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
+
+      // Atualiza Decomposição de Retorno
+      const stockEl = document.getElementById("decomp-stock-return");
+      const stockIsPos = metrics.totalStockPLPct >= 0;
+      stockEl.textContent = fmtPCT(metrics.totalStockPLPct);
+      stockEl.className = `font-bold ${stockIsPos ? 'text-gain' : 'text-loss'}`;
+      document.getElementById("decomp-stock-val").textContent = `${stockIsPos ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} nas ações`;
+
+      const fxEl = document.getElementById("decomp-fx-return");
+      const fxIsPos = metrics.fxImpactPct >= 0;
+      fxEl.textContent = fmtPCT(metrics.fxImpactPct);
+      fxEl.className = `font-bold ${fxIsPos ? 'text-gain' : 'text-loss'}`;
+      document.getElementById("decomp-fx-val").textContent = `Impacto da cotação EUR/USD (${EUR_USD.toFixed(4)})`;
+
+      document.getElementById("decomp-total-text").textContent = fmtPCT(metrics.totalPLPct);
     }
 
-    function renderPerformanceDashboard(metrics) {
-      const elStockPct = document.getElementById("perf-asset-usd-pct");
-      const elFxPct = document.getElementById("perf-fx-impact-pct");
-      const elTotalPct = document.getElementById("perf-total-eur-pct");
-
-      const stockPos = metrics.totalStockPctUSD >= 0;
-      const fxPos = metrics.totalFxPct >= 0;
-      const totalPos = metrics.totalPLPct >= 0;
-
-      elStockPct.textContent = fmtPCT(metrics.totalStockPctUSD);
-      elStockPct.className = `font-bold ${stockPos ? 'text-profit' : 'text-loss'}`;
-
-      elFxPct.textContent = fmtPCT(metrics.totalFxPct);
-      elFxPct.className = `font-bold ${fxPos ? 'text-blue-400' : 'text-amber-400'}`;
-
-      elTotalPct.textContent = fmtPCT(metrics.totalPLPct);
-      elTotalPct.className = `text-base font-extrabold ${totalPos ? 'text-profit' : 'text-loss'}`;
-
-      const barStock = document.getElementById("bar-perf-asset");
-      const barFx = document.getElementById("bar-perf-fx");
-      if (barStock) {
-        const wStock = Math.min(100, Math.max(6, Math.abs(metrics.totalStockPctUSD)));
-        barStock.style.width = `${wStock}%`;
-        barStock.className = `h-full rounded-full transition-all duration-500 ${stockPos ? 'bg-profit' : 'bg-loss'}`;
-      }
-      if (barFx) {
-        const wFx = Math.min(100, Math.max(6, Math.abs(metrics.totalFxPct) * 3));
-        barFx.style.width = `${wFx}%`;
-        barFx.className = `h-full rounded-full transition-all duration-500 ${fxPos ? 'bg-blue-400' : 'bg-amber-400'}`;
-      }
-
-      const container = document.getElementById("ranking-bars-container");
-      const countLabel = document.getElementById("ranking-count-label");
+    function renderPerformanceBars(metrics) {
+      const container = document.getElementById("performance-bars-container");
       if (!container) return;
       container.innerHTML = "";
 
       if (metrics.assets.length === 0) {
-        container.innerHTML = `<div class="text-xs text-slate-400 py-4 text-center">Nenhum ativo registado para apresentar percentagens.</div>`;
-        if (countLabel) countLabel.textContent = "0 posições";
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 font-mono">Sem ativos registados para apresentar a classificação.</div>`;
         return;
       }
 
-      const sortedAssets = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
-      if (countLabel) countLabel.textContent = `${sortedAssets.length} posições`;
-      const maxAbsPct = Math.max(...sortedAssets.map(a => Math.abs(a.plPct)), 1);
+      const sorted = [...metrics.assets].sort((a, b) => b.plPct - a.plPct);
+      const maxAbsPct = Math.max(...sorted.map(a => Math.abs(a.plPct)), 10);
 
-      sortedAssets.forEach(asset => {
+      sorted.forEach(asset => {
         const isPos = asset.plPct >= 0;
-        const colorClass = isPos ? 'text-profit' : 'text-loss';
-        const bgBarClass = isPos ? 'bg-profit' : 'bg-loss';
-        const barWidth = Math.min(100, Math.max(6, (Math.abs(asset.plPct) / maxAbsPct) * 100));
+        const colorText = isPos ? 'text-gain' : 'text-loss';
+        const colorBg = isPos ? 'bg-gain' : 'bg-loss';
+        const barWidth = Math.min(100, (Math.abs(asset.plPct) / maxAbsPct) * 100);
 
         const row = document.createElement("div");
-        row.className = "flex items-center gap-3 text-xs font-mono";
+        row.className = "flex items-center gap-3 text-xs";
         row.innerHTML = `
-          <div class="w-16 shrink-0 flex items-center gap-2 font-bold text-white">
-            <span class="w-1.5 h-1.5 rounded-full ${isPos ? 'bg-profit' : 'bg-loss'}"></span>
-            ${asset.ticker}
+          <div class="w-16 font-mono font-bold text-white flex items-center gap-1.5 shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full ${colorBg}"></span>
+            <span>${asset.ticker}</span>
           </div>
-          <div class="flex-1">
-            <div class="w-full h-2 bg-surface-base rounded-full overflow-hidden border border-surface-border">
-              <div class="h-full ${bgBarClass} rounded-full transition-all duration-500" style="width: ${barWidth}%"></div>
-            </div>
+          <div class="flex-1 h-2 bg-surface-subtle rounded-full overflow-hidden relative">
+            <div class="h-full rounded-full ${colorBg} transition-all duration-500" style="width: ${Math.max(barWidth, 3)}%"></div>
           </div>
-          <div class="w-20 text-right font-extrabold ${colorClass} shrink-0">
+          <div class="w-24 text-right font-mono font-bold ${colorText} shrink-0">
             ${fmtPCT(asset.plPct)}
           </div>
         `;
@@ -1389,112 +1287,117 @@
       filtered.forEach(asset => {
         const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
         const isPos = asset.plEUR >= 0;
-        const colorClass = isPos ? 'text-profit' : 'text-loss';
+        const colorClass = isPos ? 'text-gain' : 'text-loss';
+        const badgeBg = isPos ? 'bg-gain-subtle text-gain border border-gain/20' : 'bg-loss-subtle text-loss border border-loss/20';
         const isExpanded = expandedTickers.has(asset.ticker);
 
         const parentTr = document.createElement("tr");
-        parentTr.className = `cursor-pointer transition border-b border-surface-border/60 ${isExpanded ? 'bg-surface-elevated/70' : 'hover:bg-surface-elevated/30'}`;
+        parentTr.className = `cursor-pointer transition border-b border-surface-border ${isExpanded ? 'bg-surface-cardHover' : 'hover:bg-surface-cardHover/50'}`;
         parentTr.onclick = (e) => {
           if (e.target.closest('button')) return;
           toggleTickerExpand(asset.ticker);
         };
 
         parentTr.innerHTML = `
-          <td class="py-3.5 px-4">
+          <td class="py-3 px-4">
             <div class="flex items-center gap-3">
-              <div class="text-slate-400 hover:text-white transition">
+              <div class="p-1 rounded-md text-slate-400 hover:text-white transition">
                 <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4"></i>
               </div>
-              <div class="w-8 h-8 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-center font-bold text-xs text-blue-400 font-mono">
-                ${asset.ticker.slice(0, 4)}
+              <div class="w-8 h-8 rounded-lg bg-surface-subtle border border-surface-border flex items-center justify-center font-bold text-xs text-accent font-mono">
+                ${asset.ticker.slice(0, 3)}
               </div>
               <div>
-                <div class="font-bold text-white font-mono text-xs flex items-center gap-1.5">
+                <div class="font-bold text-white font-mono text-xs flex items-center gap-2">
                   ${asset.ticker}
-                  <span class="text-[10px] px-1.5 py-0.2 rounded-full ${asset.lots.length > 1 ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20' : 'bg-surface-elevated text-slate-400'} font-mono">
-                    ${asset.lots.length} ${asset.lots.length === 1 ? 'lote' : 'lotes'}
+                  <span class="text-[10px] px-1.5 py-0.5 rounded ${asset.lots.length > 1 ? 'bg-accent/20 text-accent font-bold' : 'bg-surface-subtle text-slate-400'} font-mono">
+                    ${asset.lots.length} ${asset.lots.length === 1 ? 'compra' : 'compras'}
                   </span>
                 </div>
-                <div class="text-[11px] text-slate-400 line-clamp-1 max-w-[140px] sm:max-w-[200px]">${asset.name}</div>
+                <div class="text-[11px] text-slate-400 truncate max-w-[120px] sm:max-w-[180px]">${asset.name}</div>
               </div>
             </div>
           </td>
 
-          <td class="py-3.5 px-3 text-right font-mono font-medium text-slate-200">
+          <td class="py-3 px-3 text-right font-mono font-medium text-slate-200">
             ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
           </td>
 
-          <td class="py-3.5 px-3 text-right font-mono">
-            <div class="text-slate-200 font-semibold">${fmtUSD(asset.pmpUSD)}</div>
+          <td class="py-3 px-3 text-right font-mono">
+            <div class="text-slate-200 font-bold">${fmtUSD(asset.pmpUSD)}</div>
             <div class="text-[10px] text-slate-400" title="Preço de Equilíbrio">BE: ${fmtUSD(asset.breakEvenUSD)}</div>
           </td>
 
-          <td class="py-3.5 px-3 text-right font-mono font-bold text-white">
+          <td class="py-3 px-3 text-right font-mono font-bold text-white">
             ${fmtUSD(asset.currUSD)}
           </td>
 
-          <td class="py-3.5 px-3 text-right font-mono text-slate-300">
+          <td class="py-3 px-3 text-right font-mono text-slate-300">
             ${fmtEUR(asset.totalInvEUR)}
           </td>
 
-          <td class="py-3.5 px-3 text-right font-mono font-bold text-white">
+          <td class="py-3 px-3 text-right font-mono font-bold text-white">
             ${fmtEUR(asset.totalCurrEUR)}
           </td>
 
-          <td class="py-3.5 px-4 text-right font-mono">
-            <div class="text-xs sm:text-sm font-extrabold ${colorClass}">${fmtPCT(asset.plPct)}</div>
-            <div class="text-[10px] text-slate-400">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
+          <td class="py-3 px-3 text-right font-mono">
+            <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
+            <div class="text-[10px] px-1.5 py-0.5 rounded inline-block ${badgeBg} mt-0.5 font-bold">
+              ${fmtPCT(asset.plPct)}
+            </div>
           </td>
 
-          <td class="py-3.5 px-3 text-center">
+          <td class="py-3 px-3 text-center">
             <div class="w-16 sm:w-20 mx-auto">
               <div class="text-[10px] font-mono text-slate-400 mb-1">${allocPct.toFixed(1)}%</div>
-              <div class="w-full h-1 bg-surface-base rounded-full overflow-hidden border border-surface-border">
-                <div class="h-full bg-blue-500 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
+              <div class="w-full h-1 bg-surface-subtle rounded-full overflow-hidden">
+                <div class="h-full bg-accent rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
               </div>
             </div>
           </td>
 
-          <td class="py-3.5 px-3 text-center">
+          <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
-              <button onclick="openModalForTicker('${asset.ticker}')" class="px-2 py-1 text-[11px] font-medium text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-600 rounded-lg transition active:scale-95 flex items-center gap-1" title="Adicionar Compra a ${asset.ticker}">
-                <i data-lucide="plus" class="w-3 h-3"></i>
-                <span class="hidden sm:inline">Lote</span>
+              <button onclick="openModalForTicker('${asset.ticker}')" class="px-2.5 py-1 text-[11px] font-semibold text-accent hover:text-white bg-accent/10 hover:bg-sky-500 rounded-lg border border-accent/20 transition active:scale-95 flex items-center gap-1" title="Adicionar Compra a ${asset.ticker}">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Reforço</span>
               </button>
-              <button onclick="deleteEntireAsset('${asset.ticker}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-surface-elevated transition active:scale-95" title="Eliminar ${asset.ticker} (todos os lotes)">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <button onclick="deleteEntireAsset('${asset.ticker}')" class="p-1.5 text-slate-400 hover:text-loss rounded-lg hover:bg-surface-subtle transition active:scale-95" title="Eliminar ${asset.ticker} (todos os lotes)">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
           </td>
         `;
         tbody.appendChild(parentTr);
 
+        // Lotes Expandidos
         if (isExpanded) {
           const detailTr = document.createElement("tr");
-          detailTr.className = "bg-surface-base/80 border-b border-surface-border";
+          detailTr.className = "bg-surface-subtle/30 border-b border-surface-border";
 
           let lotsRowsHtml = "";
           asset.lots.forEach((lot, idx) => {
             const lotIsPos = lot.plEUR >= 0;
-            const lotColor = lotIsPos ? 'text-profit' : 'text-loss';
+            const lotColor = lotIsPos ? 'text-gain' : 'text-loss';
+            const lotBadgeBg = lotIsPos ? 'bg-gain-subtle text-gain border border-gain/20' : 'bg-loss-subtle text-loss border border-loss/20';
 
             lotsRowsHtml += `
-              <tr class="border-b border-surface-border/40 hover:bg-surface-elevated/40 transition text-[11px] font-mono">
+              <tr class="border-b border-surface-border/60 hover:bg-surface-cardHover/40 transition text-xs font-mono">
                 <td class="py-2.5 px-3 text-slate-300">
                   <div class="flex items-center gap-2">
-                    <span class="w-5 h-5 rounded bg-surface-elevated text-blue-400 flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
+                    <span class="w-5 h-5 rounded-md bg-surface-subtle text-accent flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
                     <div>
-                      <span class="text-white font-medium">${lot.buyDate || '2024-01-01'}</span>
-                      <span class="ml-1 text-[10px] text-slate-400">[${lot.broker}]</span>
+                      <span class="text-white font-semibold">📅 ${lot.buyDate || '2024-01-01'}</span>
+                      <span class="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-surface-subtle text-slate-400">[${lot.broker}]</span>
                     </div>
                   </div>
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-200">
-                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
+                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} ações
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtUSD(lot.avgUSD)}
-                  <span class="block text-[9px] text-slate-400">Tx: ${fmtUSD(lot.feesUSD || 0)}</span>
+                  <span class="block text-[10px] text-slate-400">Taxa: ${fmtUSD(lot.feesUSD || 0)}</span>
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
@@ -1503,20 +1406,20 @@
                   ${fmtEUR(lot.currEUR)}
                 </td>
                 <td class="py-2.5 px-3 text-right">
-                  <div class="font-extrabold ${lotColor}">${fmtPCT(lot.plPct)}</div>
-                  <div class="text-[9px] text-slate-400">Ação: ${fmtPCT(lot.stockPctUSD)} | FX: ${fmtPCT(lot.fxPct)}</div>
+                  <span class="font-bold ${lotColor}">${lotIsPos ? '+' : ''}${fmtEUR(lot.plEUR)}</span>
+                  <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${lotBadgeBg}">${fmtPCT(lot.plPct)}</span>
                 </td>
                 <td class="py-2.5 px-3 text-center">
-                  <span class="px-2 py-0.5 rounded-full bg-surface-elevated text-blue-300 text-[10px]">
-                    ${lot.lotPositionWeight.toFixed(1)}%
+                  <span class="px-2 py-0.5 rounded-full bg-surface-subtle text-accent text-[10px]">
+                    ${lot.lotPositionWeight.toFixed(1)}% do ativo
                   </span>
                 </td>
                 <td class="py-2.5 px-3 text-center">
                   <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
-                    <button onclick="openModal('${lot.id}')" class="p-1 text-slate-400 hover:text-blue-400 rounded hover:bg-surface-card transition" title="Editar lote">
+                    <button onclick="openModal('${lot.id}')" class="p-1.5 text-slate-400 hover:text-accent rounded-lg hover:bg-surface-subtle transition" title="Editar lote">
                       <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                     </button>
-                    <button onclick="deleteAsset('${lot.id}')" class="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-surface-card transition" title="Eliminar lote">
+                    <button onclick="deleteAsset('${lot.id}')" class="p-1.5 text-slate-400 hover:text-loss rounded-lg hover:bg-surface-subtle transition" title="Eliminar lote">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </div>
@@ -1526,21 +1429,21 @@
           });
 
           detailTr.innerHTML = `
-            <td colspan="9" class="p-3 sm:p-4 bg-surface-base/90">
-              <div class="rounded-xl border border-blue-500/20 bg-surface-card p-3.5 space-y-3">
-                <div class="flex items-center justify-between border-b border-surface-border pb-2">
+            <td colspan="9" class="p-4 bg-[#0B0F17]/50">
+              <div class="rounded-xl border border-accent/20 bg-surface-card p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-surface-border pb-2.5">
                   <div class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                    <span class="w-2 h-2 rounded-full bg-accent"></span>
                     <h4 class="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Lotes Individuais de ${asset.ticker} (${asset.lots.length} Compras)
+                      Lotes e Compras de ${asset.ticker} (${asset.lots.length} Lotes)
                     </h4>
                   </div>
                   <div class="flex items-center gap-3">
-                    <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition">
+                    <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-semibold text-accent hover:text-white flex items-center gap-1 transition">
                       <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                      Novo Lote
+                      + Registar Nova Compra
                     </button>
-                    <button onclick="deleteEntireAsset('${asset.ticker}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition">
+                    <button onclick="deleteEntireAsset('${asset.ticker}')" class="text-xs font-semibold text-loss hover:text-rose-300 flex items-center gap-1 transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                       Eliminar Ativo
                     </button>
@@ -1551,14 +1454,14 @@
                   <table class="w-full text-left border-collapse">
                     <thead>
                       <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-surface-border">
-                        <th class="py-1.5 px-3">Lote / Data</th>
-                        <th class="py-1.5 px-3 text-right">Qtd</th>
-                        <th class="py-1.5 px-3 text-right">Preço Pago ($)</th>
-                        <th class="py-1.5 px-3 text-right">Custo (€)</th>
-                        <th class="py-1.5 px-3 text-right">Valor Atual (€)</th>
-                        <th class="py-1.5 px-3 text-right">Valorização (%) [Ação | Moeda]</th>
-                        <th class="py-1.5 px-3 text-center">Peso no Ativo</th>
-                        <th class="py-1.5 px-3 text-center">Ações</th>
+                        <th class="py-2 px-3">Lote / Data</th>
+                        <th class="py-2 px-3 text-right">Qtd</th>
+                        <th class="py-2 px-3 text-right">Preço Pago ($)</th>
+                        <th class="py-2 px-3 text-right">Custo (€)</th>
+                        <th class="py-2 px-3 text-right">Valor Atual (€)</th>
+                        <th class="py-2 px-3 text-right">Rentabilidade do Lote</th>
+                        <th class="py-2 px-3 text-center">Peso no Ativo</th>
+                        <th class="py-2 px-3 text-center">Ações</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-surface-border/40">
@@ -1576,9 +1479,7 @@
       lucide.createIcons();
     }
 
-    // ==========================================
-    // 7. MODAL DE COMPRA & SUGESTÕES DE TICKER
-    // ==========================================
+    // 7. GESTÃO DE MODAIS E FORMULÁRIO DE COMPRA
     window.openModal = function (editLotId = null) {
       const form = document.getElementById("asset-form");
       if (form) form.reset();
@@ -1589,17 +1490,11 @@
       const hintBox = document.getElementById("form-existing-hint");
       if (hintBox) hintBox.classList.add("hidden");
 
-      const suggestionsBox = document.getElementById("ticker-suggestions");
-      if (suggestionsBox) suggestionsBox.classList.add("hidden");
-
-      const statusLabel = document.getElementById("ticker-status-label");
-      if (statusLabel) {
-        statusLabel.textContent = "Pesquisa automática de cotação e empresa";
-      }
+      hideSuggestions();
 
       document.getElementById("form-id").value = "";
-      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
-      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como um lote independente rastreável.";
+      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-accent"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
+      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como uma posição individual rastreável.";
 
       const dateInput = document.getElementById("form-date");
       if (dateInput) {
@@ -1632,7 +1527,6 @@
         modal.classList.remove("hidden");
         modal.classList.add("flex");
       }
-      lucide.createIcons();
     };
 
     window.openModalForTicker = function (ticker) {
@@ -1651,18 +1545,59 @@
         modal.classList.add("hidden");
         modal.classList.remove("flex");
       }
-      const suggestionsBox = document.getElementById("ticker-suggestions");
-      if (suggestionsBox) suggestionsBox.classList.add("hidden");
+      hideSuggestions();
+    };
+
+    function showSuggestions(list) {
+      const container = document.getElementById("ticker-suggestions");
+      if (!container) return;
+      if (list.length === 0) {
+        container.classList.add("hidden");
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <div onclick="selectSuggestion('${item.ticker}')" class="p-2.5 hover:bg-surface-subtle cursor-pointer border-b border-surface-border last:border-0 flex items-center justify-between transition">
+          <div>
+            <span class="font-bold text-accent font-mono text-xs">${item.ticker}</span>
+            <span class="text-slate-300 text-xs ml-2">${item.name}</span>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">${fmtUSD(item.price)}</span>
+        </div>
+      `).join('');
+      container.classList.remove("hidden");
+    }
+
+    function hideSuggestions() {
+      const container = document.getElementById("ticker-suggestions");
+      if (container) container.classList.add("hidden");
+    }
+
+    window.selectSuggestion = function (ticker) {
+      const input = document.getElementById("form-ticker");
+      if (input) input.value = ticker;
+      hideSuggestions();
+      onTickerInput(ticker);
     };
 
     window.onTickerInput = function (rawVal) {
-      const query = (rawVal || "").trim().toUpperCase();
+      const ticker = (rawVal || "").trim().toUpperCase();
       const currentEditId = document.getElementById("form-id")?.value;
       const hintBox = document.getElementById("form-existing-hint");
-      const suggestionsBox = document.getElementById("ticker-suggestions");
+      const statusLabel = document.getElementById("ticker-source-status");
 
-      if (query.length >= 1 && !currentEditId) {
-        const existingCount = portfolio.filter(it => it.ticker === query).length;
+      if (ticker.length >= 1) {
+        const matches = Object.entries(TICKER_DIRECTORY)
+          .filter(([k, v]) => k.includes(ticker) || v.name.toUpperCase().includes(ticker))
+          .map(([k, v]) => ({ ticker: k, ...v }))
+          .slice(0, 5);
+        showSuggestions(matches);
+      } else {
+        hideSuggestions();
+      }
+
+      if (ticker.length >= 1 && !currentEditId) {
+        const existingCount = portfolio.filter(it => it.ticker === ticker).length;
         if (existingCount > 0) {
           if (hintBox) {
             document.getElementById("form-hint-ticker").textContent = `${existingCount} compras existentes`;
@@ -1675,94 +1610,46 @@
         if (hintBox) hintBox.classList.add("hidden");
       }
 
-      if (query.length >= 1 && suggestionsBox) {
-        const matches = Object.entries(TICKER_DIRECTORY).filter(([sym, data]) => {
-          return sym.startsWith(query) || (data.name && data.name.toUpperCase().includes(query));
-        }).slice(0, 5);
+      // Preenchimento imediato pelo catálogo se existir
+      if (TICKER_DIRECTORY[ticker]) {
+        const item = TICKER_DIRECTORY[ticker];
+        const nameInput = document.getElementById("form-name");
+        const currInput = document.getElementById("form-curr");
+        const catInput = document.getElementById("form-category");
 
-        if (matches.length > 0) {
-          suggestionsBox.innerHTML = matches.map(([sym, data]) => `
-            <div 
-              onclick="selectTickerSuggestion('${sym}', '${data.name.replace(/'/g, "\\'")}', '${data.category}', ${data.price})"
-              class="px-3 py-2 hover:bg-surface-border cursor-pointer border-b border-surface-border/40 last:border-none flex items-center justify-between transition"
-            >
-              <div>
-                <span class="font-bold text-blue-400 font-mono text-xs">${sym}</span>
-                <span class="text-[11px] text-slate-300 ml-1.5">${data.name}</span>
-              </div>
-              <span class="text-[10px] font-mono text-slate-400 font-semibold">$${data.price.toFixed(2)}</span>
-            </div>
-          `).join('');
-          suggestionsBox.classList.remove("hidden");
-        } else {
-          suggestionsBox.classList.add("hidden");
-        }
-      } else if (suggestionsBox) {
-        suggestionsBox.classList.add("hidden");
+        if (nameInput && !nameInput.value) nameInput.value = item.name;
+        if (currInput && (!currInput.value || currInput.value === "0")) currInput.value = item.price.toFixed(2);
+        if (catInput && item.category) catInput.value = item.category;
+        if (statusLabel) statusLabel.textContent = `Ativo reconhecido: ${item.name}`;
       }
 
-      debounceTickerLookup(query);
-      updateBreakEvenDisplay();
-    };
-
-    window.selectTickerSuggestion = function(sym, name, category, price) {
-      document.getElementById("form-ticker").value = sym;
-      document.getElementById("form-name").value = name;
-      if (category) document.getElementById("form-category").value = category;
-
-      const currInput = document.getElementById("form-curr");
-      if (currInput && (!currInput.value || currInput.value === "0")) {
-        currInput.value = price.toFixed(2);
-      }
-
-      const statusLabel = document.getElementById("ticker-status-label");
-      if (statusLabel) {
-        statusLabel.innerHTML = `<span class="text-profit font-semibold">✓ ${name} selecionada ($${price.toFixed(2)})</span>`;
-      }
-
-      const suggestionsBox = document.getElementById("ticker-suggestions");
-      if (suggestionsBox) suggestionsBox.classList.add("hidden");
-
+      debounceTickerLookup(ticker);
       updateBreakEvenDisplay();
     };
 
     window.debounceTickerLookup = function (ticker) {
       clearTimeout(lookupDebounceTimer);
       const clean = (ticker || "").trim().toUpperCase();
-      const statusLabel = document.getElementById("ticker-status-label");
-
       if (clean.length >= 2) {
-        if (statusLabel) {
-          statusLabel.innerHTML = `<span class="text-blue-400 flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> A pesquisar ${clean}...</span>`;
-          lucide.createIcons();
-        }
-
         lookupDebounceTimer = setTimeout(async () => {
           const indicator = document.getElementById("ticker-fetch-indicator");
           const currInput = document.getElementById("form-curr");
           const nameInput = document.getElementById("form-name");
-          const catInput = document.getElementById("form-category");
+          const statusLabel = document.getElementById("ticker-source-status");
 
           if (indicator) indicator.classList.remove("hidden");
           const quote = await fetchQuoteFromWeb(clean);
           if (indicator) indicator.classList.add("hidden");
 
           if (quote) {
-            if (currInput && (!currInput.value || currInput.value === "0" || currInput.value === "0.00")) {
+            if (currInput && (!currInput.value || currInput.value === "0")) {
               currInput.value = quote.price.toFixed(2);
             }
-            if (nameInput && (!nameInput.value || nameInput.value === clean)) {
+            if (nameInput && !nameInput.value) {
               nameInput.value = quote.name;
             }
-            if (catInput && quote.category) {
-              catInput.value = quote.category;
-            }
             if (statusLabel) {
-              statusLabel.innerHTML = `<span class="text-profit font-semibold">✓ ${quote.name} encontrada ($${quote.price.toFixed(2)})</span>`;
-            }
-          } else {
-            if (statusLabel) {
-              statusLabel.innerHTML = `<span class="text-amber-400 font-medium">Ativo não listado. Podes introduzir o nome e cotação manualmente.</span>`;
+              statusLabel.textContent = `Preço obtido via ${quote.source}: $${quote.price}`;
             }
           }
         }, 500);
@@ -1791,6 +1678,9 @@
       } else if (broker === 'XTB_FX') {
         fees = orderVol * 0.005;
         if (note) note.textContent = "XTB Conta EUR: 0.50% de taxa de conversão cambial.";
+      } else {
+        fees = 0.00;
+        if (note) note.textContent = "Taxa personalizada ou sem comissão.";
       }
 
       if (feesInput) feesInput.value = fees.toFixed(2);
@@ -1839,12 +1729,6 @@
         return;
       }
 
-      const today = new Date().toISOString().split("T")[0];
-      if (buyDate > today) {
-        if (errBox) { errBox.textContent = "A data de compra não pode ser posterior à data atual."; errBox.classList.remove("hidden"); }
-        return;
-      }
-
       if (!name) name = TICKER_DIRECTORY[ticker]?.name || ticker;
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
@@ -1858,17 +1742,23 @@
       if (id) {
         const idx = portfolio.findIndex(it => String(it.id) === String(id));
         if (idx !== -1) {
-          const currentBuyRate = portfolio[idx].eurUsdRateAtBuy || EUR_USD;
-          portfolio[idx] = { id: String(id), ticker, name, category, broker, buyDate, qty, avgUSD, currUSD, feesUSD, eurUsdRateAtBuy: currentBuyRate };
+          portfolio[idx] = {
+            ...portfolio[idx],
+            ticker,
+            name,
+            category,
+            broker,
+            buyDate,
+            qty,
+            avgUSD,
+            currUSD,
+            feesUSD
+          };
         }
         showToast(`Lote de ${ticker} atualizado com sucesso!`);
       } else {
-        const newId = Date.now().toString();
-        deletedIdsSet.delete(newId);
-        saveDeletedIds();
-
         const newLot = {
-          id: newId,
+          id: Date.now().toString(),
           ticker,
           name,
           category,
@@ -1882,7 +1772,7 @@
         };
         portfolio.push(newLot);
         expandedTickers.add(ticker);
-        showToast(`Nova compra de ${ticker} adicionada!`);
+        showToast(`Nova compra de ${ticker} guardada!`);
       }
 
       saveLocalPortfolio();
@@ -1893,20 +1783,18 @@
 
     window.deleteAsset = function (id) {
       const lot = portfolio.find(it => String(it.id) === String(id));
-      const label = lot ? `${lot.ticker} (${lot.qty} ações em ${lot.buyDate})` : "este lote";
+      const label = lot ? `${lot.ticker} (${lot.qty} ações)` : "este lote";
 
       openConfirmModal(
         "Eliminar Lote de Compra",
-        `Tens a certeza de que desejas remover permanentemente esta compra de ${label}?`,
+        `Tens a certeza de que desejas remover permanentemente a compra de ${label}?`,
         () => {
           deletedIdsSet.add(String(id));
-          saveDeletedIds();
-
           portfolio = portfolio.filter(it => String(it.id) !== String(id));
           saveLocalPortfolio();
           renderAll();
           deleteAssetFromSupabase(id);
-          showToast("Lote de compra removido permanentemente.");
+          showToast("Lote de compra removido com sucesso.");
         }
       );
     };
@@ -1917,61 +1805,30 @@
 
       const msg = lots.length === 1
         ? `Tens a certeza de que queres eliminar o ativo ${ticker} da carteira?`
-        : `Tens a certeza de que queres eliminar o ativo ${ticker} e todos os seus ${lots.length} lotes da carteira?`;
+        : `Tens a certeza de que queres eliminar o ativo ${ticker} e todos os seus ${lots.length} lotes de compra da carteira?`;
 
       openConfirmModal(
         `Eliminar Ativo ${ticker}`,
         msg,
         () => {
-          lots.forEach(lot => {
-            deletedIdsSet.add(String(lot.id));
-          });
-          saveDeletedIds();
-
+          lots.forEach(lot => deletedIdsSet.add(String(lot.id)));
           portfolio = portfolio.filter(it => it.ticker !== ticker);
           expandedTickers.delete(ticker);
           saveLocalPortfolio();
           renderAll();
           deleteEntireAssetFromSupabase(ticker);
-          showToast(`Ativo ${ticker} e respetivos lotes eliminados.`);
+          showToast(`Ativo ${ticker} removido com sucesso.`);
         }
       );
-    };
-
-    window.injectTestAsset = function () {
-      const newId = Date.now().toString();
-      deletedIdsSet.delete(newId);
-      saveDeletedIds();
-
-      const testItem = {
-        id: newId,
-        ticker: "NOW",
-        name: "ServiceNow, Inc.",
-        category: "Tecnologia",
-        broker: "IBKR",
-        buyDate: "2024-07-20",
-        qty: 3,
-        avgUSD: 130.00,
-        currUSD: 137.50,
-        feesUSD: 0.35,
-        eurUsdRateAtBuy: EUR_USD
-      };
-
-      portfolio.push(testItem);
-      expandedTickers.add("NOW");
-      saveLocalPortfolio();
-      renderAll();
-      syncAllToSupabase(false);
-      showToast("Compra de teste da ServiceNow (NOW) adicionada!");
     };
 
     window.setCategoryFilter = function (cat) {
       currentFilter = cat;
       document.querySelectorAll(".cat-pill").forEach(btn => {
         if (btn.getAttribute("data-cat") === cat) {
-          btn.className = "cat-pill active px-3 py-1 rounded-lg text-xs font-medium bg-blue-600 text-white transition whitespace-nowrap";
+          btn.className = "cat-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-accent text-slate-950 transition whitespace-nowrap";
         } else {
-          btn.className = "cat-pill px-3 py-1 rounded-lg text-xs font-medium bg-surface-elevated hover:bg-surface-border text-slate-300 transition whitespace-nowrap";
+          btn.className = "cat-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap";
         }
       });
       renderAll();
@@ -1996,13 +1853,11 @@
     function renderAll() {
       const metrics = calculatePortfolioMetrics();
       renderKPIs(metrics);
-      renderPerformanceDashboard(metrics);
+      renderPerformanceBars(metrics);
       renderTable(metrics);
     }
 
-    // ==========================================
     // 8. ARRANQUE DA APLICAÇÃO
-    // ==========================================
     window.addEventListener("DOMContentLoaded", async () => {
       loadLocalPortfolio();
       renderAll();
