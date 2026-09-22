@@ -138,7 +138,7 @@
     <div class="text-xs text-slate-200" id="toast-message">Notificação</div>
   </div>
 
-  <!-- Custom In-App Confirmation Modal (Zero alert/confirm calls) -->
+  <!-- Custom In-App Confirmation Modal -->
   <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 hidden">
     <div class="glass-panel bg-slate-900 border border-slate-700/80 w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4">
       <div class="flex items-center gap-3">
@@ -227,6 +227,7 @@
 
     </section>
 
+    <!-- Historical Chart Section -->
     <section class="p-4 sm:p-6 rounded-2xl glass-panel flex flex-col space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
         <div>
@@ -237,7 +238,7 @@
             </h2>
             <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-sky-400 border border-slate-700">Por Data de Compra</span>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">Evolução temporal com acumulação precisa de cada compra individual</p>
+          <p class="text-xs text-slate-400 mt-0.5">Evolução temporal acumulada com precisão dia a dia a partir de cada aquisição</p>
         </div>
 
         <!-- Scrubber Inspection Header -->
@@ -277,6 +278,7 @@
       </div>
     </section>
 
+    <!-- Consolidated Assets Section -->
     <section class="rounded-2xl glass-panel overflow-hidden flex flex-col">
       
       <!-- Table Header & Filters -->
@@ -720,7 +722,7 @@
       setTimeout(() => toast.classList.add("hidden"), 3800);
     }
 
-    // Modal Confirmation Dialog System (Replacing window.confirm)
+    // Modal Confirmation Dialog System
     function openConfirmModal(title, message, onConfirm) {
       const modal = document.getElementById("modal-confirm");
       document.getElementById("confirm-modal-title").textContent = title;
@@ -791,8 +793,7 @@
     };
 
     /**
-     * Resilient Two-Way Merge:
-     * Never blindly wipe local items with an older Supabase snapshot.
+     * Resilient Two-Way Merge
      */
     async function syncFromSupabase() {
       if (!supabaseClient) return;
@@ -1418,14 +1419,14 @@
         portfolio.forEach(it => {
           if (it.buyDate) {
             const d = new Date(it.buyDate);
-            if (d < oldest) oldest = d;
+            if (!isNaN(d.getTime()) && d < oldest) oldest = d;
           }
         });
         startTime = oldest;
         numPoints = 45;
       }
 
-      const totalSpan = now.getTime() - startTime.getTime();
+      const totalSpan = Math.max(1000 * 60 * 60, now.getTime() - startTime.getTime());
       const points = [];
 
       for (let i = 0; i <= numPoints; i++) {
@@ -1441,14 +1442,23 @@
             const costEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / EUR_USD;
             investedAtPt += costEUR;
 
-            const progress = i / numPoints;
-            const seed = (lot.ticker.charCodeAt(0) * 7 + i) % 11;
-            const noise = 1 + ((seed - 5) * 0.003 * (1 - progress));
-            const interpolatedPrice = (lot.avgUSD + (lot.currUSD - lot.avgUSD) * progress) * noise;
+            // Interpolate price cleanly from purchase price to current market price
+            const buyTime = new Date(buyD).getTime();
+            let progress = 1;
+            if (ptTime.getTime() > buyTime) {
+              const spanFromBuy = now.getTime() - buyTime;
+              progress = spanFromBuy > 0 ? Math.min(1, Math.max(0, (ptTime.getTime() - buyTime) / spanFromBuy)) : 1;
+            } else if (tf === '1D') {
+              progress = i / numPoints;
+            }
+
+            const assetCurrentUSD = lot.currUSD || lot.avgUSD;
+            const interpolatedPrice = lot.avgUSD + ((assetCurrentUSD - lot.avgUSD) * progress);
             valueAtPt += (lot.qty * interpolatedPrice) / EUR_USD;
           }
         });
 
+        // Exact anchoring at the last point to match table KPIs
         if (i === numPoints) {
           investedAtPt = metrics.totalInvEUR;
           valueAtPt = metrics.totalCurrEUR;
@@ -1468,47 +1478,64 @@
     function renderLineChart() {
       const canvas = document.getElementById("equityLineChart");
       if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width || canvas.parentElement?.clientWidth || 600;
+      const H = rect.height || 260;
+
       const ctx = canvas.getContext("2d");
       const dpr = window.devicePixelRatio || 1;
 
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
       ctx.scale(dpr, dpr);
 
       const metrics = calculatePortfolioMetrics();
       const points = generateDateDrivenPoints(metrics, currentChartTimeframe);
       if (points.length < 2) return;
 
-      const W = rect.width;
-      const H = rect.height;
-      const padLeft = 10;
-      const padRight = 10;
-      const padTop = 20;
-      const padBottom = 25;
+      const padLeft = 12;
+      const padRight = 55; // Room for Y-axis currency labels
+      const padTop = 18;
+      const padBottom = 24;
 
       const vals = points.map(p => p.value).concat(points.map(p => p.invested));
-      let minVal = Math.min(...vals) * 0.98;
-      let maxVal = Math.max(...vals) * 1.02;
-      if (maxVal === minVal) { maxVal += 100; minVal -= 100; }
+      let minVal = Math.min(...vals);
+      let maxVal = Math.max(...vals);
+
+      if (maxVal === minVal || !isFinite(minVal) || !isFinite(maxVal)) {
+        maxVal = (maxVal || 1000) * 1.1;
+        minVal = (minVal || 1000) * 0.9;
+      } else {
+        const span = maxVal - minVal;
+        minVal = Math.max(0, minVal - (span * 0.08));
+        maxVal = maxVal + (span * 0.08);
+      }
 
       const getX = (idx) => padLeft + (idx / (points.length - 1)) * (W - padLeft - padRight);
       const getY = (val) => H - padBottom - ((val - minVal) / (maxVal - minVal)) * (H - padTop - padBottom);
 
       ctx.clearRect(0, 0, W, H);
 
-      // Grid Lines
+      // Grid Lines & Y-axis labels
       ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
       ctx.lineWidth = 1;
+      ctx.fillStyle = "rgba(148, 163, 184, 0.6)";
+      ctx.font = "10px JetBrains Mono, monospace";
+      ctx.textAlign = "left";
+
       for (let g = 0; g <= 3; g++) {
         const gy = padTop + (g / 3) * (H - padTop - padBottom);
         ctx.beginPath();
         ctx.moveTo(padLeft, gy);
         ctx.lineTo(W - padRight, gy);
         ctx.stroke();
+
+        const gridVal = maxVal - (g / 3) * (maxVal - minVal);
+        ctx.fillText(Math.round(gridVal) + '€', W - padRight + 6, gy + 3);
       }
 
-      // Cost Baseline
+      // Cost Baseline (Stepped Capital Invested)
       ctx.strokeStyle = "rgba(148, 163, 184, 0.4)";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
@@ -1522,7 +1549,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Gradient Fill
+      // Gradient Fill for Portfolio Value
       const isPositive = metrics.totalPLEUR >= 0;
       const grad = ctx.createLinearGradient(0, padTop, 0, H - padBottom);
       if (isPositive) {
@@ -1546,7 +1573,7 @@
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // Main Line
+      // Main Equity Line
       ctx.strokeStyle = isPositive ? "#10b981" : "#f43f5e";
       ctx.lineWidth = 2.5;
       ctx.lineJoin = "round";
@@ -1559,13 +1586,13 @@
       });
       ctx.stroke();
 
-      // Scrubber Pin
+      // Scrubber Pin & Crosshair
       const activeIdx = (chartHoverIndex >= 0 && chartHoverIndex < points.length) ? chartHoverIndex : (points.length - 1);
       const activePt = points[activeIdx];
       const hx = getX(activeIdx);
       const hy = getY(activePt.value);
 
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 2]);
       ctx.beginPath();
@@ -1603,7 +1630,12 @@
       const handleMove = (clientX) => {
         const rect = canvas.getBoundingClientRect();
         const x = clientX - rect.left;
-        const pct = Math.max(0, Math.min(1, x / rect.width));
+        const padLeft = 12;
+        const padRight = 55;
+        const widthUsable = rect.width - padLeft - padRight;
+        if (widthUsable <= 0) return;
+
+        const pct = Math.max(0, Math.min(1, (x - padLeft) / widthUsable));
         const metrics = calculatePortfolioMetrics();
         const points = generateDateDrivenPoints(metrics, currentChartTimeframe);
         chartHoverIndex = Math.round(pct * (points.length - 1));
@@ -1854,7 +1886,7 @@
       syncAllToSupabase(false);
     };
 
-    // Delete a single buy lot using in-app confirmation modal (zero window.confirm)
+    // Delete a single buy lot using in-app confirmation modal
     window.deleteAsset = function (id) {
       const lot = portfolio.find(it => String(it.id) === String(id));
       const label = lot ? `${lot.ticker} (${lot.qty} ações em ${lot.buyDate})` : "este lote";
