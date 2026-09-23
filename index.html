@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Tipografia Moderna: Syne / Plus Jakarta Sans & JetBrains Mono -->
+  <!-- Tipografia Moderna -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -587,6 +587,42 @@
     const fmtUSD = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
     const fmtPCT = (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 
+    // Funções utilitárias de formatação legível de datas
+    function formatChartDateLabel(dateStr) {
+      const parts = String(dateStr).split("-");
+      if (parts.length === 3) {
+        const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const mIdx = parseInt(parts[1], 10) - 1;
+        const yearShort = parts[0].slice(2);
+        return `${months[mIdx]} '${yearShort}`;
+      }
+      return dateStr;
+    }
+
+    function formatChartFullDate(dateStr) {
+      const parts = String(dateStr).split("-");
+      if (parts.length === 3) {
+        const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const day = parts[2];
+        const mIdx = parseInt(parts[1], 10) - 1;
+        const year = parts[0];
+        return `${day} de ${months[mIdx]} de ${year}`;
+      }
+      return dateStr;
+    }
+
+    function formatLotPrettyDate(dateStr) {
+      const parts = String(dateStr || '2026-06-01').split("-");
+      if (parts.length === 3) {
+        const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const day = parts[2];
+        const mIdx = parseInt(parts[1], 10) - 1;
+        const year = parts[0];
+        return `${day} ${months[mIdx]} ${year}`;
+      }
+      return dateStr;
+    }
+
     function showToast(msg, isSuccess = true) {
       const toast = document.getElementById("status-toast");
       const text = document.getElementById("toast-message");
@@ -1141,7 +1177,7 @@
         if (hasBought && dayInvestedEUR > 0) {
           const returnPct = ((dayMarketEUR - dayInvestedEUR) / dayInvestedEUR) * 100;
 
-          labels.push(dateStr.slice(5));
+          labels.push(dateStr);
           investedCurveEUR.push(Number(dayInvestedEUR.toFixed(2)));
           marketCurveEUR.push(Number(dayMarketEUR.toFixed(2)));
           performanceCurvePCT.push(Number(returnPct.toFixed(2)));
@@ -1220,12 +1256,22 @@
             legend: { display: false },
             tooltip: {
               backgroundColor: '#0D111D',
-              titleColor: '#F8FAFC',
-              bodyColor: '#E2E8F0',
-              borderColor: 'rgba(255, 255, 255, 0.1)',
+              titleColor: '#38BDF8',
+              titleFont: { family: '"JetBrains Mono"', size: 12, weight: 'bold' },
+              bodyColor: '#F8FAFC',
+              bodyFont: { family: '"JetBrains Mono"', size: 11 },
+              borderColor: 'rgba(56, 189, 248, 0.25)',
               borderWidth: 1,
-              padding: 10,
+              padding: 12,
+              cornerRadius: 10,
               callbacks: {
+                title: (items) => {
+                  if (items.length > 0) {
+                    const fullDateStr = filteredDates[items[0].dataIndex] || items[0].label;
+                    return formatChartFullDate(fullDateStr);
+                  }
+                  return '';
+                },
                 label: (c) => {
                   if (currentChartMode === 'EUR') {
                     return ` ${c.dataset.label}: ${fmtEUR(c.parsed.y)}`;
@@ -1239,14 +1285,22 @@
           scales: {
             x: {
               grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, maxTicksLimit: 8 }
+              ticks: { 
+                color: '#94A3B8',
+                font: { family: '"JetBrains Mono"', size: 11, weight: '600' },
+                maxTicksLimit: 7,
+                callback: function(val, index) {
+                  const rawLabel = this.getLabelForValue(val);
+                  return formatChartDateLabel(rawLabel);
+                }
+              }
             },
             y: {
               position: 'right',
               grid: { color: 'rgba(255, 255, 255, 0.03)' },
               ticks: {
-                color: '#64748B',
-                font: { family: '"JetBrains Mono"', size: 10 },
+                color: '#94A3B8',
+                font: { family: '"JetBrains Mono"', size: 10, weight: '500' },
                 callback: v => currentChartMode === 'EUR' ? `€${v.toLocaleString('pt-PT')}` : `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
               }
             }
@@ -1398,37 +1452,41 @@
           asset.lots.forEach((lot, idx) => {
             const lotIsPos = lot.plEUR >= 0;
             const lotColor = lotIsPos ? 'text-brand-gain' : 'text-brand-loss';
+            const prettyBuyDate = formatLotPrettyDate(lot.buyDate);
 
             lotsRowsHtml += `
-              <tr class="border-b border-brand-border/40 hover:bg-white/[0.02] transition text-[11px] font-mono">
-                <td class="py-2.5 px-4 text-slate-300">
-                  <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 rounded bg-slate-800 text-sky-400 flex items-center justify-center text-[9px] font-bold">#${idx + 1}</span>
-                    <span class="text-white font-medium">${lot.buyDate || '2026-06-01'}</span>
-                    <span class="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-slate-400">[${lot.broker}]</span>
+              <tr class="border-b border-brand-border/40 hover:bg-white/[0.02] transition text-xs font-mono">
+                <td class="py-3 px-4 text-slate-300">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-5 h-5 rounded-md bg-slate-800 text-sky-400 flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
+                    <span class="px-2.5 py-1 rounded-md bg-sky-500/10 border border-sky-500/20 text-sky-300 font-bold flex items-center gap-1.5 text-[11px]">
+                      <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-400"></i>
+                      ${prettyBuyDate}
+                    </span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-medium">[${lot.broker}]</span>
                   </div>
                 </td>
-                <td class="py-2.5 px-4 text-right text-slate-200">
+                <td class="py-3 px-4 text-right text-slate-200">
                   ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
                 </td>
-                <td class="py-2.5 px-4 text-right text-slate-300">
+                <td class="py-3 px-4 text-right text-slate-300">
                   ${formatNative(lot.avgUSD)}
                 </td>
-                <td class="py-2.5 px-4 text-right text-slate-300">
+                <td class="py-3 px-4 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
                 </td>
-                <td class="py-2.5 px-4 text-right text-white font-bold">
+                <td class="py-3 px-4 text-right text-white font-bold">
                   ${fmtEUR(lot.currEUR)}
                 </td>
-                <td class="py-2.5 px-4 text-right">
+                <td class="py-3 px-4 text-right">
                   <span class="font-bold ${lotColor}">${lotIsPos ? '+' : ''}${fmtEUR(lot.plEUR)} (${fmtPCT(lot.plPct)})</span>
                 </td>
-                <td class="py-2.5 px-4 text-center">
+                <td class="py-3 px-4 text-center">
                   <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
-                    <button onclick="openModal('${lot.id}')" class="p-1 text-slate-400 hover:text-sky-400 rounded transition">
+                    <button onclick="openModal('${lot.id}')" class="p-1.5 text-slate-400 hover:text-sky-400 rounded-lg transition" title="Editar">
                       <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
                     </button>
-                    <button onclick="deleteAsset('${lot.id}')" class="p-1 text-slate-400 hover:text-brand-loss rounded transition">
+                    <button onclick="deleteAsset('${lot.id}')" class="p-1.5 text-slate-400 hover:text-brand-loss rounded-lg transition" title="Eliminar">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </div>
