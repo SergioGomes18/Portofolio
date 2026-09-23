@@ -454,7 +454,7 @@
               inputmode="decimal"
               id="form-avg" 
               required 
-              placeholder="ex: 584.16" 
+              placeholder="ex: 583.81" 
               oninput="recalculateFormFees()"
               class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
@@ -475,36 +475,37 @@
           </div>
         </div>
 
-        <!-- NOVO CAMPO: ALINHAMENTO COM A CORRETORA (€ REAL DEBITADO) -->
+        <!-- SUPORTE IBKR (CUSTO EM EUROS) & XTB (CÂMBIO USD/EUR) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface-subtle/80 border border-surface-border">
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-accent">Total Pago Real (€ EUR)</label>
-              <span class="text-[10px] text-slate-400 font-mono">Corretora</span>
+              <span class="text-[10px] text-slate-400 font-mono">IBKR / Débito</span>
             </div>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-cost-eur" 
-              placeholder="ex: 508.45" 
+              placeholder="ex: 505.31 ou 95.73" 
               oninput="onCostEURInput(this.value)"
               class="w-full px-3 py-2 bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
-              title="Coloca aqui o valor exato em Euros que foi debitado pela tua corretora (incluindo taxas e câmbio real)"
+              title="Coloca aqui o valor exato em Euros debitado no teu extrato bancário ou corretora"
             >
           </div>
 
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-300">Câmbio EUR/USD Efetivo</label>
-              <span class="text-[10px] text-slate-400 font-mono" id="form-fx-hint">Auto</span>
+              <label class="text-xs font-semibold text-slate-300">Câmbio Efetivo</label>
+              <span class="text-[10px] text-slate-400 font-mono" id="form-fx-hint">EUR/USD ou XTB</span>
             </div>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-rate-at-buy" 
-              placeholder="1.0850" 
+              placeholder="ex: 1.1553 ou 0.8796" 
               oninput="onFxRateInput(this.value)"
               class="w-full px-3 py-2 bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
+              title="Podes inserir o câmbio padrão EUR/USD (ex: 1.15) ou o câmbio invertido da XTB (ex: 0.8796)"
             >
           </div>
         </div>
@@ -843,6 +844,7 @@
         currUSD: item.currUSD,
         feesUSD: item.feesUSD || 0,
         eurUsdRateAtBuy: item.eurUsdRateAtBuy || EUR_USD,
+        costEUR: item.costEUR || null,
         updated_at: new Date().toISOString()
       }));
 
@@ -947,8 +949,9 @@
         // Custo em Euros: utiliza o valor exato debitado ou converte pelo câmbio da compra
         let lotInvEUR = lot.costEUR;
         if (!lotInvEUR || lotInvEUR <= 0) {
-          const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
-          lotInvEUR = lotCostUSD / rateAtBuy;
+          let rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+          if (rateAtBuy > 0 && rateAtBuy < 1) rateAtBuy = 1 / rateAtBuy;
+          lotInvEUR = lotCostUSD / (rateAtBuy || EUR_USD);
         }
 
         const lotCurrEUR = lotCurrValUSD / EUR_USD;
@@ -1196,7 +1199,9 @@
             hasBought = true;
             let lotCostEUR = lot.costEUR;
             if (!lotCostEUR || lotCostEUR <= 0) {
-              lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (lot.eurUsdRateAtBuy || fxRate);
+              let r = lot.eurUsdRateAtBuy || fxRate;
+              if (r > 0 && r < 1) r = 1 / r;
+              lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (r || fxRate);
             }
             dayInvestedEUR += lotCostEUR;
 
@@ -1577,7 +1582,7 @@
       lucide.createIcons();
     }
 
-    // SINCRONIZAÇÃO AUTOMÁTICA ENTRE CUSTO EM EUROS E CÂMBIO
+    // SINCRONIZAÇÃO INTELIGENTE: SUPORTE IBKR (€) E XTB (USD/EUR)
     window.onCostEURInput = function(val) {
       const costEUR = parseNumericInput(val);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
@@ -1593,11 +1598,16 @@
     };
 
     window.onFxRateInput = function(val) {
-      const rate = parseNumericInput(val);
+      let rate = parseNumericInput(val);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avg = parseNumericInput(document.getElementById("form-avg")?.value);
       const fees = parseNumericInput(document.getElementById("form-fees")?.value);
       const totalUSD = (qty * avg) + fees;
+
+      // Se o utilizador escrever o câmbio no formato XTB (ex: 0.8796 USD/EUR), inverte para o padrão EUR/USD
+      if (rate > 0 && rate < 1) {
+        rate = 1 / rate;
+      }
 
       if (rate > 0 && totalUSD > 0) {
         const impliedCostEUR = totalUSD / rate;
@@ -1643,7 +1653,9 @@
           document.getElementById("form-curr").value = lot.currUSD;
           document.getElementById("form-fees").value = lot.feesUSD || 0;
           
-          const rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+          let rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+          if (rateAtBuy > 0 && rateAtBuy < 1) rateAtBuy = 1 / rateAtBuy;
+
           const costEUR = lot.costEUR || (((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / rateAtBuy);
           document.getElementById("form-cost-eur").value = Number(costEUR.toFixed(2));
           document.getElementById("form-rate-at-buy").value = Number(rateAtBuy.toFixed(4));
@@ -1715,11 +1727,13 @@
       if (feesInput) feesInput.value = fees.toFixed(2);
       updateBreakEvenDisplay();
 
-      // Recalcula o Custo em Euros sugerido se o campo ainda não foi preenchido manualmente
+      // Recalcula o Custo em Euros sugerido se o campo ainda não tiver valor fixo
       const totalUSD = orderVol + fees;
       const rateInput = document.getElementById("form-rate-at-buy");
       let rate = parseNumericInput(rateInput?.value) || EUR_USD;
+      if (rate > 0 && rate < 1) rate = 1 / rate;
       if (rate <= 0) rate = EUR_USD;
+
       if (rateInput && !rateInput.value) rateInput.value = rate.toFixed(4);
 
       const costInput = document.getElementById("form-cost-eur");
@@ -1786,6 +1800,11 @@
       // Custo em Euros e Câmbio Efetivo
       let costEUR = parseNumericInput(document.getElementById("form-cost-eur")?.value);
       let eurUsdRateAtBuy = parseNumericInput(document.getElementById("form-rate-at-buy")?.value);
+
+      // Suporte XTB (inversão se for menor que 1)
+      if (eurUsdRateAtBuy > 0 && eurUsdRateAtBuy < 1) {
+        eurUsdRateAtBuy = 1 / eurUsdRateAtBuy;
+      }
 
       const totalUSD = (qty * avgUSD) + feesUSD;
       if (costEUR > 0 && eurUsdRateAtBuy <= 0) {
