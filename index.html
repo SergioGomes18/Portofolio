@@ -177,7 +177,7 @@
         </div>
         <div>
           <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
-          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-total-invested-usd">$0.00 custo total</div>
+          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-total-invested-sub">Custo total liquidado</div>
         </div>
       </div>
 
@@ -191,7 +191,7 @@
         </div>
         <div>
           <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
-          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-current-value-usd">$0.00 a mercado</div>
+          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="kpi-current-value-sub">A mercado em tempo real</div>
         </div>
       </div>
 
@@ -207,7 +207,7 @@
           <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-gain" id="kpi-pl-eur">+0,00 €</div>
           <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1">
             <span id="kpi-pl-pct" class="font-bold text-gain">+0.00%</span>
-            <span class="text-slate-500 font-normal" id="kpi-pl-usd">($0.00 total)</span>
+            <span class="text-slate-500 font-normal">retorno total</span>
           </div>
         </div>
       </div>
@@ -239,7 +239,7 @@
             <i data-lucide="line-chart" class="w-4 h-4 text-accent"></i>
             <h2 class="text-xs font-bold text-white uppercase tracking-wider" id="chart-section-title">Evolução Patrimonial</h2>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5" id="chart-section-subtitle">Histórico da carteira com cotações oficiais diárias do Google Finance</p>
+          <p class="text-xs text-slate-400 mt-0.5" id="chart-section-subtitle">Histórico da carteira com cotações oficiais diárias do Google Finance e Yahoo Finance</p>
         </div>
         
         <div class="flex flex-wrap items-center gap-2.5">
@@ -294,8 +294,8 @@
             <tr class="border-b border-surface-border bg-surface-subtle/40 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
               <th class="py-3 px-4 font-semibold">Ativo</th>
               <th class="py-3 px-3 text-right font-semibold">Qtd Total</th>
-              <th class="py-3 px-3 text-right font-semibold">PMP ($)</th>
-              <th class="py-3 px-3 text-right font-semibold">Cotação ($)</th>
+              <th class="py-3 px-3 text-right font-semibold">PMP</th>
+              <th class="py-3 px-3 text-right font-semibold">Cotação</th>
               <th class="py-3 px-3 text-right font-semibold">Variação 1D</th>
               <th class="py-3 px-3 text-right font-semibold">Investido (€)</th>
               <th class="py-3 px-3 text-right font-semibold">Valor Atual (€)</th>
@@ -325,7 +325,7 @@
       <div class="px-5 py-3 border-t border-surface-border bg-surface-subtle/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 font-mono">
         <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-gain inline-block animate-pulse"></span>
-          <span>Dados oficiais fornecidos em direto pelo teu Google Sheets.</span>
+          <span>Cotações sincronizadas diretamente com a tua Google Spreadsheet.</span>
         </span>
         <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
@@ -364,7 +364,7 @@
               id="form-ticker" 
               required 
               autocomplete="off"
-              placeholder="ex: NOW, MSFT, META" 
+              placeholder="ex: SXRV, META, NOW, MSFT" 
               oninput="onTickerChange(this.value)"
               class="w-full uppercase px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono tracking-wider"
             >
@@ -372,7 +372,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Categoria</label>
-            <select id="form-category" class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
+            <select id="form-category" onchange="onCategoryChange(this.value)" class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
               <option value="Tecnologia">Tecnologia</option>
               <option value="Consumo">Consumo Defensivo</option>
               <option value="Financeiro">Financeiro / Bancos</option>
@@ -384,11 +384,11 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Empresa / Ativo</label>
           <input 
             type="text" 
             id="form-name" 
-            placeholder="ex: ServiceNow, Microsoft, Meta..." 
+            placeholder="ex: iShares NASDAQ 100, Microsoft, Meta..." 
             class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent"
           >
         </div>
@@ -397,9 +397,9 @@
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Corretora *</label>
             <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
-              <option value="IBKR">Interactive Brokers (Tiered $0.35)</option>
-              <option value="IBKR_FIXED">Interactive Brokers (Fixed $1.00)</option>
-              <option value="XTB">XTB (Conta USD - 0% Comissão)</option>
+              <option value="XTB">XTB (Sem Comissões / 0%)</option>
+              <option value="IBKR">Interactive Brokers (Tiered)</option>
+              <option value="IBKR_FIXED">Interactive Brokers (Fixed)</option>
               <option value="XTB_FX">XTB (Conta EUR - 0.50% Câmbio)</option>
               <option value="REVOLUT">Revolut</option>
               <option value="OTHER">Outra Corretora</option>
@@ -433,6 +433,7 @@
           </div>
         </div>
 
+        <!-- QUANTIDADE, PREÇO PAGO E COTAÇÃO DINÂMICOS (€ OU $) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Quantidade *</label>
@@ -441,14 +442,14 @@
               inputmode="decimal"
               id="form-qty" 
               required 
-              placeholder="ex: 1" 
+              placeholder="ex: 0.6975" 
               oninput="recalculateFormFees()"
               class="w-full px-3.5 py-2.5 bg-surface-subtle border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
             >
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Preço Pago ($ USD) *</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-form-avg">Preço Pago ($ USD) *</label>
             <input 
               type="text" 
               inputmode="decimal"
@@ -462,8 +463,8 @@
 
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-slate-300">Cotação ($ USD)</label>
-              <span class="text-[10px] text-gain font-mono">Google</span>
+              <label class="text-xs font-semibold text-slate-300" id="lbl-form-curr">Cotação ($ USD)</label>
+              <span class="text-[10px] text-gain font-mono">Google/Yahoo</span>
             </div>
             <input 
               type="text" 
@@ -475,25 +476,25 @@
           </div>
         </div>
 
-        <!-- SUPORTE IBKR (CUSTO EM EUROS) & XTB (CÂMBIO USD/EUR) -->
+        <!-- TOTAL PAGO REAL EM EUROS E CÂMBIO -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface-subtle/80 border border-surface-border">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs font-semibold text-accent">Total Pago Real (€ EUR)</label>
-              <span class="text-[10px] text-slate-400 font-mono">IBKR / Débito</span>
+              <label class="text-xs font-semibold text-accent">Total Pago Real (€ EUR) *</label>
+              <span class="text-[10px] text-slate-400 font-mono">Débito Real</span>
             </div>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-cost-eur" 
-              placeholder="ex: 505.31 ou 95.73" 
+              placeholder="ex: 683.27 ou 505.31" 
               oninput="onCostEURInput(this.value)"
               class="w-full px-3 py-2 bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
-              title="Coloca aqui o valor exato em Euros debitado no teu extrato bancário ou corretora"
+              title="Coloca aqui o valor exato em Euros debitado na tua corretora ou conta bancária"
             >
           </div>
 
-          <div>
+          <div id="container-fx-rate">
             <div class="flex items-center justify-between mb-1">
               <label class="text-xs font-semibold text-slate-300">Câmbio Efetivo</label>
               <span class="text-[10px] text-slate-400 font-mono" id="form-fx-hint">EUR/USD ou XTB</span>
@@ -505,20 +506,20 @@
               placeholder="ex: 1.1553 ou 0.8796" 
               oninput="onFxRateInput(this.value)"
               class="w-full px-3 py-2 bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
-              title="Podes inserir o câmbio padrão EUR/USD (ex: 1.15) ou o câmbio invertido da XTB (ex: 0.8796)"
+              title="Para compras em Euros (ex: SXRV), o câmbio é automaticamente 1.0000"
             >
           </div>
         </div>
 
         <div class="p-4 rounded-xl bg-surface-subtle border border-surface-border space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-300 font-medium">Comissão da Ordem ($ USD):</span>
+            <span class="text-xs text-slate-300 font-medium" id="lbl-form-fees">Comissão da Ordem:</span>
             <div class="w-28">
               <input 
                 type="text" 
                 inputmode="decimal"
                 id="form-fees" 
-                value="0.35" 
+                value="0.00" 
                 oninput="updateBreakEvenDisplay()"
                 class="w-full px-2.5 py-1 text-right bg-[#101726] border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
               >
@@ -568,7 +569,7 @@
       <div class="p-5 space-y-4 overflow-y-auto custom-scrollbar text-xs">
         <div class="p-3.5 rounded-xl bg-gain-subtle border border-gain/20 text-gain flex items-center gap-2.5">
           <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
-          <span>Sincronização em nuvem e cópia de segurança ativas.</span>
+          <span>Sincronização em nuvem e colunas costEUR / eurUsdRateAtBuy ativas.</span>
         </div>
 
         <div>
@@ -620,6 +621,12 @@
     let expandedTickers = new Set();
     let pendingConfirmAction = null;
     let portfolioChartInstance = null;
+
+    // IDENTIFICAÇÃO DE ATIVOS COTADOS EM EUROS (€)
+    function isEuroAsset(ticker) {
+      const t = String(ticker || '').trim().toUpperCase();
+      return t === 'SXRV' || t === 'SXR8' || t.startsWith('ETR:') || t.startsWith('FRA:');
+    }
 
     function parseNumericInput(val) {
       if (typeof val === 'number') return isNaN(val) ? 0 : val;
@@ -719,7 +726,6 @@
       }
     };
 
-    // ATALHOS RÁPIDOS PARA O CALENDÁRIO
     window.setFormDatePreset = function(preset) {
       const dateInput = document.getElementById("form-date");
       if (!dateInput) return;
@@ -736,7 +742,6 @@
       }
     };
 
-    // ALTERNAR MODO DO GRÁFICO (€ vs %)
     window.setChartMode = function(mode) {
       currentChartMode = mode;
       const btnEur = document.getElementById("btn-chart-mode-eur");
@@ -748,7 +753,7 @@
         btnEur.className = "px-2.5 py-1 rounded-lg bg-accent text-slate-950 font-bold transition";
         btnPct.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
         if (titleEl) titleEl.textContent = "Evolução Patrimonial";
-        if (subEl) subEl.textContent = "Histórico da carteira com cotações oficiais diárias do Google Finance";
+        if (subEl) subEl.textContent = "Histórico da carteira com cotações oficiais diárias do Google Finance e Yahoo Finance";
       } else {
         btnPct.className = "px-2.5 py-1 rounded-lg bg-accent text-slate-950 font-bold transition";
         btnEur.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
@@ -796,7 +801,7 @@
                 currUSD: parseFloat(item.currUSD),
                 prevCloseUSD: parseFloat(item.prevCloseUSD || item.currUSD),
                 feesUSD: parseFloat(item.feesUSD || 0),
-                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || EUR_USD),
+                eurUsdRateAtBuy: parseFloat(item.eurUsdRateAtBuy || (isEuroAsset(item.ticker) ? 1.0 : EUR_USD)),
                 costEUR: item.costEUR ? parseFloat(item.costEUR) : null
               });
             });
@@ -843,7 +848,7 @@
         avgUSD: item.avgUSD,
         currUSD: item.currUSD,
         feesUSD: item.feesUSD || 0,
-        eurUsdRateAtBuy: item.eurUsdRateAtBuy || EUR_USD,
+        eurUsdRateAtBuy: item.eurUsdRateAtBuy || (isEuroAsset(item.ticker) ? 1.0 : EUR_USD),
         costEUR: item.costEUR || null,
         updated_at: new Date().toISOString()
       }));
@@ -883,14 +888,14 @@
 
         const data = await res.json();
         
-        // 1. Atualiza Câmbio EUR/USD
+        // 1. Câmbio EUR/USD
         if (data && data.eurusd) {
           EUR_USD = parseFloat(data.eurusd);
           const el = document.getElementById("val-eurusd");
           if (el) el.textContent = EUR_USD.toFixed(4);
         }
 
-        // 2. Atualiza Cotações dos Ativos
+        // 2. Cotações dos Ativos
         if (data && data.quotes) {
           cachedQuotes = data.quotes;
           let updatedCount = 0;
@@ -907,14 +912,14 @@
           saveLocalPortfolio();
           renderAll();
 
-          // 3. Atualiza Gráfico se o histórico vier no payload
+          // 3. Gráfico Histórico
           if (data.history && Object.keys(data.history).length > 0) {
             cachedHistoryData = data.history;
             buildRealHistoryChart(cachedHistoryData);
           }
 
           if (manual) {
-            showToast(`${updatedCount} ativos sincronizados com Google Finance!`);
+            showToast(`${updatedCount} ativos sincronizados!`);
             syncAllToSupabase(false);
           }
         }
@@ -929,72 +934,73 @@
       }
     }
 
-    // MOTOR DE CÁLCULO
+    // MOTOR DE CÁLCULO INTELIGENTE (DISTINGUE EUROS E DÓLARES)
     function calculatePortfolioMetrics() {
       let totalInvEUR = 0;
-      let totalInvUSD = 0;
       let totalCurrEUR = 0;
-      let totalCurrUSD = 0;
 
-      let totalMarketValUSD = 0;
-      let totalDayGainUSD = 0;
+      let totalMarketValUSD_equity = 0;
+      let totalDayGainEUR = 0;
 
       const groupedMap = new Map();
 
       portfolio.forEach(lot => {
-        const orderVolUSD = lot.qty * lot.avgUSD;
-        const lotCostUSD = orderVolUSD + (lot.feesUSD || 0);
-        const lotCurrValUSD = lot.qty * lot.currUSD;
+        const isEur = isEuroAsset(lot.ticker);
+        const orderVolNative = lot.qty * lot.avgUSD;
+        const lotCostNative = orderVolNative + (lot.feesUSD || 0);
+        const lotCurrValNative = lot.qty * lot.currUSD;
 
-        // Custo em Euros: utiliza o valor exato debitado ou converte pelo câmbio da compra
+        // Custo em Euros Real:
         let lotInvEUR = lot.costEUR;
         if (!lotInvEUR || lotInvEUR <= 0) {
-          let rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
-          if (rateAtBuy > 0 && rateAtBuy < 1) rateAtBuy = 1 / rateAtBuy;
-          lotInvEUR = lotCostUSD / (rateAtBuy || EUR_USD);
+          if (isEur) {
+            lotInvEUR = lotCostNative;
+          } else {
+            let rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+            if (rateAtBuy > 0 && rateAtBuy < 1) rateAtBuy = 1 / rateAtBuy;
+            lotInvEUR = lotCostNative / (rateAtBuy || EUR_USD);
+          }
         }
 
-        const lotCurrEUR = lotCurrValUSD / EUR_USD;
+        // Valor a Mercado Atual em Euros:
+        const lotCurrEUR = isEur ? lotCurrValNative : (lotCurrValNative / EUR_USD);
         const lotPLEUR = lotCurrEUR - lotInvEUR;
-        const lotPLUSD = lotCurrValUSD - lotCostUSD;
         const lotPLPct = lotInvEUR > 0 ? (lotPLEUR / lotInvEUR) * 100 : 0;
-        const lotBreakEvenUSD = lot.qty > 0 ? lotCostUSD / lot.qty : lot.avgUSD;
+        const lotBreakEven = lot.qty > 0 ? lotCostNative / lot.qty : lot.avgUSD;
 
-        const prevPriceUSD = lot.prevCloseUSD || lot.currUSD;
+        const prevPrice = lot.prevCloseUSD || lot.currUSD;
         const currentVal = lot.qty * lot.currUSD;
-        const prevVal = lot.qty * prevPriceUSD;
+        const prevVal = lot.qty * prevPrice;
+        const dayChangeDeltaNative = currentVal - prevVal;
+        const dayChangeDeltaEUR = isEur ? dayChangeDeltaNative : (dayChangeDeltaNative / EUR_USD);
 
-        totalMarketValUSD += currentVal;
-        totalDayGainUSD += (currentVal - prevVal);
-
-        const dayChangeUSD = lot.currUSD - prevPriceUSD;
-        const dayChangePct = prevPriceUSD > 0 ? (dayChangeUSD / prevPriceUSD) * 100 : 0;
-
+        totalDayGainEUR += dayChangeDeltaEUR;
         totalInvEUR += lotInvEUR;
-        totalInvUSD += lotCostUSD;
         totalCurrEUR += lotCurrEUR;
-        totalCurrUSD += lotCurrValUSD;
+
+        const dayChangePct = prevPrice > 0 ? ((lot.currUSD - prevPrice) / prevPrice) * 100 : 0;
 
         const calculatedLot = {
           ...lot,
-          costUSD: lotCostUSD,
-          currValUSD: lotCurrValUSD,
+          isEur,
+          costNative: lotCostNative,
+          currValNative: lotCurrValNative,
           invEUR: lotInvEUR,
           currEUR: lotCurrEUR,
           plEUR: lotPLEUR,
-          plUSD: lotPLUSD,
           plPct: lotPLPct,
           dayChangePct,
-          breakEvenUSD: lotBreakEvenUSD
+          breakEvenNative: lotBreakEven
         };
 
         if (!groupedMap.has(lot.ticker)) {
           groupedMap.set(lot.ticker, {
             ticker: lot.ticker,
+            isEur,
             name: lot.name || lot.ticker,
-            category: lot.category || 'Tecnologia',
-            currUSD: lot.currUSD,
-            prevCloseUSD: lot.prevCloseUSD || lot.currUSD,
+            category: lot.category || (isEur ? 'ETF' : 'Tecnologia'),
+            currNative: lot.currUSD,
+            prevCloseNative: lot.prevCloseUSD || lot.currUSD,
             lots: []
           });
         }
@@ -1003,9 +1009,9 @@
 
       const consolidatedAssets = Array.from(groupedMap.values()).map(asset => {
         let totalQty = 0;
-        let totalCostBasisUSD = 0;
-        let totalFeesUSD = 0;
-        let totalValUSD = 0;
+        let totalCostBasisNative = 0;
+        let totalFeesNative = 0;
+        let totalValNative = 0;
         let totalInvEUR_asset = 0;
         let totalCurrEUR_asset = 0;
 
@@ -1013,21 +1019,20 @@
 
         asset.lots.forEach(lot => {
           totalQty += lot.qty;
-          totalCostBasisUSD += (lot.qty * lot.avgUSD);
-          totalFeesUSD += (lot.feesUSD || 0);
-          totalValUSD += lot.currValUSD;
+          totalCostBasisNative += (lot.qty * lot.avgUSD);
+          totalFeesNative += (lot.feesUSD || 0);
+          totalValNative += lot.currValNative;
           totalInvEUR_asset += lot.invEUR;
           totalCurrEUR_asset += lot.currEUR;
         });
 
-        const pmpUSD = totalQty > 0 ? (totalCostBasisUSD / totalQty) : 0;
-        const breakEvenUSD = totalQty > 0 ? ((totalCostBasisUSD + totalFeesUSD) / totalQty) : 0;
+        const pmpNative = totalQty > 0 ? (totalCostBasisNative / totalQty) : 0;
+        const breakEvenNative = totalQty > 0 ? ((totalCostBasisNative + totalFeesNative) / totalQty) : 0;
         const plEUR = totalCurrEUR_asset - totalInvEUR_asset;
-        const plUSD = totalValUSD - (totalCostBasisUSD + totalFeesUSD);
         const plPct = totalInvEUR_asset > 0 ? (plEUR / totalInvEUR_asset) * 100 : 0;
 
-        const dayChangeUSD = asset.currUSD - asset.prevCloseUSD;
-        const dayChangePct = asset.prevCloseUSD > 0 ? (dayChangeUSD / asset.prevCloseUSD) * 100 : 0;
+        const dayChangeNative = asset.currNative - asset.prevCloseNative;
+        const dayChangePct = asset.prevCloseNative > 0 ? (dayChangeNative / asset.prevCloseNative) * 100 : 0;
 
         asset.lots = asset.lots.map(lot => ({
           ...lot,
@@ -1037,54 +1042,42 @@
         return {
           ...asset,
           totalQty,
-          pmpUSD,
-          breakEvenUSD,
-          totalFeesUSD,
-          totalCostUSD: totalCostBasisUSD + totalFeesUSD,
-          totalValUSD,
+          pmpNative,
+          breakEvenNative,
+          totalFeesNative,
+          totalCostNative: totalCostBasisNative + totalFeesNative,
+          totalValNative,
           totalInvEUR: totalInvEUR_asset,
           totalCurrEUR: totalCurrEUR_asset,
           plEUR,
-          plUSD,
           plPct,
           dayChangePct
         };
       });
 
       const totalPLEUR = totalCurrEUR - totalInvEUR;
-      const totalPLUSD = totalCurrUSD - totalInvUSD;
       const totalPLPct = totalInvEUR > 0 ? (totalPLEUR / totalInvEUR) * 100 : 0;
-
-      const day1DPct = (totalMarketValUSD - totalDayGainUSD) > 0 
-        ? (totalDayGainUSD / (totalMarketValUSD - totalDayGainUSD)) * 100 
-        : 0;
-      const day1DDeltaEUR = totalDayGainUSD / EUR_USD;
+      const prevTotalPortfolioEUR = totalCurrEUR - totalDayGainEUR;
+      const day1DPct = prevTotalPortfolioEUR > 0 ? (totalDayGainEUR / prevTotalPortfolioEUR) * 100 : 0;
 
       return {
         assets: consolidatedAssets,
         rawLots: portfolio,
         totalInvEUR,
-        totalInvUSD,
         totalCurrEUR,
-        totalCurrUSD,
         totalPLEUR,
-        totalPLUSD,
         totalPLPct,
         day1DPct,
-        day1DDeltaEUR
+        day1DDeltaEUR: totalDayGainEUR
       };
     }
 
     function renderKPIs(metrics) {
       document.getElementById("kpi-total-invested").textContent = fmtEUR(metrics.totalInvEUR);
-      document.getElementById("kpi-total-invested-usd").textContent = `${fmtUSD(metrics.totalInvUSD)} custo total`;
-
       document.getElementById("kpi-current-value").textContent = fmtEUR(metrics.totalCurrEUR);
-      document.getElementById("kpi-current-value-usd").textContent = `${fmtUSD(metrics.totalCurrUSD)} a mercado`;
 
       const plEurEl = document.getElementById("kpi-pl-eur");
       const plPctEl = document.getElementById("kpi-pl-pct");
-      const plUsdEl = document.getElementById("kpi-pl-usd");
       const plIcon = document.getElementById("kpi-pl-icon-container");
 
       const isPositive = metrics.totalPLEUR >= 0;
@@ -1094,7 +1087,6 @@
       plPctEl.textContent = fmtPCT(metrics.totalPLPct);
       plPctEl.className = `font-bold ${isPositive ? 'text-gain' : 'text-loss'}`;
 
-      plUsdEl.textContent = `(${isPositive ? '+' : ''}${fmtUSD(metrics.totalPLUSD)} total)`;
       if (plIcon) {
         plIcon.innerHTML = isPositive 
           ? `<i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>`
@@ -1111,7 +1103,7 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-    // CONSTRUÇÃO DO GRÁFICO (SUPORTA MODO € E MODO %)
+    // CONSTRUÇÃO DO GRÁFICO HISTÓRICO REAL
     function buildRealHistoryChart(history) {
       const canvas = document.getElementById("portfolioChart");
       if (!canvas) return;
@@ -1122,7 +1114,6 @@
         return;
       }
 
-      // Encontra a data real mais antiga
       let earliestDate = "2026-06-01";
       portfolio.forEach(lot => {
         let d = (lot.buyDate || '').trim();
@@ -1130,7 +1121,6 @@
         if (d && d < earliestDate) earliestDate = d;
       });
 
-      // Extrai e ordena todas as datas do histórico
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') {
@@ -1182,7 +1172,7 @@
 
       filteredDates.forEach(dateStr => {
         let dayInvestedEUR = 0;
-        let dayMarketUSD = 0;
+        let dayMarketEUR = 0;
 
         if (history["EURUSD"] && history["EURUSD"][dateStr]) {
           lastKnownFx = history["EURUSD"][dateStr];
@@ -1197,24 +1187,34 @@
 
           if (lotDateStr <= dateStr) {
             hasBought = true;
+            const isEur = isEuroAsset(lot.ticker);
             let lotCostEUR = lot.costEUR;
+
             if (!lotCostEUR || lotCostEUR <= 0) {
-              let r = lot.eurUsdRateAtBuy || fxRate;
-              if (r > 0 && r < 1) r = 1 / r;
-              lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (r || fxRate);
+              if (isEur) {
+                lotCostEUR = (lot.qty * lot.avgUSD) + (lot.feesUSD || 0);
+              } else {
+                let r = lot.eurUsdRateAtBuy || fxRate;
+                if (r > 0 && r < 1) r = 1 / r;
+                lotCostEUR = ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / (r || fxRate);
+              }
             }
             dayInvestedEUR += lotCostEUR;
 
             if (history[lot.ticker] && history[lot.ticker][dateStr]) {
               lastKnownPrice[lot.ticker] = history[lot.ticker][dateStr];
             }
-            const pUSD = lastKnownPrice[lot.ticker] || lot.currUSD;
-            dayMarketUSD += (lot.qty * pUSD);
+            const pNative = lastKnownPrice[lot.ticker] || lot.currUSD;
+
+            if (isEur) {
+              dayMarketEUR += (lot.qty * pNative);
+            } else {
+              dayMarketEUR += ((lot.qty * pNative) / fxRate);
+            }
           }
         });
 
         if (hasBought && dayInvestedEUR > 0) {
-          const dayMarketEUR = dayMarketUSD / fxRate;
           const returnPct = ((dayMarketEUR - dayInvestedEUR) / dayInvestedEUR) * 100;
 
           labels.push(dateStr.slice(5)); // MM-DD
@@ -1239,7 +1239,6 @@
       gradient.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
       gradient.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
 
-      // Configuração dinâmica dos Datasets conforme o modo (€ ou %)
       let chartDatasets = [];
       if (currentChartMode === 'EUR') {
         chartDatasets = [
@@ -1389,6 +1388,7 @@
 
         const day1DIsPos = asset.dayChangePct >= 0;
         const isExpanded = expandedTickers.has(asset.ticker);
+        const formatNative = asset.isEur ? fmtEUR : fmtUSD;
 
         const parentTr = document.createElement("tr");
         parentTr.className = `cursor-pointer transition border-b border-surface-border ${isExpanded ? 'bg-surface-cardHover' : 'hover:bg-surface-cardHover/50'}`;
@@ -1412,6 +1412,7 @@
                   <span class="text-[10px] px-1.5 py-0.5 rounded ${asset.lots.length > 1 ? 'bg-accent/20 text-accent font-bold' : 'bg-surface-subtle text-slate-400'} font-mono">
                     ${asset.lots.length} ${asset.lots.length === 1 ? 'compra' : 'compras'}
                   </span>
+                  ${asset.isEur ? '<span class="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">EUR</span>' : ''}
                 </div>
                 <div class="text-[11px] text-slate-400 truncate max-w-[120px] sm:max-w-[180px]">${asset.name}</div>
               </div>
@@ -1423,12 +1424,12 @@
           </td>
 
           <td class="py-3 px-3 text-right font-mono">
-            <div class="text-slate-200 font-bold">${fmtUSD(asset.pmpUSD)}</div>
-            <div class="text-[10px] text-slate-400" title="Preço de Equilíbrio">BE: ${fmtUSD(asset.breakEvenUSD)}</div>
+            <div class="text-slate-200 font-bold">${formatNative(asset.pmpNative)}</div>
+            <div class="text-[10px] text-slate-400" title="Preço de Equilíbrio">BE: ${formatNative(asset.breakEvenNative)}</div>
           </td>
 
           <td class="py-3 px-3 text-right font-mono font-bold text-white">
-            ${fmtUSD(asset.currUSD)}
+            ${formatNative(asset.currNative)}
           </td>
 
           <td class="py-3 px-3 text-right font-mono font-bold ${day1DIsPos ? 'text-gain' : 'text-loss'}">
@@ -1499,8 +1500,8 @@
                   ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} ações
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
-                  ${fmtUSD(lot.avgUSD)}
-                  <span class="block text-[10px] text-slate-400">Taxa: ${fmtUSD(lot.feesUSD || 0)}</span>
+                  ${formatNative(lot.avgUSD)}
+                  <span class="block text-[10px] text-slate-400">Taxa: ${formatNative(lot.feesUSD || 0)}</span>
                 </td>
                 <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
@@ -1559,8 +1560,8 @@
                       <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-surface-border">
                         <th class="py-2 px-3">Lote / Data</th>
                         <th class="py-2 px-3 text-right">Qtd</th>
-                        <th class="py-2 px-3 text-right">Preço Pago ($)</th>
-                        <th class="py-2 px-3 text-right">Custo (€)</th>
+                        <th class="py-2 px-3 text-right">Preço Pago (${asset.isEur ? '€' : '$'})</th>
+                        <th class="py-2 px-3 text-right">Custo Líquido (€)</th>
                         <th class="py-2 px-3 text-right">Valor Atual (€)</th>
                         <th class="py-2 px-3 text-right">Rentabilidade Total</th>
                         <th class="py-2 px-3 text-center">Peso no Ativo</th>
@@ -1582,8 +1583,40 @@
       lucide.createIcons();
     }
 
-    // SINCRONIZAÇÃO INTELIGENTE: SUPORTE IBKR (€) E XTB (USD/EUR)
+    // AJUSTE DINÂMICO DE MOEDA DO FORMULÁRIO (€ vs $)
+    function updateFormCurrencyLabels(ticker) {
+      const isEur = isEuroAsset(ticker);
+      const lblAvg = document.getElementById("lbl-form-avg");
+      const lblCurr = document.getElementById("lbl-form-curr");
+      const lblFees = document.getElementById("lbl-form-fees");
+      const fxRateInput = document.getElementById("form-rate-at-buy");
+      const fxContainer = document.getElementById("container-fx-rate");
+
+      if (isEur) {
+        if (lblAvg) lblAvg.textContent = "Preço Pago (€ EUR) *";
+        if (lblCurr) lblCurr.textContent = "Cotação (€ EUR)";
+        if (lblFees) lblFees.textContent = "Comissão da Ordem (€ EUR):";
+        if (fxRateInput) fxRateInput.value = "1.0000";
+        if (fxContainer) fxContainer.classList.add("opacity-50", "pointer-events-none");
+      } else {
+        if (lblAvg) lblAvg.textContent = "Preço Pago ($ USD) *";
+        if (lblCurr) lblCurr.textContent = "Cotação ($ USD)";
+        if (lblFees) lblFees.textContent = "Comissão da Ordem ($ USD):";
+        if (fxContainer) fxContainer.classList.remove("opacity-50", "pointer-events-none");
+      }
+    }
+
+    window.onCategoryChange = function(cat) {
+      const tickerInput = document.getElementById("form-ticker");
+      if (cat === 'ETF' && tickerInput && !tickerInput.value) {
+        updateFormCurrencyLabels('SXRV');
+      }
+    };
+
     window.onCostEURInput = function(val) {
+      const ticker = (document.getElementById("form-ticker")?.value || "").trim().toUpperCase();
+      if (isEuroAsset(ticker)) return;
+
       const costEUR = parseNumericInput(val);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avg = parseNumericInput(document.getElementById("form-avg")?.value);
@@ -1598,13 +1631,15 @@
     };
 
     window.onFxRateInput = function(val) {
+      const ticker = (document.getElementById("form-ticker")?.value || "").trim().toUpperCase();
+      if (isEuroAsset(ticker)) return;
+
       let rate = parseNumericInput(val);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avg = parseNumericInput(document.getElementById("form-avg")?.value);
       const fees = parseNumericInput(document.getElementById("form-fees")?.value);
       const totalUSD = (qty * avg) + fees;
 
-      // Se o utilizador escrever o câmbio no formato XTB (ex: 0.8796 USD/EUR), inverte para o padrão EUR/USD
       if (rate > 0 && rate < 1) {
         rate = 1 / rate;
       }
@@ -1653,18 +1688,27 @@
           document.getElementById("form-curr").value = lot.currUSD;
           document.getElementById("form-fees").value = lot.feesUSD || 0;
           
-          let rateAtBuy = lot.eurUsdRateAtBuy || EUR_USD;
+          updateFormCurrencyLabels(lot.ticker);
+
+          let rateAtBuy = lot.eurUsdRateAtBuy || (isEuroAsset(lot.ticker) ? 1.0 : EUR_USD);
           if (rateAtBuy > 0 && rateAtBuy < 1) rateAtBuy = 1 / rateAtBuy;
 
-          const costEUR = lot.costEUR || (((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / rateAtBuy);
+          let costEUR = lot.costEUR;
+          if (!costEUR) {
+            costEUR = isEuroAsset(lot.ticker) 
+              ? ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0))
+              : (((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / rateAtBuy);
+          }
+
           document.getElementById("form-cost-eur").value = Number(costEUR.toFixed(2));
           document.getElementById("form-rate-at-buy").value = Number(rateAtBuy.toFixed(4));
 
           updateBreakEvenDisplay();
         }
       } else {
+        updateFormCurrencyLabels('NOW');
         const feesInput = document.getElementById("form-fees");
-        if (feesInput) feesInput.value = "0.35";
+        if (feesInput) feesInput.value = "0.00";
         document.getElementById("form-rate-at-buy").value = EUR_USD.toFixed(4);
         updateBreakEvenDisplay();
       }
@@ -1696,6 +1740,13 @@
 
     window.onTickerChange = function (val) {
       const ticker = (val || "").trim().toUpperCase();
+      updateFormCurrencyLabels(ticker);
+
+      if (isEuroAsset(ticker)) {
+        const catSelect = document.getElementById("form-category");
+        if (catSelect) catSelect.value = "ETF";
+      }
+
       const currInput = document.getElementById("form-curr");
       if (ticker && cachedQuotes[ticker] && currInput && (!currInput.value || currInput.value === "0")) {
         currInput.value = cachedQuotes[ticker].price.toFixed(2);
@@ -1704,13 +1755,15 @@
     };
 
     window.recalculateFormFees = function () {
-      const broker = document.getElementById("form-broker")?.value || 'IBKR';
+      const ticker = (document.getElementById("form-ticker")?.value || "").trim().toUpperCase();
+      const isEur = isEuroAsset(ticker);
+      const broker = document.getElementById("form-broker")?.value || 'XTB';
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
-      const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
+      const avg = parseNumericInput(document.getElementById("form-avg")?.value);
       const feesInput = document.getElementById("form-fees");
 
       let fees = 0;
-      const orderVol = qty * avgUSD;
+      const orderVol = qty * avg;
 
       if (broker === 'IBKR') {
         fees = Math.max(0.35, qty * 0.0035);
@@ -1727,22 +1780,29 @@
       if (feesInput) feesInput.value = fees.toFixed(2);
       updateBreakEvenDisplay();
 
-      // Recalcula o Custo em Euros sugerido se o campo ainda não tiver valor fixo
-      const totalUSD = orderVol + fees;
-      const rateInput = document.getElementById("form-rate-at-buy");
-      let rate = parseNumericInput(rateInput?.value) || EUR_USD;
-      if (rate > 0 && rate < 1) rate = 1 / rate;
-      if (rate <= 0) rate = EUR_USD;
-
-      if (rateInput && !rateInput.value) rateInput.value = rate.toFixed(4);
-
       const costInput = document.getElementById("form-cost-eur");
-      if (costInput && (!costInput.value || costInput.value === "0")) {
-        costInput.value = (totalUSD / rate).toFixed(2);
+      if (isEur) {
+        if (costInput && (!costInput.value || costInput.value === "0")) {
+          costInput.value = (orderVol + fees).toFixed(2);
+        }
+      } else {
+        const totalUSD = orderVol + fees;
+        const rateInput = document.getElementById("form-rate-at-buy");
+        let rate = parseNumericInput(rateInput?.value) || EUR_USD;
+        if (rate > 0 && rate < 1) rate = 1 / rate;
+        if (rate <= 0) rate = EUR_USD;
+
+        if (rateInput && !rateInput.value) rateInput.value = rate.toFixed(4);
+
+        if (costInput && (!costInput.value || costInput.value === "0")) {
+          costInput.value = (totalUSD / rate).toFixed(2);
+        }
       }
     };
 
     window.updateBreakEvenDisplay = function () {
+      const ticker = (document.getElementById("form-ticker")?.value || "").trim().toUpperCase();
+      const isEur = isEuroAsset(ticker);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avg = parseNumericInput(document.getElementById("form-avg")?.value);
       const fees = parseNumericInput(document.getElementById("form-fees")?.value);
@@ -1752,7 +1812,9 @@
         be = ((qty * avg) + fees) / qty;
       }
       const beEl = document.getElementById("form-be-display");
-      if (beEl) beEl.textContent = fmtUSD(be);
+      if (beEl) {
+        beEl.textContent = isEur ? fmtEUR(be) : fmtUSD(be);
+      }
     };
 
     window.saveAsset = function (e) {
@@ -1763,17 +1825,18 @@
 
       const id = document.getElementById("form-id")?.value;
       const ticker = (document.getElementById("form-ticker")?.value || "").trim().toUpperCase();
+      const isEur = isEuroAsset(ticker);
       let name = (document.getElementById("form-name")?.value || "").trim();
-      const category = document.getElementById("form-category")?.value || "Tecnologia";
-      const broker = document.getElementById("form-broker")?.value || "IBKR";
+      const category = document.getElementById("form-category")?.value || (isEur ? "ETF" : "Tecnologia");
+      const broker = document.getElementById("form-broker")?.value || "XTB";
       let buyDate = document.getElementById("form-date")?.value || new Date().toISOString().split("T")[0];
       if (buyDate.startsWith("2024-")) buyDate = buyDate.replace("2024-", "2026-");
 
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
-      const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
+      const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value); // Valor nativo (€ ou $)
 
       if (!ticker) {
-        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação (ex: NOW, META)."; errBox.classList.remove("hidden"); }
+        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação/ETF."; errBox.classList.remove("hidden"); }
         return;
       }
       if (qty <= 0) {
@@ -1785,7 +1848,7 @@
         return;
       }
 
-      if (!name) name = ticker;
+      if (!name) name = isEur ? `${ticker} UCITS ETF` : ticker;
 
       let currUSD = parseNumericInput(document.getElementById("form-curr")?.value);
       if (currUSD <= 0) {
@@ -1797,23 +1860,26 @@
       const prevCloseUSD = cachedQuotes[ticker]?.prevClose || currUSD;
       const feesUSD = parseNumericInput(document.getElementById("form-fees")?.value);
 
-      // Custo em Euros e Câmbio Efetivo
       let costEUR = parseNumericInput(document.getElementById("form-cost-eur")?.value);
       let eurUsdRateAtBuy = parseNumericInput(document.getElementById("form-rate-at-buy")?.value);
 
-      // Suporte XTB (inversão se for menor que 1)
-      if (eurUsdRateAtBuy > 0 && eurUsdRateAtBuy < 1) {
-        eurUsdRateAtBuy = 1 / eurUsdRateAtBuy;
-      }
+      if (isEur) {
+        eurUsdRateAtBuy = 1.0;
+        if (costEUR <= 0) costEUR = (qty * avgUSD) + feesUSD;
+      } else {
+        if (eurUsdRateAtBuy > 0 && eurUsdRateAtBuy < 1) {
+          eurUsdRateAtBuy = 1 / eurUsdRateAtBuy;
+        }
 
-      const totalUSD = (qty * avgUSD) + feesUSD;
-      if (costEUR > 0 && eurUsdRateAtBuy <= 0) {
-        eurUsdRateAtBuy = totalUSD / costEUR;
-      } else if (eurUsdRateAtBuy > 0 && costEUR <= 0) {
-        costEUR = totalUSD / eurUsdRateAtBuy;
-      } else if (costEUR <= 0 && eurUsdRateAtBuy <= 0) {
-        eurUsdRateAtBuy = EUR_USD;
-        costEUR = totalUSD / EUR_USD;
+        const totalUSD = (qty * avgUSD) + feesUSD;
+        if (costEUR > 0 && eurUsdRateAtBuy <= 0) {
+          eurUsdRateAtBuy = totalUSD / costEUR;
+        } else if (eurUsdRateAtBuy > 0 && costEUR <= 0) {
+          costEUR = totalUSD / eurUsdRateAtBuy;
+        } else if (costEUR <= 0 && eurUsdRateAtBuy <= 0) {
+          eurUsdRateAtBuy = EUR_USD;
+          costEUR = totalUSD / EUR_USD;
+        }
       }
 
       if (id) {
@@ -1945,7 +2011,6 @@
       await syncFromSupabase();
       await fetchLiveMarketData();
 
-      // Atualização periódica automática a cada 60 segundos
       setInterval(() => {
         fetchLiveMarketData();
       }, 60000);
