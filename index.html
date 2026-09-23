@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AssetPulse | Gestão de Carteira</title>
+  <title>AssetPulse | Portfolio Intelligence</title>
 
   <!-- Tailwind CSS, Supabase SDK & Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Fontes Google -->
+  <!-- Fontes Google: Inter / Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Ícones Lucide -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -24,30 +24,21 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Inter"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
-            surface: {
-              DEFAULT: '#0B0F19',
-              card: '#111827',
-              cardHover: '#172033',
-              subtle: '#1A2338',
-              border: '#1F293D',
+            app: {
+              bg: '#080A0F',
+              card: '#0F121C',
+              cardHover: '#141824',
+              subtle: '#181E2E',
+              border: 'rgba(255, 255, 255, 0.08)',
+              borderFocus: 'rgba(56, 189, 248, 0.4)',
             },
-            accent: {
-              DEFAULT: '#38BDF8',
-              hover: '#0284C7',
-              subtle: 'rgba(56, 189, 248, 0.10)',
-            },
-            gain: {
-              DEFAULT: '#10B981',
-              subtle: 'rgba(16, 185, 129, 0.10)',
-            },
-            loss: {
-              DEFAULT: '#F43F5E',
-              subtle: 'rgba(244, 63, 94, 0.10)',
-            }
+            cyanTech: '#38BDF8',
+            emeraldGain: '#10B981',
+            roseLoss: '#F43F5E',
           }
         }
       }
@@ -56,278 +47,275 @@
 
   <style>
     body {
-      background-color: #070B14;
+      background-color: #080A0F;
       color: #E2E8F0;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar {
-      height: 5px;
-      width: 5px;
+      height: 4px;
+      width: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
       background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #1F293D;
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 9999px;
     }
-    .card-modern {
-      background: linear-gradient(180deg, rgba(17, 24, 39, 0.85) 0%, rgba(13, 19, 32, 0.95) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+    .fintech-card {
+      background-color: #0F121C;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.25);
     }
     input[type="date"] {
       color-scheme: dark;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans selection:bg-accent/30 selection:text-white">
+<body class="min-h-screen flex flex-col font-sans selection:bg-cyanTech/30 selection:text-white pb-12">
 
-  <!-- CABEÇALHO ELEGANTE -->
-  <header class="sticky top-0 z-30 bg-[#070B14]/90 backdrop-blur-xl border-b border-surface-border/60">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4 py-3">
+  <!-- CABEÇALHO MINIMALISTA -->
+  <header class="sticky top-0 z-30 bg-[#080A0F]/85 backdrop-blur-xl border-b border-app-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-2xl bg-accent-subtle border border-accent/25 flex items-center justify-center text-accent shadow-inner">
-          <i data-lucide="shield-check" class="w-5 h-5"></i>
+      <!-- Logo & Status -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-cyanTech/10 border border-cyanTech/30 flex items-center justify-center text-cyanTech">
+          <i data-lucide="activity" class="w-4 h-4"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-base font-extrabold tracking-tight text-white font-mono">AssetPulse</span>
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-accent-subtle text-accent border border-accent/20 font-mono tracking-wide">LIVE</span>
+            <span class="text-sm font-bold tracking-tight text-white font-mono">AssetPulse</span>
+            <span class="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-white/[0.05] text-cyanTech border border-white/[0.08]">v2.6</span>
           </div>
-          <div class="flex items-center gap-2.5 text-xs text-slate-400 font-mono mt-0.5">
-            <span id="header-eurusd" class="hover:text-accent cursor-pointer transition font-medium" onclick="fetchLiveMarketData(true)" title="Câmbio oficial">
-              1 € = <span id="val-eurusd" class="text-slate-100 font-bold">1.0850</span> $
+          <div class="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+            <span id="header-eurusd" class="hover:text-cyanTech cursor-pointer transition" onclick="fetchLiveMarketData(true)" title="Câmbio EUR/USD">
+              EUR/USD <span id="val-eurusd" class="text-white font-medium">1.0850</span>
             </span>
             <span class="text-slate-600">•</span>
-            <span class="flex items-center gap-1.5 text-gain font-semibold text-[11px] cursor-pointer" onclick="openSupabaseModal()">
-              <span class="w-2 h-2 rounded-full bg-gain animate-pulse"></span>
-              <span>API Conectada</span>
+            <span class="flex items-center gap-1.5 text-emeraldGain cursor-pointer" onclick="openSupabaseModal()">
+              <span class="w-1.5 h-1.5 rounded-full bg-emeraldGain animate-pulse"></span>
+              <span>Cloud Sync</span>
             </span>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-2.5">
-        <button id="btn-sync-quotes" onclick="fetchLiveMarketData(true)" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-surface-card hover:bg-surface-subtle border border-surface-border/80 rounded-xl transition shadow-sm active:scale-95">
-          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-accent"></i>
-          <span class="hidden sm:inline">Sincronizar</span>
+      <!-- Ações de Cabeçalho -->
+      <div class="flex items-center gap-2">
+        <button id="btn-sync-quotes" onclick="fetchLiveMarketData(true)" class="p-2 sm:px-3 sm:py-2 text-xs font-mono text-slate-300 hover:text-white bg-app-card hover:bg-app-subtle border border-app-border rounded-xl transition flex items-center gap-1.5" title="Sincronizar">
+          <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-cyanTech"></i>
+          <span class="hidden sm:inline">Sync</span>
         </button>
 
-        <button onclick="openSupabaseModal()" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-surface-card hover:bg-surface-subtle border border-surface-border/80 rounded-xl transition shadow-sm active:scale-95">
-          <i data-lucide="database" class="w-3.5 h-3.5 text-gain"></i>
-          <span class="hidden md:inline">Nuvem</span>
+        <button onclick="openSupabaseModal()" class="p-2 sm:px-3 sm:py-2 text-xs font-mono text-slate-300 hover:text-white bg-app-card hover:bg-app-subtle border border-app-border rounded-xl transition flex items-center gap-1.5">
+          <i data-lucide="database" class="w-3.5 h-3.5 text-emeraldGain"></i>
+          <span class="hidden sm:inline">DB</span>
         </button>
 
-        <button onclick="openModal()" class="flex items-center gap-2 px-4 py-2.5 text-xs font-bold bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl shadow-lg shadow-sky-500/15 transition active:scale-95">
-          <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
-          <span>Nova Compra</span>
+        <button onclick="openModal()" class="px-3.5 py-2 text-xs font-semibold bg-white hover:bg-slate-200 text-slate-950 rounded-xl transition shadow flex items-center gap-1.5 active:scale-95">
+          <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+          <span>Nova Ordem</span>
         </button>
       </div>
 
     </div>
   </header>
 
-  <!-- NOTIFICAÇÃO TOAST -->
-  <div id="status-toast" class="hidden fixed bottom-6 right-6 z-50 p-4 rounded-2xl card-modern shadow-2xl flex items-center gap-3.5 border border-surface-border transition-all max-w-sm">
-    <div id="toast-icon" class="shrink-0">
-      <i data-lucide="info" class="w-5 h-5 text-accent"></i>
+  <!-- TOAST NOTIFICATION -->
+  <div id="status-toast" class="hidden fixed bottom-6 right-6 z-50 p-4 rounded-2xl fintech-card shadow-2xl flex items-center gap-3 border border-app-border transition-all max-w-sm">
+    <div id="toast-icon" class="shrink-0 text-cyanTech">
+      <i data-lucide="info" class="w-4 h-4"></i>
     </div>
-    <div class="text-xs text-slate-200 font-medium" id="toast-message">Notificação</div>
+    <div class="text-xs text-slate-200 font-mono" id="toast-message">Notificação</div>
   </div>
 
-  <!-- MODAL DE CONFIRMAÇÃO DE ELIMINAÇÃO -->
-  <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
-    <div class="card-modern bg-[#101726] border border-surface-border/80 w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-5">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-2xl bg-loss-subtle border border-loss/20 flex items-center justify-center text-loss shrink-0">
-          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+    <div class="fintech-card bg-[#0F121C] border border-app-border w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-roseLoss/10 border border-roseLoss/20 flex items-center justify-center text-roseLoss shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-sm font-bold text-white tracking-tight" id="confirm-modal-title">Confirmar Eliminação</h3>
-          <p class="text-xs text-slate-400 mt-1 leading-relaxed" id="confirm-modal-message">Tens a certeza de que desejas avançar com esta ação?</p>
+          <h3 class="text-sm font-bold text-white font-mono" id="confirm-modal-title">Confirmar Eliminação</h3>
+          <p class="text-xs text-slate-400 mt-1 leading-relaxed" id="confirm-modal-message">Tens a certeza de que desejas avançar?</p>
         </div>
       </div>
-      <div class="flex items-center justify-end gap-3 pt-2">
-        <button type="button" onclick="closeConfirmModal()" class="px-4 py-2.5 text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 rounded-xl transition">
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 text-xs font-mono text-slate-400 hover:text-white bg-app-subtle rounded-xl transition">
           Cancelar
         </button>
-        <button type="button" onclick="executeConfirmedAction()" class="px-5 py-2.5 text-xs font-bold text-white bg-loss hover:bg-rose-500 rounded-xl shadow-lg shadow-loss/20 transition active:scale-95">
+        <button type="button" onclick="executeConfirmedAction()" class="px-4 py-2 text-xs font-mono font-bold text-white bg-roseLoss hover:bg-rose-600 rounded-xl transition">
           Eliminar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+  <!-- MAIN VIEW -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- CARTÕES PRINCIPAIS (KPIs) COM ESPAÇAMENTO E DESTAQUE -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+    <!-- KPI DASHBOARD CARDS -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       
-      <!-- Total Investido -->
-      <div class="p-6 rounded-3xl card-modern flex flex-col justify-between transition hover:border-slate-700/60">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
-          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400 font-mono">Investimento Real</span>
-          <div class="p-2 rounded-xl bg-surface-subtle text-slate-400">
-            <i data-lucide="wallet" class="w-4 h-4"></i>
-          </div>
+      <!-- Custo Investido -->
+      <div class="p-5 fintech-card flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Investimento Real</span>
+          <i data-lucide="wallet" class="w-3.5 h-3.5 text-slate-400"></i>
         </div>
-        <div>
-          <div class="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
-          <div class="text-[11px] text-slate-400 mt-1.5 font-medium font-mono" id="kpi-total-invested-sub">Custo total liquidado</div>
+        <div class="mt-4">
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-total-invested">0,00 €</div>
+          <div class="text-[11px] font-mono text-slate-400 mt-1" id="kpi-total-invested-sub">Capital liquidado</div>
         </div>
       </div>
 
-      <!-- Património Atual -->
-      <div class="p-6 rounded-3xl card-modern flex flex-col justify-between transition hover:border-slate-700/60">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
-          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400 font-mono">Património Atual</span>
-          <div class="p-2 rounded-xl bg-surface-subtle text-accent">
-            <i data-lucide="coins" class="w-4 h-4"></i>
-          </div>
+      <!-- Património Total -->
+      <div class="p-5 fintech-card flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Património Atual</span>
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-cyanTech"></i>
         </div>
-        <div>
-          <div class="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
-          <div class="text-[11px] text-slate-400 mt-1.5 font-medium font-mono" id="kpi-current-value-sub">A mercado em tempo real</div>
+        <div class="mt-4">
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-white" id="kpi-current-value">0,00 €</div>
+          <div class="text-[11px] font-mono text-slate-400 mt-1" id="kpi-current-value-sub">A mercado em tempo real</div>
         </div>
       </div>
 
-      <!-- Mais-Valia Líquida -->
-      <div class="p-6 rounded-3xl card-modern flex flex-col justify-between transition hover:border-slate-700/60">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
-          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400 font-mono">Mais-Valia Líquida</span>
-          <div class="p-2 rounded-xl bg-surface-subtle" id="kpi-pl-icon-container">
-            <i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>
+      <!-- Mais-Valia Total -->
+      <div class="p-5 fintech-card flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Mais-Valia Líquida</span>
+          <div id="kpi-pl-icon-container">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emeraldGain"></i>
           </div>
         </div>
-        <div>
-          <div class="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight text-gain" id="kpi-pl-eur">+0,00 €</div>
-          <div class="flex items-center gap-2 text-xs font-mono mt-1.5">
-            <span id="kpi-pl-pct" class="font-bold text-gain">+0.00%</span>
-            <span class="text-slate-500 font-normal">retorno total</span>
+        <div class="mt-4">
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-emeraldGain" id="kpi-pl-eur">+0,00 €</div>
+          <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1">
+            <span id="kpi-pl-pct" class="font-bold text-emeraldGain">+0.00%</span>
+            <span class="text-slate-400">total</span>
           </div>
         </div>
       </div>
 
-      <!-- Variação Diária (1D) -->
-      <div class="p-6 rounded-3xl card-modern flex flex-col justify-between transition hover:border-slate-700/60">
-        <div class="flex items-center justify-between text-slate-400 mb-3">
-          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400 font-mono">Variação Diária (1D)</span>
-          <div class="p-2 rounded-xl bg-surface-subtle text-accent">
-            <i data-lucide="calendar" class="w-4 h-4"></i>
-          </div>
+      <!-- Sessão de Hoje (1D) -->
+      <div class="p-5 fintech-card flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-slate-400">Desempenho Diário</span>
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyanTech"></i>
         </div>
-        <div>
-          <div class="text-2xl sm:text-3xl font-extrabold font-mono tracking-tight text-slate-100" id="kpi-1d-eur">+0,00 €</div>
-          <div class="flex items-center gap-2 text-xs font-mono mt-1.5">
-            <span id="kpi-1d-pct" class="font-bold text-gain">+0.00%</span>
-            <span class="text-slate-500 font-normal">na sessão de hoje</span>
+        <div class="mt-4">
+          <div class="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-100" id="kpi-1d-eur">+0,00 €</div>
+          <div class="flex items-center gap-1.5 text-[11px] font-mono mt-1">
+            <span id="kpi-1d-pct" class="font-bold text-emeraldGain">+0.00%</span>
+            <span class="text-slate-400">sessão</span>
           </div>
         </div>
       </div>
 
     </section>
 
-    <!-- GRÁFICO LINEAR ELEGANTE -->
-    <section class="p-6 rounded-3xl card-modern space-y-5">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-surface-border/60 pb-4">
+    <!-- GRÁFICO HISTÓRICO MINIMALISTA -->
+    <section class="p-5 sm:p-6 fintech-card space-y-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-app-border pb-4">
         <div>
-          <div class="flex items-center gap-2.5">
-            <div class="w-2 h-2 rounded-full bg-accent"></div>
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono" id="chart-section-title">Evolução Patrimonial</h2>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyanTech"></span>
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-white" id="chart-section-title">Evolução Patrimonial</h2>
           </div>
-          <p class="text-xs text-slate-400 mt-1" id="chart-section-subtitle">Histórico oficial cruzado com as ordens de compra</p>
+          <p class="text-[11px] text-slate-400 mt-0.5" id="chart-section-subtitle">Histórico oficial cruzado com as tuas ordens de compra</p>
         </div>
         
-        <div class="flex flex-wrap items-center gap-3">
-          <!-- SELETOR DE MODO -->
-          <div class="flex items-center bg-[#070B14] p-1.5 rounded-2xl border border-surface-border text-xs font-mono">
-            <button id="btn-chart-mode-eur" onclick="setChartMode('EUR')" class="px-3 py-1.5 rounded-xl bg-accent text-slate-950 font-bold transition shadow-sm">€</button>
-            <button id="btn-chart-mode-pct" onclick="setChartMode('PCT')" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium">%</button>
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Modo EUR / % -->
+          <div class="flex items-center bg-[#080A0F] p-1 rounded-xl border border-app-border text-xs font-mono">
+            <button id="btn-chart-mode-eur" onclick="setChartMode('EUR')" class="px-2.5 py-1 rounded-lg bg-white text-slate-950 font-bold transition">€</button>
+            <button id="btn-chart-mode-pct" onclick="setChartMode('PCT')" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">%</button>
           </div>
 
-          <!-- BOTÕES DINÂMICOS DE RANGE -->
-          <div class="flex items-center gap-1.5 bg-[#070B14] p-1.5 rounded-2xl border border-surface-border text-xs font-mono">
-            <button onclick="setChartRange('1M')" class="chart-range-btn px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium" data-range="1M">1M</button>
-            <button onclick="setChartRange('3M')" class="chart-range-btn px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium" data-range="3M">3M</button>
-            <button onclick="setChartRange('YTD')" class="chart-range-btn px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium" data-range="YTD">YTD</button>
-            <button onclick="setChartRange('ALL')" class="chart-range-btn active px-3.5 py-1.5 rounded-xl bg-accent text-slate-950 font-bold transition shadow-sm" data-range="ALL">TUDO</button>
+          <!-- Ranges -->
+          <div class="flex items-center gap-1 bg-[#080A0F] p-1 rounded-xl border border-app-border text-xs font-mono">
+            <button onclick="setChartRange('1M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="1M">1M</button>
+            <button onclick="setChartRange('3M')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="3M">3M</button>
+            <button onclick="setChartRange('YTD')" class="chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-range="YTD">YTD</button>
+            <button onclick="setChartRange('ALL')" class="chart-range-btn active px-3 py-1 rounded-lg bg-cyanTech text-slate-950 font-bold transition" data-range="ALL">TUDO</button>
           </div>
         </div>
       </div>
 
-      <div class="relative w-full h-72 sm:h-80 pt-2">
+      <div class="relative w-full h-64 sm:h-72">
         <canvas id="portfolioChart"></canvas>
       </div>
     </section>
 
-    <!-- TABELA DE ATIVOS E COMPRAS COM MAIS ESPAÇO E CONTRASTE -->
-    <section class="rounded-3xl card-modern overflow-hidden flex flex-col">
+    <!-- LISTA DE ATIVOS -->
+    <section class="fintech-card overflow-hidden flex flex-col">
       
-      <div class="p-6 border-b border-surface-border/60 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+      <!-- Cabeçalho da Tabela e Filtros -->
+      <div class="p-5 border-b border-app-border flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div>
-          <div class="flex items-center gap-3">
-            <h2 class="text-xs font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
-              <i data-lucide="layers" class="w-4 h-4 text-accent"></i>
-              Ativos em Carteira
-            </h2>
-            <span class="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-surface-subtle text-slate-300 border border-surface-border" id="table-asset-count">0 ativos</span>
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-xs font-mono font-bold text-white uppercase tracking-wider">Ativos em Carteira</h2>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.05] text-slate-300 border border-white/[0.08]" id="table-asset-count">0 ativos</span>
           </div>
-          <p class="text-xs text-slate-400 mt-1.5">Clica em qualquer linha para abrir os lotes individuais, preços de equilíbrio e taxas.</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Toca numa posição para ver lotes individuais, preços de equilíbrio e datas.</p>
         </div>
 
-        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
-          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-4 py-2 rounded-xl text-xs font-bold bg-accent text-slate-950 transition whitespace-nowrap shadow-sm" data-cat="ALL">Todos</button>
-          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
-          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
-          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap" data-cat="ETF">ETFs</button>
+        <div class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 sm:pb-0 font-mono text-xs">
+          <button onclick="setCategoryFilter('ALL')" class="cat-pill active px-3 py-1.5 rounded-lg font-bold bg-white text-slate-950 transition whitespace-nowrap" data-cat="ALL">Todos</button>
+          <button onclick="setCategoryFilter('Tecnologia')" class="cat-pill px-3 py-1.5 rounded-lg text-slate-400 hover:text-white bg-app-subtle border border-app-border transition whitespace-nowrap" data-cat="Tecnologia">Tecnologia</button>
+          <button onclick="setCategoryFilter('Consumo')" class="cat-pill px-3 py-1.5 rounded-lg text-slate-400 hover:text-white bg-app-subtle border border-app-border transition whitespace-nowrap" data-cat="Consumo">Consumo</button>
+          <button onclick="setCategoryFilter('ETF')" class="cat-pill px-3 py-1.5 rounded-lg text-slate-400 hover:text-white bg-app-subtle border border-app-border transition whitespace-nowrap" data-cat="ETF">ETFs</button>
         </div>
       </div>
 
-      <!-- Tabela Responsiva com Linhas Arejadas -->
+      <!-- Tabela Arejada e Nítida -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-surface-border/80 bg-[#070B14]/60 text-slate-400 font-mono text-[11px] uppercase tracking-wider">
-              <th class="py-4 px-5 font-semibold">Ativo</th>
-              <th class="py-4 px-4 text-right font-semibold">Qtd Total</th>
-              <th class="py-4 px-4 text-right font-semibold">PMP</th>
-              <th class="py-4 px-4 text-right font-semibold">Cotação</th>
-              <th class="py-4 px-4 text-right font-semibold">Variação 1D</th>
-              <th class="py-4 px-4 text-right font-semibold">Investido (€)</th>
-              <th class="py-4 px-4 text-right font-semibold">Valor Atual (€)</th>
-              <th class="py-4 px-4 text-right font-semibold">Mais-Valia Líquida</th>
-              <th class="py-4 px-4 text-center font-semibold">Peso</th>
-              <th class="py-4 px-5 text-center font-semibold">Ações</th>
+            <tr class="border-b border-app-border bg-[#080A0F]/50 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
+              <th class="py-3 px-4 font-semibold">Ativo</th>
+              <th class="py-3 px-3 text-right font-semibold">Qtd</th>
+              <th class="py-3 px-3 text-right font-semibold">PMP</th>
+              <th class="py-3 px-3 text-right font-semibold">Cotação</th>
+              <th class="py-3 px-3 text-right font-semibold">1D</th>
+              <th class="py-3 px-3 text-right font-semibold">Investido</th>
+              <th class="py-3 px-3 text-right font-semibold">Valor Atual</th>
+              <th class="py-3 px-3 text-right font-semibold">Retorno Total</th>
+              <th class="py-3 px-3 text-center font-semibold">Alocação</th>
+              <th class="py-3 px-4 text-center font-semibold">Ações</th>
             </tr>
           </thead>
-          <tbody id="portfolio-table-body" class="divide-y divide-surface-border/40 font-sans">
-            <!-- Linhas geradas dinamicamente -->
+          <tbody id="portfolio-table-body" class="divide-y divide-app-border font-sans">
+            <!-- Linhas geradas via JavaScript -->
           </tbody>
         </table>
       </div>
 
       <!-- Estado Vazio -->
-      <div id="table-empty-state" class="hidden p-16 text-center space-y-4">
-        <div class="w-14 h-14 rounded-3xl bg-surface-subtle border border-surface-border flex items-center justify-center mx-auto text-slate-400 shadow-inner">
-          <i data-lucide="inbox" class="w-7 h-7"></i>
+      <div id="table-empty-state" class="hidden p-12 text-center space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-app-subtle border border-app-border flex items-center justify-center mx-auto text-slate-400">
+          <i data-lucide="inbox" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-sm font-bold text-white">Nenhum ativo registado</h3>
-          <p class="text-xs text-slate-400 mt-1">Clica no botão "+ Nova Compra" para registar a tua primeira posição.</p>
+          <h3 class="text-xs font-bold font-mono text-white">Nenhum ativo registado</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Usa o botão "+ Nova Ordem" para registar a tua primeira posição.</p>
         </div>
       </div>
 
-      <!-- Rodapé de Estado -->
-      <div class="px-6 py-4 border-t border-surface-border/60 bg-[#070B14]/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 font-mono">
-        <span class="flex items-center gap-2.5">
-          <span class="w-2 h-2 rounded-full bg-gain inline-block animate-pulse"></span>
-          <span>Cotações sincronizadas com a folha Google Finance.</span>
+      <!-- Rodapé -->
+      <div class="px-5 py-3 border-t border-app-border bg-[#080A0F]/30 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 font-mono">
+        <span class="flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emeraldGain inline-block animate-pulse"></span>
+          <span>Feed oficial Google Finance & Yahoo Finance ativo.</span>
         </span>
-        <span id="sync-last-timestamp" class="text-slate-400">Sincronizado: --:--:--</span>
+        <span id="sync-last-timestamp">Sincronizado: --:--:--</span>
       </div>
 
     </section>
@@ -335,44 +323,44 @@
   </main>
 
   <!-- MODAL DE COMPRA / EDIÇÃO DE LOTE -->
-  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
-    <div class="card-modern bg-[#101726] border border-surface-border/80 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 hidden">
+    <div class="fintech-card bg-[#0F121C] border border-app-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
-      <div class="px-6 py-5 border-b border-surface-border/60 flex items-center justify-between shrink-0">
+      <div class="px-5 py-4 border-b border-app-border flex items-center justify-between shrink-0">
         <div>
-          <h3 class="text-sm font-bold text-white flex items-center gap-2.5" id="modal-title">
-            <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+          <h3 class="text-sm font-mono font-bold text-white flex items-center gap-2" id="modal-title">
+            <span class="w-2 h-2 rounded-full bg-cyanTech"></span>
             Registar Nova Compra
           </h3>
-          <p class="text-xs text-slate-400 mt-1" id="modal-subtitle">Cada compra é guardada como uma posição individual rastreável.</p>
+          <p class="text-[11px] text-slate-400 mt-0.5" id="modal-subtitle">Cada compra é guardada como um lote com histórico próprio.</p>
         </div>
-        <button onclick="closeModal()" class="p-2 text-slate-400 hover:text-white rounded-2xl hover:bg-surface-subtle transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-app-subtle transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <form id="asset-form" onsubmit="saveAsset(event)" class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+      <form id="asset-form" onsubmit="saveAsset(event)" class="p-5 space-y-4 overflow-y-auto custom-scrollbar font-sans text-xs">
         <input type="hidden" id="form-id" value="">
 
-        <div id="form-error-feedback" class="hidden p-3.5 rounded-2xl bg-loss-subtle border border-loss/20 text-loss text-xs"></div>
+        <div id="form-error-feedback" class="hidden p-3 rounded-xl bg-roseLoss/10 border border-roseLoss/20 text-roseLoss text-xs font-mono"></div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Ticker / Símbolo *</label>
+            <label class="block text-[11px] font-mono text-slate-400 mb-1">Ticker / Símbolo *</label>
             <input 
               type="text" 
               id="form-ticker" 
               required 
               autocomplete="off"
-              placeholder="ex: SXRV, META, NOW, MSFT" 
+              placeholder="ex: SXRV, META, MSFT" 
               oninput="onTickerChange(this.value)"
-              class="w-full uppercase px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono tracking-wider"
+              class="w-full uppercase px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyanTech font-mono tracking-wider"
             >
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Categoria</label>
-            <select id="form-category" onchange="onCategoryChange(this.value)" class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
+            <label class="block text-[11px] font-mono text-slate-400 mb-1">Categoria</label>
+            <select id="form-category" onchange="onCategoryChange(this.value)" class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white focus:outline-none focus:border-cyanTech">
               <option value="Tecnologia">Tecnologia</option>
               <option value="Consumo">Consumo Defensivo</option>
               <option value="Financeiro">Financeiro / Bancos</option>
@@ -384,59 +372,53 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nome da Empresa / Ativo</label>
+          <label class="block text-[11px] font-mono text-slate-400 mb-1">Nome do Ativo</label>
           <input 
             type="text" 
             id="form-name" 
             placeholder="ex: iShares NASDAQ 100, Microsoft, Meta..." 
-            class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent"
+            class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyanTech"
           >
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Corretora *</label>
-            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent">
-              <option value="XTB">XTB (Sem Comissões / 0%)</option>
+            <label class="block text-[11px] font-mono text-slate-400 mb-1">Corretora *</label>
+            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white focus:outline-none focus:border-cyanTech">
+              <option value="XTB">XTB (0% Comissão)</option>
               <option value="IBKR">Interactive Brokers (Tiered)</option>
               <option value="IBKR_FIXED">Interactive Brokers (Fixed)</option>
-              <option value="XTB_FX">XTB (Conta EUR - 0.50% Câmbio)</option>
+              <option value="XTB_FX">XTB (EUR - 0.50% Câmbio)</option>
               <option value="REVOLUT">Revolut</option>
-              <option value="OTHER">Outra Corretora</option>
+              <option value="OTHER">Outra</option>
             </select>
           </div>
 
-          <!-- SELETOR DE DATA COM ATALHOS -->
           <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="text-xs font-semibold text-slate-300">Data da Compra *</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-mono text-slate-400">Data de Compra *</label>
               <div class="flex items-center gap-1 font-mono text-[10px]">
-                <button type="button" onclick="setFormDatePreset('today')" class="px-2 py-0.5 rounded bg-surface-subtle hover:bg-accent/20 text-slate-300 hover:text-accent border border-surface-border transition">Hoje</button>
-                <button type="button" onclick="setFormDatePreset('yesterday')" class="px-2 py-0.5 rounded bg-surface-subtle hover:bg-accent/20 text-slate-300 hover:text-accent border border-surface-border transition">Ontem</button>
-                <button type="button" onclick="setFormDatePreset('jun1')" class="px-2 py-0.5 rounded bg-surface-subtle hover:bg-accent/20 text-slate-300 hover:text-accent border border-surface-border transition">1 Jun</button>
+                <button type="button" onclick="setFormDatePreset('today')" class="px-1.5 py-0.5 rounded bg-app-subtle hover:text-cyanTech text-slate-400 border border-app-border">Hoje</button>
+                <button type="button" onclick="setFormDatePreset('yesterday')" class="px-1.5 py-0.5 rounded bg-app-subtle hover:text-cyanTech text-slate-400 border border-app-border">Ontem</button>
+                <button type="button" onclick="setFormDatePreset('jun1')" class="px-1.5 py-0.5 rounded bg-app-subtle hover:text-cyanTech text-slate-400 border border-app-border">1 Jun</button>
               </div>
             </div>
 
-            <div class="relative flex items-center">
-              <input 
-                type="date" 
-                id="form-date" 
-                required
-                min="2025-01-01"
-                onclick="try { this.showPicker(); } catch(e){}"
-                class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white focus:outline-none focus:border-accent font-mono cursor-pointer"
-              >
-              <div class="absolute right-3.5 pointer-events-none text-slate-400">
-                <i data-lucide="calendar" class="w-4 h-4 text-accent"></i>
-              </div>
-            </div>
+            <input 
+              type="date" 
+              id="form-date" 
+              required
+              min="2025-01-01"
+              onclick="try { this.showPicker(); } catch(e){}"
+              class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white focus:outline-none focus:border-cyanTech font-mono cursor-pointer"
+            >
           </div>
         </div>
 
-        <!-- QUANTIDADE, PREÇO PAGO E COTAÇÃO DINÂMICOS (€ OU $) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- QUANTIDADE, PREÇO E COTAÇÃO -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Quantidade *</label>
+            <label class="block text-[11px] font-mono text-slate-400 mb-1">Quantidade *</label>
             <input 
               type="text" 
               inputmode="decimal"
@@ -444,12 +426,12 @@
               required 
               placeholder="ex: 0.6975" 
               oninput="recalculateFormFees()"
-              class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
+              class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyanTech font-mono"
             >
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5" id="lbl-form-avg">Preço Pago ($ USD) *</label>
+            <label class="block text-[11px] font-mono text-slate-400 mb-1" id="lbl-form-avg">Preço Pago ($ USD) *</label>
             <input 
               type="text" 
               inputmode="decimal"
@@ -457,93 +439,87 @@
               required 
               placeholder="ex: 583.81" 
               oninput="recalculateFormFees()"
-              class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
+              class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyanTech font-mono"
             >
           </div>
 
           <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="text-xs font-semibold text-slate-300" id="lbl-form-curr">Cotação ($ USD)</label>
-              <span class="text-[10px] text-gain font-mono font-medium">Sheets</span>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-mono text-slate-400" id="lbl-form-curr">Cotação Atual</label>
+              <span class="text-[9px] text-emeraldGain font-mono">Live</span>
             </div>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-curr" 
               placeholder="Auto" 
-              class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-accent font-mono"
+              class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-cyanTech font-mono"
             >
           </div>
         </div>
 
-        <!-- TOTAL PAGO REAL EM EUROS E CÂMBIO -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-[#070B14]/80 border border-surface-border">
+        <!-- TOTAL PAGO EM EUROS E CÂMBIO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#080A0F] border border-app-border">
           <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="text-xs font-bold text-accent">Total Pago Real (€ EUR) *</label>
-              <span class="text-[10px] text-slate-400 font-mono">Débito Real</span>
-            </div>
+            <label class="block text-[11px] font-mono text-cyanTech mb-1">Total Débito Real (€ EUR) *</label>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-cost-eur" 
               placeholder="ex: 683.27 ou 505.31" 
               oninput="onCostEURInput(this.value)"
-              class="w-full px-3.5 py-2.5 bg-surface-card border border-surface-border rounded-xl text-xs font-mono text-white focus:outline-none focus:border-accent"
-              title="Coloca aqui o valor exato em Euros debitado na tua corretora"
+              class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyanTech"
+              title="Valor em Euros exatamente liquidado na tua corretora"
             >
           </div>
 
           <div id="container-fx-rate">
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="text-xs font-semibold text-slate-300">Câmbio Efetivo</label>
-              <span class="text-[10px] text-slate-400 font-mono" id="form-fx-hint">EUR/USD</span>
-            </div>
+            <label class="block text-[11px] font-mono text-slate-400 mb-1">Câmbio Efetivo</label>
             <input 
               type="text" 
               inputmode="decimal"
               id="form-rate-at-buy" 
               placeholder="ex: 1.1411" 
               oninput="onFxRateInput(this.value)"
-              class="w-full px-3.5 py-2.5 bg-surface-card border border-surface-border rounded-xl text-xs font-mono text-white focus:outline-none focus:border-accent"
+              class="w-full px-3 py-2 bg-app-card border border-app-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyanTech"
             >
           </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-[#070B14] border border-surface-border space-y-2.5">
+        <div class="p-3.5 rounded-xl bg-[#080A0F] border border-app-border space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-300 font-medium" id="lbl-form-fees">Comissão da Ordem:</span>
-            <div class="w-32">
+            <span class="text-[11px] font-mono text-slate-400" id="lbl-form-fees">Comissão da Ordem:</span>
+            <div class="w-28">
               <input 
                 type="text" 
                 inputmode="decimal"
                 id="form-fees" 
                 value="0.00" 
                 oninput="updateBreakEvenDisplay()"
-                class="w-full px-3 py-1.5 text-right bg-surface-card border border-surface-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-accent"
+                class="w-full px-2.5 py-1 text-right bg-app-card border border-app-border rounded-lg text-xs font-mono text-white focus:outline-none focus:border-cyanTech"
               >
             </div>
           </div>
-          <div class="flex items-center justify-between text-xs pt-2 border-t border-surface-border/60">
-            <span class="text-slate-400">Preço de Equilíbrio (Break-Even):</span>
-            <span class="font-mono font-bold text-accent text-sm" id="form-be-display">$0.00</span>
+          <div class="flex items-center justify-between text-xs pt-1.5 border-t border-app-border/60">
+            <span class="text-slate-400 font-mono text-[11px]">Break-Even:</span>
+            <span class="font-mono font-bold text-cyanTech" id="form-be-display">$0.00</span>
           </div>
         </div>
 
-        <div class="flex items-center justify-end gap-3 pt-2">
+        <div class="flex items-center justify-end gap-2.5 pt-2">
           <button 
             type="button" 
             onclick="closeModal()" 
-            class="px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 rounded-xl transition"
+            class="px-4 py-2 text-xs font-mono text-slate-400 hover:text-white bg-app-subtle rounded-xl transition"
           >
             Cancelar
           </button>
           <button 
             type="submit" 
             id="form-submit-btn"
-            class="px-6 py-2.5 text-xs font-bold text-slate-950 bg-sky-500 hover:bg-sky-400 rounded-xl shadow-lg shadow-sky-500/15 transition active:scale-95"
+            class="px-5 py-2 text-xs font-mono font-bold text-slate-950 bg-white hover:bg-slate-200 rounded-xl transition active:scale-95 shadow"
           >
-            Guardar Compra
+            Guardar
           </button>
         </div>
 
@@ -552,48 +528,48 @@
   </div>
 
   <!-- MODAL SUPABASE -->
-  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 hidden">
-    <div class="card-modern bg-[#101726] border border-surface-border/80 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+  <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
+    <div class="fintech-card bg-[#0F121C] border border-app-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
       
-      <div class="px-6 py-5 border-b border-surface-border/60 flex items-center justify-between">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2.5">
-          <i data-lucide="database" class="w-4 h-4 text-gain"></i>
-          Base de Dados Supabase
+      <div class="px-5 py-4 border-b border-app-border flex items-center justify-between">
+        <h3 class="text-sm font-mono font-bold text-white flex items-center gap-2">
+          <i data-lucide="database" class="w-4 h-4 text-emeraldGain"></i>
+          Sincronização Supabase
         </h3>
-        <button onclick="closeSupabaseModal()" class="p-2 text-slate-400 hover:text-white rounded-2xl hover:bg-surface-subtle transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button onclick="closeSupabaseModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-app-subtle transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar text-xs">
-        <div class="p-4 rounded-2xl bg-gain-subtle border border-gain/20 text-gain flex items-center gap-3">
-          <i data-lucide="check-circle" class="w-5 h-5 shrink-0"></i>
-          <span class="font-medium">Sincronização em nuvem e persistência de dados ativa.</span>
+      <div class="p-5 space-y-4 text-xs font-mono">
+        <div class="p-3.5 rounded-xl bg-emeraldGain/10 border border-emeraldGain/20 text-emeraldGain flex items-center gap-2.5">
+          <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+          <span>Base de dados em nuvem e colunas costEUR / fx sincronizadas.</span>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-300 mb-1.5">Google Apps Script Endpoint</label>
+          <label class="block text-slate-400 mb-1">Google Apps Script Endpoint</label>
           <input 
             type="text" 
             value="https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec" 
-            class="w-full px-4 py-3 bg-[#070B14] border border-surface-border rounded-xl text-white font-mono text-xs truncate" 
+            class="w-full px-3.5 py-2.5 bg-[#080A0F] border border-app-border rounded-xl text-white font-mono text-xs truncate" 
             readonly
           >
         </div>
 
-        <div class="pt-3 border-t border-surface-border/60 flex items-center justify-between">
-          <button onclick="restoreFromSafetyBackup()" class="px-4 py-2.5 bg-surface-subtle hover:bg-slate-700/60 text-amber-300 font-semibold rounded-xl text-xs transition active:scale-95">
-            Recuperar Cópia Local
+        <div class="pt-2 border-t border-app-border flex items-center justify-between">
+          <button onclick="restoreFromSafetyBackup()" class="px-3.5 py-2 bg-app-subtle hover:bg-slate-700/60 text-amber-300 font-medium rounded-xl text-xs transition">
+            Restaurar Local
           </button>
-          <button onclick="syncAllToSupabase(true)" class="px-5 py-2.5 bg-gain hover:bg-emerald-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-gain/20 transition active:scale-95">
-            Forçar Sincronização
+          <button onclick="syncAllToSupabase(true)" class="px-4 py-2 bg-emeraldGain hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow transition">
+            Forçar Sync
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MOTOR JAVASCRIPT CONSOLIDADO (TOTALMENTE INTATO NAS FÓRMULAS) -->
+  <!-- MOTOR JAVASCRIPT CONSOLIDADO (TOTALMENTE INTACTO) -->
   <script>
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec";
     const SUPABASE_PROJECT_URL = "https://efdnhtlixevwnakrfjuq.supabase.co";
@@ -643,8 +619,8 @@
 
       text.textContent = msg;
       icon.innerHTML = isSuccess 
-        ? `<i data-lucide="check-circle" class="w-5 h-5 text-gain"></i>` 
-        : `<i data-lucide="alert-circle" class="w-5 h-5 text-loss"></i>`;
+        ? `<i data-lucide="check-circle" class="w-4 h-4 text-emeraldGain"></i>` 
+        : `<i data-lucide="alert-circle" class="w-4 h-4 text-roseLoss"></i>`;
       lucide.createIcons();
 
       toast.classList.remove("hidden");
@@ -710,7 +686,7 @@
           portfolio = JSON.parse(snap);
           saveLocalPortfolio();
           renderAll();
-          showToast("Cópia de segurança restaurada com sucesso!");
+          showToast("Cópia local restaurada com sucesso!");
           syncAllToSupabase();
         } catch (e) {
           showToast("Erro ao ler cópia.", false);
@@ -744,15 +720,15 @@
       const subEl = document.getElementById("chart-section-subtitle");
 
       if (mode === 'EUR') {
-        btnEur.className = "px-3 py-1.5 rounded-xl bg-accent text-slate-950 font-bold transition shadow-sm";
-        btnPct.className = "px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium";
+        btnEur.className = "px-2.5 py-1 rounded-lg bg-white text-slate-950 font-bold transition";
+        btnPct.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
         if (titleEl) titleEl.textContent = "Evolução Patrimonial";
-        if (subEl) subEl.textContent = "Histórico da carteira com cotações oficiais diárias do Google Finance e Yahoo Finance";
+        if (subEl) subEl.textContent = "Histórico oficial cruzado com as tuas ordens de compra";
       } else {
-        btnPct.className = "px-3 py-1.5 rounded-xl bg-accent text-slate-950 font-bold transition shadow-sm";
-        btnEur.className = "px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium";
+        btnPct.className = "px-2.5 py-1 rounded-lg bg-cyanTech text-slate-950 font-bold transition";
+        btnEur.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
         if (titleEl) titleEl.textContent = "Rentabilidade da Carteira";
-        if (subEl) subEl.textContent = "Desempenho percentual puro (sem distorção de entradas de capital)";
+        if (subEl) subEl.textContent = "Desempenho percentual ponderado no tempo";
       }
 
       if (cachedHistoryData) {
@@ -852,7 +828,7 @@
           const payloadWithoutDate = payloadWithDate.map(({ buy_date, ...rest }) => rest);
           await supabaseClient.from('portfolio').upsert(payloadWithoutDate, { onConflict: 'id' });
         }
-        if (showFeedback) showToast("Dados salvaguardados no Supabase!");
+        if (showFeedback) showToast("Base de dados Supabase sincronizada!");
       } catch (e) {}
     }
 
@@ -908,13 +884,13 @@
           }
 
           if (manual) {
-            showToast(`${updatedCount} ativos sincronizados!`);
+            showToast(`${updatedCount} ativos atualizados!`);
             syncAllToSupabase(false);
           }
         }
       } catch (err) {
         console.error("Erro na leitura do Google Apps Script:", err);
-        if (manual) showToast("Erro ao aceder à folha do Google Finance.", false);
+        if (manual) showToast("Erro ao aceder à folha de cotações.", false);
       } finally {
         if (icon) icon.classList.remove("animate-spin");
         const ts = new Date().toLocaleTimeString('pt-PT');
@@ -1066,15 +1042,15 @@
 
       const isPositive = metrics.totalPLEUR >= 0;
       plEurEl.textContent = `${isPositive ? '+' : ''}${fmtEUR(metrics.totalPLEUR)}`;
-      plEurEl.className = `text-2xl sm:text-3xl font-extrabold font-mono tracking-tight ${isPositive ? 'text-gain' : 'text-loss'}`;
+      plEurEl.className = `text-xl sm:text-2xl font-bold font-mono tracking-tight ${isPositive ? 'text-emeraldGain' : 'text-roseLoss'}`;
       
       plPctEl.textContent = fmtPCT(metrics.totalPLPct);
-      plPctEl.className = `font-bold ${isPositive ? 'text-gain' : 'text-loss'}`;
+      plPctEl.className = `font-bold ${isPositive ? 'text-emeraldGain' : 'text-roseLoss'}`;
 
       if (plIcon) {
         plIcon.innerHTML = isPositive 
-          ? `<i data-lucide="trending-up" class="w-4 h-4 text-gain"></i>`
-          : `<i data-lucide="trending-down" class="w-4 h-4 text-loss"></i>`;
+          ? `<i data-lucide="trending-up" class="w-3.5 h-3.5 text-emeraldGain"></i>`
+          : `<i data-lucide="trending-down" class="w-3.5 h-3.5 text-roseLoss"></i>`;
       }
 
       const kpi1dEur = document.getElementById("kpi-1d-eur");
@@ -1082,7 +1058,7 @@
       const is1dPos = metrics.day1DDeltaEUR >= 0;
       kpi1dEur.textContent = `${is1dPos ? '+' : ''}${fmtEUR(metrics.day1DDeltaEUR)}`;
       kpi1dPct.textContent = fmtPCT(metrics.day1DPct);
-      kpi1dPct.className = `font-bold ${is1dPos ? 'text-gain' : 'text-loss'}`;
+      kpi1dPct.className = `font-bold ${is1dPos ? 'text-emeraldGain' : 'text-roseLoss'}`;
 
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
@@ -1218,8 +1194,8 @@
         portfolioChartInstance.destroy();
       }
 
-      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
-      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.30)');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.22)');
       gradient.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
 
       let chartDatasets = [];
@@ -1229,12 +1205,12 @@
             label: 'Património Atual (€)',
             data: marketCurveEUR,
             borderColor: '#38BDF8',
-            borderWidth: 2.5,
+            borderWidth: 2,
             fill: true,
             backgroundColor: gradient,
-            tension: 0.2,
+            tension: 0.15,
             pointRadius: 0,
-            pointHoverRadius: 6,
+            pointHoverRadius: 5,
             pointHoverBackgroundColor: '#38BDF8',
             pointHoverBorderColor: '#FFFFFF',
             pointHoverBorderWidth: 2
@@ -1242,9 +1218,9 @@
           {
             label: 'Investimento Real (€)',
             data: investedCurveEUR,
-            borderColor: '#475569',
-            borderWidth: 1.5,
-            borderDash: [5, 5],
+            borderColor: 'rgba(255, 255, 255, 0.25)',
+            borderWidth: 1.2,
+            borderDash: [4, 4],
             fill: false,
             tension: 0,
             pointRadius: 0
@@ -1253,15 +1229,15 @@
       } else {
         chartDatasets = [
           {
-            label: 'Rentabilidade Acumulada (%)',
+            label: 'Rentabilidade (%)',
             data: performanceCurvePCT,
             borderColor: '#38BDF8',
-            borderWidth: 2.5,
+            borderWidth: 2,
             fill: true,
             backgroundColor: gradient,
-            tension: 0.25,
+            tension: 0.15,
             pointRadius: 0,
-            pointHoverRadius: 6,
+            pointHoverRadius: 5,
             pointHoverBackgroundColor: '#38BDF8',
             pointHoverBorderColor: '#FFFFFF',
             pointHoverBorderWidth: 2
@@ -1284,13 +1260,13 @@
               display: true,
               position: 'top',
               align: 'end',
-              labels: { color: '#94A3B8', boxWidth: 12, font: { family: '"JetBrains Mono"', size: 11 } }
+              labels: { color: '#64748B', boxWidth: 10, font: { family: '"JetBrains Mono"', size: 10 } }
             },
             tooltip: {
-              backgroundColor: '#101726',
+              backgroundColor: '#0F121C',
               titleColor: '#F8FAFC',
               bodyColor: '#E2E8F0',
-              borderColor: '#1F293D',
+              borderColor: 'rgba(255, 255, 255, 0.12)',
               borderWidth: 1,
               padding: 10,
               callbacks: {
@@ -1306,15 +1282,15 @@
           },
           scales: {
             x: {
-              grid: { color: 'rgba(31, 41, 61, 0.4)' },
-              ticks: { color: '#64748B', font: { family: '"JetBrains Mono"', size: 10 }, maxTicksLimit: 8 }
+              grid: { color: 'rgba(255, 255, 255, 0.04)' },
+              ticks: { color: '#475569', font: { family: '"JetBrains Mono"', size: 9 }, maxTicksLimit: 7 }
             },
             y: {
-              grid: { color: 'rgba(31, 41, 61, 0.4)' },
+              grid: { color: 'rgba(255, 255, 255, 0.04)' },
               ticks: {
-                color: '#64748B',
-                font: { family: '"JetBrains Mono"', size: 10 },
-                callback: v => currentChartMode === 'EUR' ? `${v.toLocaleString('pt-PT')} €` : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
+                color: '#475569',
+                font: { family: '"JetBrains Mono"', size: 9 },
+                callback: v => currentChartMode === 'EUR' ? `${v.toLocaleString('pt-PT')} €` : `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
               }
             }
           }
@@ -1326,9 +1302,9 @@
       currentChartRange = range;
       document.querySelectorAll(".chart-range-btn").forEach(btn => {
         if (btn.getAttribute("data-range") === range) {
-          btn.className = "chart-range-btn active px-3.5 py-1.5 rounded-xl bg-accent text-slate-950 font-bold transition shadow-sm";
+          btn.className = "chart-range-btn active px-3 py-1 rounded-lg bg-cyanTech text-slate-950 font-bold transition";
         } else {
-          btn.className = "chart-range-btn px-3 py-1.5 rounded-xl text-slate-400 hover:text-white transition font-medium";
+          btn.className = "chart-range-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition";
         }
       });
 
@@ -1366,91 +1342,91 @@
       filtered.forEach(asset => {
         const allocPct = metrics.totalCurrEUR > 0 ? (asset.totalCurrEUR / metrics.totalCurrEUR) * 100 : 0;
         const isPos = asset.plPct >= 0;
-        const colorClass = isPos ? 'text-gain' : 'text-loss';
-        const badgeBg = isPos ? 'bg-gain-subtle text-gain border border-gain/20' : 'bg-loss-subtle text-loss border border-loss/20';
+        const colorClass = isPos ? 'text-emeraldGain' : 'text-roseLoss';
+        const badgeBg = isPos ? 'bg-emeraldGain/10 text-emeraldGain border border-emeraldGain/20' : 'bg-roseLoss/10 text-roseLoss border border-roseLoss/20';
 
         const day1DIsPos = asset.dayChangePct >= 0;
         const isExpanded = expandedTickers.has(asset.ticker);
         const formatNative = asset.isEur ? fmtEUR : fmtUSD;
 
         const parentTr = document.createElement("tr");
-        parentTr.className = `cursor-pointer transition border-b border-surface-border/40 ${isExpanded ? 'bg-surface-cardHover' : 'hover:bg-surface-cardHover/60'}`;
+        parentTr.className = `cursor-pointer transition border-b border-app-border ${isExpanded ? 'bg-app-cardHover' : 'hover:bg-app-cardHover/50'}`;
         parentTr.onclick = (e) => {
           if (e.target.closest('button')) return;
           toggleTickerExpand(asset.ticker);
         };
 
         parentTr.innerHTML = `
-          <td class="py-4.5 px-5">
-            <div class="flex items-center gap-3.5">
-              <div class="p-1 rounded-lg text-slate-400 hover:text-white transition">
-                <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4"></i>
+          <td class="py-3.5 px-4">
+            <div class="flex items-center gap-3">
+              <div class="text-slate-400 hover:text-white transition">
+                <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-3.5 h-3.5"></i>
               </div>
-              <div class="w-9 h-9 rounded-xl bg-surface-subtle border border-surface-border flex items-center justify-center font-bold text-xs text-accent font-mono shadow-sm">
+              <div class="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center font-bold text-[11px] text-cyanTech font-mono">
                 ${asset.ticker.slice(0, 3)}
               </div>
               <div>
-                <div class="font-bold text-white font-mono text-xs flex items-center gap-2">
-                  <span class="tracking-wide">${asset.ticker}</span>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full ${asset.lots.length > 1 ? 'bg-accent/20 text-accent font-bold' : 'bg-surface-subtle text-slate-400'} font-mono">
-                    ${asset.lots.length} ${asset.lots.length === 1 ? 'lote' : 'lotes'}
+                <div class="font-bold text-white font-mono text-xs flex items-center gap-1.5">
+                  <span>${asset.ticker}</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded bg-white/[0.04] text-slate-400 font-mono">
+                    ${asset.lots.length}L
                   </span>
-                  ${asset.isEur ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 font-mono font-bold border border-amber-500/20">EUR</span>' : '<span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-700/40 text-slate-400 font-mono font-bold">USD</span>'}
+                  ${asset.isEur ? '<span class="text-[9px] px-1 py-0.2 rounded bg-amber-400/10 text-amber-300 font-mono font-medium">EUR</span>' : ''}
                 </div>
-                <div class="text-[11px] text-slate-400 truncate max-w-[130px] sm:max-w-[200px] mt-0.5 font-medium">${asset.name}</div>
+                <div class="text-[10px] text-slate-400 truncate max-w-[120px] sm:max-w-[180px]">${asset.name}</div>
               </div>
             </div>
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono font-medium text-slate-200">
+          <td class="py-3.5 px-3 text-right font-mono text-slate-300 font-medium">
             ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono">
-            <div class="text-slate-200 font-bold">${formatNative(asset.pmpNative)}</div>
-            <div class="text-[10px] text-slate-400 mt-0.5" title="Preço de Equilíbrio">BE: ${formatNative(asset.breakEvenNative)}</div>
+          <td class="py-3.5 px-3 text-right font-mono">
+            <div class="text-slate-200 font-semibold">${formatNative(asset.pmpNative)}</div>
+            <div class="text-[9px] text-slate-400">BE: ${formatNative(asset.breakEvenNative)}</div>
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono font-bold text-white text-[13px]">
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-white">
             ${formatNative(asset.currNative)}
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono font-bold ${day1DIsPos ? 'text-gain' : 'text-loss'}">
+          <td class="py-3.5 px-3 text-right font-mono font-bold ${day1DIsPos ? 'text-emeraldGain' : 'text-roseLoss'}">
             ${fmtPCT(asset.dayChangePct)}
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono text-slate-300">
+          <td class="py-3.5 px-3 text-right font-mono text-slate-400">
             ${fmtEUR(asset.totalInvEUR)}
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono font-bold text-white text-[13px]">
+          <td class="py-3.5 px-3 text-right font-mono font-bold text-white">
             ${fmtEUR(asset.totalCurrEUR)}
           </td>
 
-          <td class="py-4.5 px-4 text-right font-mono">
+          <td class="py-3.5 px-3 text-right font-mono">
             <div class="font-bold ${colorClass}">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
-            <div class="text-[10px] px-2 py-0.5 rounded-full inline-block ${badgeBg} mt-1 font-bold">
+            <div class="text-[9px] px-1.5 py-0.2 rounded inline-block ${badgeBg} mt-0.5 font-bold">
               ${fmtPCT(asset.plPct)}
             </div>
           </td>
 
-          <td class="py-4.5 px-4 text-center">
-            <div class="w-16 sm:w-20 mx-auto">
-              <div class="text-[10px] font-mono text-slate-400 mb-1 font-medium">${allocPct.toFixed(1)}%</div>
-              <div class="w-full h-1.5 bg-[#070B14] rounded-full overflow-hidden border border-surface-border">
-                <div class="h-full bg-accent rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
+          <td class="py-3.5 px-3 text-center">
+            <div class="w-14 sm:w-16 mx-auto">
+              <div class="text-[9px] font-mono text-slate-400 mb-0.5">${allocPct.toFixed(1)}%</div>
+              <div class="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                <div class="h-full bg-cyanTech rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
               </div>
             </div>
           </td>
 
-          <td class="py-4.5 px-5 text-center">
-            <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
-              <button onclick="openModalForTicker('${asset.ticker}')" class="px-3 py-1.5 text-[11px] font-bold text-accent hover:text-white bg-accent-subtle hover:bg-sky-500 rounded-xl border border-accent/25 transition active:scale-95 flex items-center gap-1.5 shadow-sm">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">Reforço</span>
+          <td class="py-3.5 px-4 text-center">
+            <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation()">
+              <button onclick="openModalForTicker('${asset.ticker}')" class="px-2 py-1 text-[10px] font-mono font-semibold text-cyanTech hover:text-white bg-cyanTech/10 hover:bg-cyanTech/30 rounded-lg border border-cyanTech/20 transition flex items-center gap-1">
+                <i data-lucide="plus" class="w-3 h-3"></i>
+                <span class="hidden sm:inline">Add</span>
               </button>
-              <button onclick="deleteEntireAsset('${asset.ticker}')" class="p-1.5 text-slate-400 hover:text-loss rounded-xl hover:bg-surface-subtle transition active:scale-95" title="Eliminar ${asset.ticker}">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              <button onclick="deleteEntireAsset('${asset.ticker}')" class="p-1 text-slate-400 hover:text-roseLoss rounded-lg transition" title="Remover">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </td>
@@ -1460,54 +1436,52 @@
         // Lotes Expandidos
         if (isExpanded) {
           const detailTr = document.createElement("tr");
-          detailTr.className = "bg-[#090D16]/60 border-b border-surface-border/60";
+          detailTr.className = "bg-[#080A0F]/50 border-b border-app-border";
 
           let lotsRowsHtml = "";
           asset.lots.forEach((lot, idx) => {
             const lotIsPos = lot.plEUR >= 0;
-            const lotColor = lotIsPos ? 'text-gain' : 'text-loss';
-            const lotBadgeBg = lotIsPos ? 'bg-gain-subtle text-gain border border-gain/20' : 'bg-loss-subtle text-loss border border-loss/20';
+            const lotColor = lotIsPos ? 'text-emeraldGain' : 'text-roseLoss';
+            const lotBadgeBg = lotIsPos ? 'bg-emeraldGain/10 text-emeraldGain border border-emeraldGain/20' : 'bg-roseLoss/10 text-roseLoss border border-roseLoss/20';
 
             lotsRowsHtml += `
-              <tr class="border-b border-surface-border/40 hover:bg-surface-cardHover/40 transition text-xs font-mono">
-                <td class="py-3 px-4 text-slate-300">
-                  <div class="flex items-center gap-2.5">
-                    <span class="w-5 h-5 rounded-md bg-surface-subtle text-accent flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
-                    <div>
-                      <span class="text-white font-semibold">📅 ${lot.buyDate || '2026-06-01'}</span>
-                      <span class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-surface-subtle text-slate-400 font-medium">[${lot.broker}]</span>
-                    </div>
+              <tr class="border-b border-app-border/40 hover:bg-white/[0.02] transition text-[11px] font-mono">
+                <td class="py-2.5 px-3 text-slate-300">
+                  <div class="flex items-center gap-2">
+                    <span class="w-4 h-4 rounded bg-white/[0.04] text-cyanTech flex items-center justify-center text-[9px] font-bold">#${idx + 1}</span>
+                    <span class="text-white font-medium">${lot.buyDate || '2026-06-01'}</span>
+                    <span class="text-[9px] px-1 py-0.2 rounded bg-white/[0.04] text-slate-400">[${lot.broker}]</span>
                   </div>
                 </td>
-                <td class="py-3 px-4 text-right text-slate-200">
-                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} ações
+                <td class="py-2.5 px-3 text-right text-slate-200">
+                  ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
                 </td>
-                <td class="py-3 px-4 text-right text-slate-300">
+                <td class="py-2.5 px-3 text-right text-slate-300">
                   ${formatNative(lot.avgUSD)}
-                  <span class="block text-[10px] text-slate-500 mt-0.5">Taxa: ${formatNative(lot.feesUSD || 0)}</span>
+                  <span class="block text-[9px] text-slate-400">taxa: ${formatNative(lot.feesUSD || 0)}</span>
                 </td>
-                <td class="py-3 px-4 text-right text-slate-300">
+                <td class="py-2.5 px-3 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
                 </td>
-                <td class="py-3 px-4 text-right text-white font-bold">
+                <td class="py-2.5 px-3 text-right text-white font-bold">
                   ${fmtEUR(lot.currEUR)}
                 </td>
-                <td class="py-3 px-4 text-right">
+                <td class="py-2.5 px-3 text-right">
                   <span class="font-bold ${lotColor}">${lotIsPos ? '+' : ''}${fmtEUR(lot.plEUR)}</span>
-                  <span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${lotBadgeBg}">${fmtPCT(lot.plPct)}</span>
+                  <span class="ml-1 px-1.5 py-0.2 rounded text-[9px] font-bold ${lotBadgeBg}">${fmtPCT(lot.plPct)}</span>
                 </td>
-                <td class="py-3 px-4 text-center">
-                  <span class="px-2.5 py-0.5 rounded-full bg-surface-subtle text-accent text-[10px] font-semibold border border-surface-border">
-                    ${lot.lotPositionWeight.toFixed(1)}% do ativo
+                <td class="py-2.5 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded bg-white/[0.04] text-cyanTech text-[9px]">
+                    ${lot.lotPositionWeight.toFixed(1)}%
                   </span>
                 </td>
-                <td class="py-3 px-4 text-center">
-                  <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
-                    <button onclick="openModal('${lot.id}')" class="p-1.5 text-slate-400 hover:text-accent rounded-lg hover:bg-surface-subtle transition">
-                      <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                <td class="py-2.5 px-3 text-center">
+                  <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation()">
+                    <button onclick="openModal('${lot.id}')" class="p-1 text-slate-400 hover:text-cyanTech rounded transition">
+                      <i data-lucide="edit-2" class="w-3 h-3"></i>
                     </button>
-                    <button onclick="deleteAsset('${lot.id}')" class="p-1.5 text-slate-400 hover:text-loss rounded-lg hover:bg-surface-subtle transition">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <button onclick="deleteAsset('${lot.id}')" class="p-1 text-slate-400 hover:text-roseLoss rounded transition">
+                      <i data-lucide="trash-2" class="w-3 h-3"></i>
                     </button>
                   </div>
                 </td>
@@ -1516,23 +1490,21 @@
           });
 
           detailTr.innerHTML = `
-            <td colspan="10" class="p-5 bg-[#070B14]/40">
-              <div class="rounded-2xl border border-surface-border bg-surface-card p-5 space-y-4 shadow-inner">
-                <div class="flex items-center justify-between border-b border-surface-border/60 pb-3">
-                  <div class="flex items-center gap-2.5">
-                    <span class="w-2 h-2 rounded-full bg-accent"></span>
-                    <h4 class="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Lotes Registados de ${asset.ticker} (${asset.lots.length} Lotes)
+            <td colspan="10" class="p-4 bg-[#080A0F]">
+              <div class="rounded-xl border border-app-border bg-[#0F121C] p-4 space-y-3">
+                <div class="flex items-center justify-between border-b border-app-border pb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyanTech"></span>
+                    <h4 class="text-[11px] font-bold text-white uppercase tracking-wider font-mono">
+                      Lotes de ${asset.ticker} (${asset.lots.length})
                     </h4>
                   </div>
-                  <div class="flex items-center gap-4">
-                    <button onclick="openModalForTicker('${asset.ticker}')" class="text-xs font-bold text-accent hover:text-white flex items-center gap-1.5 transition">
-                      <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                      + Registar Nova Compra
+                  <div class="flex items-center gap-3 font-mono text-[11px]">
+                    <button onclick="openModalForTicker('${asset.ticker}')" class="text-cyanTech hover:text-white flex items-center gap-1 transition">
+                      <i data-lucide="plus" class="w-3 h-3"></i> + Ordem
                     </button>
-                    <button onclick="deleteEntireAsset('${asset.ticker}')" class="text-xs font-bold text-loss hover:text-rose-300 flex items-center gap-1.5 transition">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                      Eliminar Ativo
+                    <button onclick="deleteEntireAsset('${asset.ticker}')" class="text-roseLoss hover:text-rose-300 flex items-center gap-1 transition">
+                      <i data-lucide="trash-2" class="w-3 h-3"></i> Eliminar
                     </button>
                   </div>
                 </div>
@@ -1540,18 +1512,18 @@
                 <div class="overflow-x-auto custom-scrollbar">
                   <table class="w-full text-left border-collapse">
                     <thead>
-                      <tr class="text-[10px] font-mono uppercase text-slate-400 border-b border-surface-border/60">
-                        <th class="py-2.5 px-4 font-semibold">Lote / Data</th>
-                        <th class="py-2.5 px-4 text-right font-semibold">Qtd</th>
-                        <th class="py-2.5 px-4 text-right font-semibold">Preço Pago (${asset.isEur ? '€' : '$'})</th>
-                        <th class="py-2.5 px-4 text-right font-semibold">Custo Líquido (€)</th>
-                        <th class="py-2.5 px-4 text-right font-semibold">Valor Atual (€)</th>
-                        <th class="py-2.5 px-4 text-right font-semibold">Rentabilidade</th>
-                        <th class="py-2.5 px-4 text-center font-semibold">Peso</th>
-                        <th class="py-2.5 px-4 text-center font-semibold">Ações</th>
+                      <tr class="text-[9px] font-mono uppercase text-slate-400 border-b border-app-border">
+                        <th class="py-1.5 px-3 font-semibold">Lote / Data</th>
+                        <th class="py-1.5 px-3 text-right font-semibold">Qtd</th>
+                        <th class="py-1.5 px-3 text-right font-semibold">Preço (${asset.isEur ? '€' : '$'})</th>
+                        <th class="py-1.5 px-3 text-right font-semibold">Custo (€)</th>
+                        <th class="py-1.5 px-3 text-right font-semibold">Atual (€)</th>
+                        <th class="py-1.5 px-3 text-right font-semibold">Retorno</th>
+                        <th class="py-1.5 px-3 text-center font-semibold">Peso</th>
+                        <th class="py-1.5 px-3 text-center font-semibold">Ações</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-surface-border/40">
+                    <tbody class="divide-y divide-app-border/40">
                       ${lotsRowsHtml}
                     </tbody>
                   </table>
@@ -1577,14 +1549,14 @@
       if (isEur) {
         if (lblAvg) lblAvg.textContent = "Preço Pago (€ EUR) *";
         if (lblCurr) lblCurr.textContent = "Cotação (€ EUR)";
-        if (lblFees) lblFees.textContent = "Comissão da Ordem (€ EUR):";
+        if (lblFees) lblFees.textContent = "Comissão (€ EUR):";
         if (fxRateInput) fxRateInput.value = "1.0000";
-        if (fxContainer) fxContainer.classList.add("opacity-50", "pointer-events-none");
+        if (fxContainer) fxContainer.classList.add("opacity-40", "pointer-events-none");
       } else {
         if (lblAvg) lblAvg.textContent = "Preço Pago ($ USD) *";
         if (lblCurr) lblCurr.textContent = "Cotação ($ USD)";
-        if (lblFees) lblFees.textContent = "Comissão da Ordem ($ USD):";
-        if (fxContainer) fxContainer.classList.remove("opacity-50", "pointer-events-none");
+        if (lblFees) lblFees.textContent = "Comissão ($ USD):";
+        if (fxContainer) fxContainer.classList.remove("opacity-40", "pointer-events-none");
       }
     }
 
@@ -1641,8 +1613,8 @@
       if (errBox) errBox.classList.add("hidden");
 
       document.getElementById("form-id").value = "";
-      document.getElementById("modal-title").innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-accent"></span> ${editLotId ? "Editar Lote de Compra" : "Registar Nova Compra"}`;
-      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os dados desta compra específica." : "Cada compra é guardada como uma posição individual rastreável.";
+      document.getElementById("modal-title").innerHTML = `<span class="w-2 h-2 rounded-full bg-cyanTech"></span> ${editLotId ? "Editar Lote" : "Nova Ordem"}`;
+      document.getElementById("modal-subtitle").textContent = editLotId ? "Atualiza os valores deste lote específico." : "Registo de posição com histórico de cotações.";
 
       const dateInput = document.getElementById("form-date");
       const todayStr = new Date().toISOString().split("T")[0];
@@ -1817,15 +1789,11 @@
       const avgUSD = parseNumericInput(document.getElementById("form-avg")?.value);
 
       if (!ticker) {
-        if (errBox) { errBox.textContent = "Por favor indica o ticker da ação/ETF."; errBox.classList.remove("hidden"); }
+        if (errBox) { errBox.textContent = "Por favor indica o ticker."; errBox.classList.remove("hidden"); }
         return;
       }
-      if (qty <= 0) {
-        if (errBox) { errBox.textContent = "A quantidade deve ser superior a zero."; errBox.classList.remove("hidden"); }
-        return;
-      }
-      if (avgUSD <= 0) {
-        if (errBox) { errBox.textContent = "O preço pago deve ser superior a zero."; errBox.classList.remove("hidden"); }
+      if (qty <= 0 || avgUSD <= 0) {
+        if (errBox) { errBox.textContent = "Quantidade e Preço devem ser superiores a zero."; errBox.classList.remove("hidden"); }
         return;
       }
 
@@ -1882,7 +1850,7 @@
             eurUsdRateAtBuy
           };
         }
-        showToast(`Lote de ${ticker} atualizado!`);
+        showToast(`Posição ${ticker} atualizada!`);
       } else {
         const newLot = {
           id: Date.now().toString(),
@@ -1901,7 +1869,7 @@
         };
         portfolio.push(newLot);
         expandedTickers.add(ticker);
-        showToast(`Nova compra de ${ticker} guardada!`);
+        showToast(`Ordem de ${ticker} guardada!`);
       }
 
       saveLocalPortfolio();
@@ -1913,11 +1881,11 @@
 
     window.deleteAsset = function (id) {
       const lot = portfolio.find(it => String(it.id) === String(id));
-      const label = lot ? `${lot.ticker} (${lot.qty} ações)` : "este lote";
+      const label = lot ? `${lot.ticker} (${lot.qty})` : "este lote";
 
       openConfirmModal(
-        "Eliminar Lote de Compra",
-        `Tens a certeza de que desejas remover a compra de ${label}?`,
+        "Remover Ordem",
+        `Tens a certeza de que desejas remover o lote de ${label}?`,
         () => {
           deletedIdsSet.add(String(id));
           portfolio = portfolio.filter(it => String(it.id) !== String(id));
@@ -1925,7 +1893,7 @@
           renderAll();
           deleteAssetFromSupabase(id);
           if (cachedHistoryData) buildRealHistoryChart(cachedHistoryData);
-          showToast("Lote removido com sucesso.");
+          showToast("Lote removido.");
         }
       );
     };
@@ -1936,7 +1904,7 @@
 
       openConfirmModal(
         `Eliminar Ativo ${ticker}`,
-        `Tens a certeza de que queres eliminar o ativo ${ticker} e os seus ${lots.length} lotes da carteira?`,
+        `Tens a certeza de que pretendes eliminar ${ticker} e os seus ${lots.length} lotes?`,
         () => {
           lots.forEach(lot => deletedIdsSet.add(String(lot.id)));
           portfolio = portfolio.filter(it => it.ticker !== ticker);
@@ -1945,7 +1913,7 @@
           renderAll();
           deleteEntireAssetFromSupabase(ticker);
           if (cachedHistoryData) buildRealHistoryChart(cachedHistoryData);
-          showToast(`Ativo ${ticker} removido com sucesso.`);
+          showToast(`${ticker} removido com sucesso.`);
         }
       );
     };
@@ -1954,9 +1922,9 @@
       currentFilter = cat;
       document.querySelectorAll(".cat-pill").forEach(btn => {
         if (btn.getAttribute("data-cat") === cat) {
-          btn.className = "cat-pill active px-4 py-2 rounded-xl text-xs font-bold bg-accent text-slate-950 transition whitespace-nowrap shadow-sm";
+          btn.className = "cat-pill active px-3 py-1.5 rounded-lg font-bold bg-white text-slate-950 transition whitespace-nowrap";
         } else {
-          btn.className = "cat-pill px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-surface-subtle hover:bg-slate-700/60 border border-surface-border transition whitespace-nowrap";
+          btn.className = "cat-pill px-3 py-1.5 rounded-lg text-slate-400 hover:text-white bg-app-subtle border border-app-border transition whitespace-nowrap";
         }
       });
       renderAll();
