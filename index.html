@@ -1084,17 +1084,24 @@
       if (!history || portfolio.length === 0) return;
 
       const metrics = calculatePortfolioMetrics();
-      const currentMarketEUR = metrics.totalCurrEUR;
+      const currentReturn = metrics.totalPLPct; // Ex: +32.92%
 
-      // 1. TUDO (Rentabilidade total acumulada da carteira)
+      // 1. TUDO
       const elAll = document.getElementById("range-val-all");
       if (elAll) {
-        elAll.textContent = fmtPCT(metrics.totalPLPct);
+        elAll.textContent = fmtPCT(currentReturn);
         const btnAll = elAll.closest(".chart-range-btn");
         if (!btnAll.classList.contains("active")) {
-          elAll.className = `text-[10px] font-bold leading-tight mt-0.5 ${metrics.totalPLPct >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          elAll.className = `text-[10px] font-bold leading-tight mt-0.5 ${currentReturn >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
+
+      // Constrói a série cronológica de rentabilidade idêntica ao gráfico
+      const dateSet = new Set();
+      Object.values(history).forEach(dict => {
+        if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
+      });
+      const allDates = Array.from(dateSet).sort();
 
       let earliestDate = "2026-06-01";
       portfolio.forEach(lot => {
@@ -1103,93 +1110,95 @@
         if (d && d < earliestDate) earliestDate = d;
       });
 
-      const dateSet = new Set();
-      Object.values(history).forEach(dict => {
-        if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
-      });
-      const allDates = Array.from(dateSet).sort();
+      // Mapeia a rentabilidade acumulada da carteira para cada dia
+      const historyReturns = {};
+      let lastFx = EUR_USD;
 
-      // Calcula o retorno real do período sobre os ativos já detidos na data inicial
-      const computePeriodReturn = (targetDateStr) => {
-        if (targetDateStr <= earliestDate) {
-          return metrics.totalPLPct;
-        }
-
-        const validDates = allDates.filter(d => d <= targetDateStr && d >= earliestDate);
-        if (validDates.length === 0) return metrics.totalPLPct;
-        const resolvedDate = validDates[validDates.length - 1];
-
-        let startFx = EUR_USD;
-        if (history["EURUSD"] && history["EURUSD"][resolvedDate]) {
-          startFx = history["EURUSD"][resolvedDate];
-        }
-
-        let startValue = 0;
-        let currentValueAtStartPositions = 0;
-
-        portfolio.forEach(lot => {
-          let bDate = (lot.buyDate || '2026-06-01').trim();
-          if (bDate.startsWith("2024-")) bDate = bDate.replace("2024-", "2026-");
-
-          // Avalia apenas as posições que já existiam no início do período
-          if (bDate <= resolvedDate) {
-            const isEur = isEuroAsset(lot.ticker);
-            const pStart = (history[lot.ticker] && history[lot.ticker][resolvedDate]) || lot.currUSD;
-            const pCurrent = lot.currUSD;
-
-            if (isEur) {
-              startValue += lot.qty * pStart;
-              currentValueAtStartPositions += lot.qty * pCurrent;
-            } else {
-              startValue += (lot.qty * pStart) / startFx;
-              currentValueAtStartPositions += (lot.qty * pCurrent) / EUR_USD;
-            }
+      allDates.forEach(dateStr => {
+        if (dateStr >= earliestDate) {
+          if (history["EURUSD"] && history["EURUSD"][dateStr]) {
+            lastFx = history["EURUSD"][dateStr];
           }
-        });
+          const fxRate = lastFx || EUR_USD;
 
-        if (startValue > 0) {
-          return ((currentValueAtStartPositions - startValue) / startValue) * 100;
+          let dayInv = 0;
+          let dayVal = 0;
+
+          portfolio.forEach(lot => {
+            let bDate = (lot.buyDate || '2026-06-01').trim();
+            if (bDate.startsWith("2024-")) bDate = bDate.replace("2024-", "2026-");
+
+            if (bDate <= dateStr) {
+              const isEur = isEuroAsset(lot.ticker);
+              let cost = lot.costEUR;
+              if (!cost || cost <= 0) {
+                cost = isEur ? (lot.qty * lot.avgUSD) + (lot.feesUSD || 0) : ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / fxRate;
+              }
+              dayInv += cost;
+
+              const price = (history[lot.ticker] && history[lot.ticker][dateStr]) || lot.currUSD;
+              dayVal += isEur ? (lot.qty * price) : ((lot.qty * price) / fxRate);
+            }
+          });
+
+          if (dayInv > 0) {
+            historyReturns[dateStr] = ((dayVal - dayInv) / dayInv) * 100;
+          }
         }
-        return 0;
+      });
+
+      // Função para obter o retorno de há X dias com base no histórico real
+      const getReturnDiff = (targetDateStr) => {
+        if (targetDateStr <= earliestDate) {
+          return currentReturn;
+        }
+
+        const validDates = Object.keys(historyReturns).filter(d => d <= targetDateStr).sort();
+        if (validDates.length === 0) return currentReturn;
+
+        const resolvedDate = validDates[validDates.length - 1];
+        const startReturn = historyReturns[resolvedDate];
+
+        return currentReturn - startReturn;
       };
 
       const now = new Date();
 
-      // 2. 1 MÊS
+      // 2. 1 MÊS (últimos 30 dias)
       const d1m = new Date(now);
       d1m.setDate(now.getDate() - 30);
-      const ret1m = computePeriodReturn(d1m.toISOString().split("T")[0]);
+      const diff1m = getReturnDiff(d1m.toISOString().split("T")[0]);
       const el1m = document.getElementById("range-val-1m");
       if (el1m) {
-        el1m.textContent = fmtPCT(ret1m);
+        el1m.textContent = fmtPCT(diff1m);
         const btn1m = el1m.closest(".chart-range-btn");
         if (!btn1m.classList.contains("active")) {
-          el1m.className = `text-[10px] font-bold leading-tight mt-0.5 ${ret1m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          el1m.className = `text-[10px] font-bold leading-tight mt-0.5 ${diff1m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // 3. 3 MESES
+      // 3. 3 MESES (últimos 90 dias - cerca de 26/28 de Junho)
       const d3m = new Date(now);
       d3m.setDate(now.getDate() - 90);
-      const ret3m = computePeriodReturn(d3m.toISOString().split("T")[0]);
+      const diff3m = getReturnDiff(d3m.toISOString().split("T")[0]);
       const el3m = document.getElementById("range-val-3m");
       if (el3m) {
-        el3m.textContent = fmtPCT(ret3m);
+        el3m.textContent = fmtPCT(diff3m);
         const btn3m = el3m.closest(".chart-range-btn");
         if (!btn3m.classList.contains("active")) {
-          el3m.className = `text-[10px] font-bold leading-tight mt-0.5 ${ret3m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          el3m.className = `text-[10px] font-bold leading-tight mt-0.5 ${diff3m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // 4. YTD (Desde 1 de Janeiro ou data de início da carteira)
+      // 4. YTD
       const dYtd = new Date(now.getFullYear(), 0, 1);
-      const retYtd = computePeriodReturn(dYtd.toISOString().split("T")[0]);
+      const diffYtd = getReturnDiff(dYtd.toISOString().split("T")[0]);
       const elYtd = document.getElementById("range-val-ytd");
       if (elYtd) {
-        elYtd.textContent = fmtPCT(retYtd);
+        elYtd.textContent = fmtPCT(diffYtd);
         const btnYtd = elYtd.closest(".chart-range-btn");
         if (!btnYtd.classList.contains("active")) {
-          elYtd.className = `text-[10px] font-bold leading-tight mt-0.5 ${retYtd >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          elYtd.className = `text-[10px] font-bold leading-tight mt-0.5 ${diffYtd >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
     }
