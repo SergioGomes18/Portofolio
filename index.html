@@ -1079,24 +1079,23 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-    // Calcula dinamicamente as percentagens dos botões 1M, 3M, YTD e TUDO
+// Calcula dinamicamente as percentagens dos botões 1M, 3M, YTD e TUDO
     function updateRangeReturnBadges(history) {
       if (!history || portfolio.length === 0) return;
 
       const metrics = calculatePortfolioMetrics();
-      const currentReturnPct = metrics.totalPLPct; // Rentabilidade acumulada atual da carteira
+      const currentMarketEUR = metrics.totalCurrEUR;
 
-      // 1. TUDO (Rentabilidade total acumulada)
+      // 1. TUDO (Rentabilidade total acumulada da carteira)
       const elAll = document.getElementById("range-val-all");
       if (elAll) {
-        elAll.textContent = fmtPCT(currentReturnPct);
+        elAll.textContent = fmtPCT(metrics.totalPLPct);
         const btnAll = elAll.closest(".chart-range-btn");
         if (!btnAll.classList.contains("active")) {
-          elAll.className = `text-[10px] font-bold leading-tight mt-0.5 ${currentReturnPct >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          elAll.className = `text-[10px] font-bold leading-tight mt-0.5 ${metrics.totalPLPct >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // Identifica a data da primeira compra registada
       let earliestDate = "2026-06-01";
       portfolio.forEach(lot => {
         let d = (lot.buyDate || '').trim();
@@ -1104,92 +1103,93 @@
         if (d && d < earliestDate) earliestDate = d;
       });
 
-      // Lista ordenada de todas as datas disponíveis no histórico
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
       });
       const allDates = Array.from(dateSet).sort();
 
-      // Função que calcula a rentabilidade acumulada (%) numa data do passado
-      const computeReturnPctAtDate = (targetDateStr) => {
-        // Se a data for anterior à primeira compra, a rentabilidade de partida é 0%
+      // Calcula o retorno real do período sobre os ativos já detidos na data inicial
+      const computePeriodReturn = (targetDateStr) => {
         if (targetDateStr <= earliestDate) {
-          return 0;
+          return metrics.totalPLPct;
         }
 
         const validDates = allDates.filter(d => d <= targetDateStr && d >= earliestDate);
-        if (validDates.length === 0) return 0;
+        if (validDates.length === 0) return metrics.totalPLPct;
         const resolvedDate = validDates[validDates.length - 1];
 
-        let fx = EUR_USD;
+        let startFx = EUR_USD;
         if (history["EURUSD"] && history["EURUSD"][resolvedDate]) {
-          fx = history["EURUSD"][resolvedDate];
+          startFx = history["EURUSD"][resolvedDate];
         }
 
-        let dayVal = 0;
-        let dayInv = 0;
+        let startValue = 0;
+        let currentValueAtStartPositions = 0;
 
         portfolio.forEach(lot => {
           let bDate = (lot.buyDate || '2026-06-01').trim();
           if (bDate.startsWith("2024-")) bDate = bDate.replace("2024-", "2026-");
 
+          // Avalia apenas as posições que já existiam no início do período
           if (bDate <= resolvedDate) {
             const isEur = isEuroAsset(lot.ticker);
-            const price = (history[lot.ticker] && history[lot.ticker][resolvedDate]) || lot.currUSD;
-            dayVal += isEur ? (lot.qty * price) : ((lot.qty * price) / fx);
+            const pStart = (history[lot.ticker] && history[lot.ticker][resolvedDate]) || lot.currUSD;
+            const pCurrent = lot.currUSD;
 
-            let cost = lot.costEUR;
-            if (!cost || cost <= 0) {
-              cost = isEur ? (lot.qty * lot.avgUSD) + (lot.feesUSD || 0) : ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / fx;
+            if (isEur) {
+              startValue += lot.qty * pStart;
+              currentValueAtStartPositions += lot.qty * pCurrent;
+            } else {
+              startValue += (lot.qty * pStart) / startFx;
+              currentValueAtStartPositions += (lot.qty * pCurrent) / EUR_USD;
             }
-            dayInv += cost;
           }
         });
 
-        return dayInv > 0 ? ((dayVal - dayInv) / dayInv) * 100 : 0;
+        if (startValue > 0) {
+          return ((currentValueAtStartPositions - startValue) / startValue) * 100;
+        }
+        return 0;
       };
 
       const now = new Date();
 
-      // 2. 1 MÊS (Variação de rentabilidade nos últimos 30 dias)
+      // 2. 1 MÊS
       const d1m = new Date(now);
       d1m.setDate(now.getDate() - 30);
-      const pastRet1m = computeReturnPctAtDate(d1m.toISOString().split("T")[0]);
-      const diff1m = currentReturnPct - pastRet1m;
+      const ret1m = computePeriodReturn(d1m.toISOString().split("T")[0]);
       const el1m = document.getElementById("range-val-1m");
       if (el1m) {
-        el1m.textContent = fmtPCT(diff1m);
+        el1m.textContent = fmtPCT(ret1m);
         const btn1m = el1m.closest(".chart-range-btn");
         if (!btn1m.classList.contains("active")) {
-          el1m.className = `text-[10px] font-bold leading-tight mt-0.5 ${diff1m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          el1m.className = `text-[10px] font-bold leading-tight mt-0.5 ${ret1m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // 3. 3 MESES (Variação de rentabilidade nos últimos 90 dias)
+      // 3. 3 MESES
       const d3m = new Date(now);
       d3m.setDate(now.getDate() - 90);
-      const pastRet3m = computeReturnPctAtDate(d3m.toISOString().split("T")[0]);
-      const diff3m = currentReturnPct - pastRet3m;
+      const ret3m = computePeriodReturn(d3m.toISOString().split("T")[0]);
       const el3m = document.getElementById("range-val-3m");
       if (el3m) {
-        el3m.textContent = fmtPCT(diff3m);
+        el3m.textContent = fmtPCT(ret3m);
         const btn3m = el3m.closest(".chart-range-btn");
         if (!btn3m.classList.contains("active")) {
-          el3m.className = `text-[10px] font-bold leading-tight mt-0.5 ${diff3m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          el3m.className = `text-[10px] font-bold leading-tight mt-0.5 ${ret3m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // 4. YTD (Desde o início do ano / primeira compra efetuada este ano)
+      // 4. YTD (Desde 1 de Janeiro ou data de início da carteira)
       const dYtd = new Date(now.getFullYear(), 0, 1);
-      const pastRetYtd = computeReturnPctAtDate(dYtd.toISOString().split("T")[0]);
-      const diffYtd = currentReturnPct - pastRetYtd;
+      const retYtd = computePeriodReturn(dYtd.toISOString().split("T")[0]);
       const elYtd = document.getElementById("range-val-ytd");
       if (elYtd) {
-        elYtd.textContent = fmtPCT(diffYtd);
+        elYtd.textContent = fmtPCT(retYtd);
         const btnYtd = elYtd.closest(".chart-range-btn");
         if (!btnYtd.classList.contains("active")) {
-          elYtd.className = `text-[10px] font-bold leading-tight mt-0.5 ${diffYtd >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          elYtd.className = `text-[10px] font-bold leading-tight mt-0.5 ${retYtd >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
     }
