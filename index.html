@@ -245,7 +245,7 @@
 
     </section>
 
-    <!-- 2. LISTA E COMPOSIÇÃO DOS ATIVOS -->
+   <!-- 2. LISTA E COMPOSIÇÃO DOS ATIVOS (LAYOUT AREJADO & ORDENADO POR PESO) -->
     <section class="surface-card rounded-3xl overflow-hidden flex flex-col">
       
       <div class="p-5 sm:p-6 border-b border-brand-border flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
@@ -254,7 +254,7 @@
             <i data-lucide="layers" class="w-4 h-4 text-sky-400"></i>
             Ativos em Carteira
           </h2>
-          <p class="text-xs text-slate-400 mt-0.5">Clica em qualquer linha para abrir os lotes individuais, preços de equilíbrio e taxas.</p>
+          <p class="text-xs text-slate-400 mt-0.5">Ordenado por alocação • Clica numa linha para expandir os lotes individuais.</p>
         </div>
 
         <!-- Filtro de Categorias em Pílulas -->
@@ -266,21 +266,17 @@
         </div>
       </div>
 
-      <!-- Tabela Arejada e Tecnológica -->
+      <!-- Tabela Simplificada e Arejada -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-brand-border bg-[#06080F]/40 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
-              <th class="py-3.5 px-5 font-semibold">Ativo</th>
-              <th class="py-3.5 px-4 text-right font-semibold">Qtd</th>
-              <th class="py-3.5 px-4 text-right font-semibold">PMP & BE</th>
-              <th class="py-3.5 px-4 text-right font-semibold">Cotação</th>
-              <th class="py-3.5 px-4 text-right font-semibold">1D</th>
-              <th class="py-3.5 px-4 text-right font-semibold">Investido</th>
-              <th class="py-3.5 px-4 text-right font-semibold">Valor Atual</th>
-              <th class="py-3.5 px-5 text-right font-semibold">Mais-Valia</th>
-              <th class="py-3.5 px-4 text-center font-semibold">Peso</th>
-              <th class="py-3.5 px-5 text-center font-semibold">Ações</th>
+            <tr class="border-b border-brand-border bg-[#06080F]/50 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
+              <th class="py-4 px-5 font-semibold">Ativo / Posição</th>
+              <th class="py-4 px-4 text-right font-semibold">Cotação & PMP</th>
+              <th class="py-4 px-4 text-right font-semibold">1D</th>
+              <th class="py-4 px-4 text-right font-semibold">Valor & Alocação</th>
+              <th class="py-4 px-5 text-right font-semibold">Mais-Valia Total</th>
+              <th class="py-4 px-4 text-center font-semibold">Ações</th>
             </tr>
           </thead>
           <tbody id="portfolio-table-body" class="divide-y divide-brand-border/60 font-sans">
@@ -310,7 +306,6 @@
       </div>
 
     </section>
-
   </main>
 
   <!-- ================= MODAL DE COMPRA / EDIÇÃO DE LOTE ================= -->
