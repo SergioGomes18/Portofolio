@@ -1540,17 +1540,39 @@ function renderTable(metrics) {
         const isExpanded = expandedTickers.has(asset.ticker);
         const formatNative = asset.isEur ? fmtEUR : fmtUSD;
 
-        // Badge personalizado por ativo
-        let iconBadgeHtml = '';
-        if (asset.ticker === 'SXRV' || asset.category === 'ETF') {
-          iconBadgeHtml = `<div class="w-9 h-9 rounded-xl bg-[#E05315] flex items-center justify-center text-white font-black text-[10px] font-mono shrink-0 shadow">NDX</div>`;
-        } else if (asset.ticker === 'META') {
-          iconBadgeHtml = `<div class="w-9 h-9 rounded-xl bg-[#0081FB] flex items-center justify-center text-white font-black text-xs shrink-0 shadow"><i data-lucide="message-circle" class="w-4 h-4"></i></div>`;
-        } else if (asset.ticker === 'MSFT') {
-          iconBadgeHtml = `<div class="w-9 h-9 rounded-xl bg-[#00A4EF] flex items-center justify-center text-white font-black text-xs shrink-0 shadow"><i data-lucide="layout-grid" class="w-4 h-4"></i></div>`;
-        } else {
-          iconBadgeHtml = `<div class="w-9 h-9 rounded-xl bg-slate-800 border border-brand-border flex items-center justify-center font-bold text-xs text-sky-400 font-mono shadow">${asset.ticker.slice(0, 3)}</div>`;
-        }
+// Logótipos automáticos e oficiais por Ticker
+    const t = (asset.ticker || '').toUpperCase();
+    const domainMap = {
+      'AAPL': 'apple.com',
+      'MSFT': 'microsoft.com',
+      'META': 'meta.com',
+      'NOW': 'servicenow.com',
+      'AMZN': 'amazon.com',
+      'GOOGL': 'google.com',
+      'GOOG': 'google.com',
+      'NVDA': 'nvidia.com',
+      'TSLA': 'tesla.com',
+      'SXRV': 'ishares.com',
+      'SXR8': 'ishares.com',
+      'CSPX': 'ishares.com',
+      'VUAA': 'vanguard.com',
+      'VUSA': 'vanguard.com',
+      'NKE': 'nike.com'
+    };
+
+    const domain = domainMap[t] || `${t.toLowerCase()}.com`;
+    const logoUrl = `https://logo.clearbit.com/${domain}`;
+
+    const iconBadgeHtml = `
+      <div class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-700/60 p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+        <img 
+          src="${logoUrl}" 
+          alt="${t}" 
+          class="w-full h-full object-contain rounded-lg"
+          onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-xs font-mono font-bold text-sky-400\\'>${t.slice(0, 3)}</span>';"
+        />
+      </div>
+    `;
 
         const parentTr = document.createElement("tr");
         parentTr.className = `cursor-pointer transition border-b border-brand-border ${isExpanded ? 'bg-brand-cardHover' : 'hover:bg-brand-cardHover/50'}`;
