@@ -771,7 +771,7 @@
                 return;
               }
 
-              let buyD = item.buy_date || item.buyDate || '2026-06-01';
+              let buyD = item.buy_date || item.buyDate || '';
               if (buyD.startsWith("2024-")) buyD = buyD.replace("2024-", "2026-");
 
               remoteMap.set(strId, {
@@ -828,7 +828,7 @@
         name: item.name,
         category: item.category,
         broker: item.broker,
-        buy_date: item.buyDate || '2026-06-01',
+        buy_date: item.buyDate || '',
         qty: item.qty,
         avgUSD: item.avgUSD,
         currUSD: item.currUSD,
