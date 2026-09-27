@@ -1074,126 +1074,155 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-// Calcula dinamicamente as percentagens dos botões 1M, 3M, YTD e TUDO
+// =========================================================================
+    // CÁLCULO DE PERFORMANCE PROFISSIONAL (TRUE TIME-WEIGHTED RETURN - TWR)
+    // Padrão institucional: isola depósitos/compras e encadeia retornos diários
+    // =========================================================================
     function updateRangeReturnBadges(history) {
       if (!history || portfolio.length === 0) return;
 
       const metrics = calculatePortfolioMetrics();
-      const currentReturn = metrics.totalPLPct; // Ex: +32.92%
 
-      // 1. TUDO
+      // 1. TUDO (Rentabilidade Total Cumulativa da Carteira / ROI global)
       const elAll = document.getElementById("range-val-all");
       if (elAll) {
-        elAll.textContent = fmtPCT(currentReturn);
+        elAll.textContent = fmtPCT(metrics.totalPLPct);
         const btnAll = elAll.closest(".chart-range-btn");
         if (!btnAll.classList.contains("active")) {
-          elAll.className = `text-[10px] font-bold leading-tight mt-0.5 ${currentReturn >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          elAll.className = `text-[10px] font-bold leading-tight mt-0.5 ${metrics.totalPLPct >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // Constrói a série cronológica de rentabilidade idêntica ao gráfico
+      // Obter lista cronológica única de todas as datas disponíveis
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
       });
       const allDates = Array.from(dateSet).sort();
+      if (allDates.length === 0) return;
 
-      let earliestDate = "2026-06-01";
+      // Data da primeiríssima compra da carteira (ex: Janeiro de 2025)
+      let earliestDate = allDates[0];
       portfolio.forEach(lot => {
         let d = (lot.buyDate || '').trim();
-        if (d.startsWith("2024-")) d = d.replace("2024-", "2026-");
         if (d && d < earliestDate) earliestDate = d;
       });
 
-      // Mapeia a rentabilidade acumulada da carteira para cada dia
-      const historyReturns = {};
+      // Mapear cotação de cada ativo e FX dia a dia com preenchimento contínuo (Forward-Fill)
+      const priceMap = {};
+      const fxMap = {};
       let lastFx = EUR_USD;
 
-      allDates.forEach(dateStr => {
-        if (dateStr >= earliestDate) {
-          if (history["EURUSD"] && history["EURUSD"][dateStr]) {
-            lastFx = history["EURUSD"][dateStr];
-          }
-          const fxRate = lastFx || EUR_USD;
-
-          let dayInv = 0;
-          let dayVal = 0;
-
-          portfolio.forEach(lot => {
-            let bDate = (lot.buyDate || '2026-06-01').trim();
-            if (bDate.startsWith("2024-")) bDate = bDate.replace("2024-", "2026-");
-
-            if (bDate <= dateStr) {
-              const isEur = isEuroAsset(lot.ticker);
-              let cost = lot.costEUR;
-              if (!cost || cost <= 0) {
-                cost = isEur ? (lot.qty * lot.avgUSD) + (lot.feesUSD || 0) : ((lot.qty * lot.avgUSD) + (lot.feesUSD || 0)) / fxRate;
-              }
-              dayInv += cost;
-
-              const price = (history[lot.ticker] && history[lot.ticker][dateStr]) || lot.currUSD;
-              dayVal += isEur ? (lot.qty * price) : ((lot.qty * price) / fxRate);
-            }
-          });
-
-          if (dayInv > 0) {
-            historyReturns[dateStr] = ((dayVal - dayInv) / dayInv) * 100;
-          }
+      allDates.forEach(d => {
+        if (history["EURUSD"] && history["EURUSD"][d]) {
+          lastFx = history["EURUSD"][d];
         }
+        fxMap[d] = lastFx;
+
+        priceMap[d] = {};
+        portfolio.forEach(lot => {
+          if (history[lot.ticker] && history[lot.ticker][d]) {
+            priceMap[d][lot.ticker] = history[lot.ticker][d];
+          } else {
+            // Se for fim de semana ou feriado, usa o fecho anterior
+            const prevDIdx = allDates.indexOf(d) - 1;
+            const prevD = prevDIdx >= 0 ? allDates[prevDIdx] : null;
+            priceMap[d][lot.ticker] = (prevD && priceMap[prevD][lot.ticker]) || lot.currUSD;
+          }
+        });
       });
 
-      // Função para obter o retorno de há X dias com base no histórico real
-      const getReturnDiff = (targetDateStr) => {
-        if (targetDateStr <= earliestDate) {
-          return currentReturn;
+      // Calcula o vetor de Retornos Diários Orgânicos (r_t) da carteira
+      // r_t mede a variação de valor dos ativos que a carteira JÁ DETINHA no dia anterior
+      const dailyTWRReturns = {};
+
+      for (let i = 1; i < allDates.length; i++) {
+        const prevDay = allDates[i - 1];
+        const currDay = allDates[i];
+
+        if (currDay < earliestDate) continue;
+
+        let prevVal = 0;
+        let currValOfPrevHoldings = 0;
+
+        portfolio.forEach(lot => {
+          const buyD = (lot.buyDate || '').trim();
+          // Avalia apenas os lotes que já existiam antes do fecho do dia anterior
+          if (buyD && buyD <= prevDay) {
+            const isEur = isEuroAsset(lot.ticker);
+            const pPrev = priceMap[prevDay][lot.ticker] || lot.currUSD;
+            const pCurr = priceMap[currDay][lot.ticker] || lot.currUSD;
+            const fxPrev = fxMap[prevDay] || EUR_USD;
+            const fxCurr = fxMap[currDay] || EUR_USD;
+
+            if (isEur) {
+              prevVal += lot.qty * pPrev;
+              currValOfPrevHoldings += lot.qty * pCurr;
+            } else {
+              prevVal += (lot.qty * pPrev) / fxPrev;
+              currValOfPrevHoldings += (lot.qty * pCurr) / fxCurr;
+            }
+          }
+        });
+
+        if (prevVal > 0) {
+          dailyTWRReturns[currDay] = (currValOfPrevHoldings - prevVal) / prevVal;
+        } else {
+          dailyTWRReturns[currDay] = 0;
         }
+      }
 
-        const validDates = Object.keys(historyReturns).filter(d => d <= targetDateStr).sort();
-        if (validDates.length === 0) return currentReturn;
+      // Função Institucional: Produto dos retornos diários no intervalo [startDate, endDate]
+      // TWR = (1 + r1) * (1 + r2) * ... * (1 + rn) - 1
+      const computeTWRBetween = (startDateStr) => {
+        const validDays = allDates.filter(d => d >= startDateStr && dailyTWRReturns[d] !== undefined);
+        if (validDays.length === 0) return 0;
 
-        const resolvedDate = validDates[validDates.length - 1];
-        const startReturn = historyReturns[resolvedDate];
+        let compounded = 1.0;
+        validDays.forEach(d => {
+          compounded *= (1.0 + dailyTWRReturns[d]);
+        });
 
-        return currentReturn - startReturn;
+        return (compounded - 1.0) * 100;
       };
 
       const now = new Date();
 
-      // 2. 1 MÊS (últimos 30 dias)
+      // 2. 1 MÊS (Últimos 30 dias com encadeamento TWR)
       const d1m = new Date(now);
       d1m.setDate(now.getDate() - 30);
-      const diff1m = getReturnDiff(d1m.toISOString().split("T")[0]);
+      const ret1m = computeTWRBetween(d1m.toISOString().split("T")[0]);
       const el1m = document.getElementById("range-val-1m");
       if (el1m) {
-        el1m.textContent = fmtPCT(diff1m);
+        el1m.textContent = fmtPCT(ret1m);
         const btn1m = el1m.closest(".chart-range-btn");
         if (!btn1m.classList.contains("active")) {
-          el1m.className = `text-[10px] font-bold leading-tight mt-0.5 ${diff1m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          el1m.className = `text-[10px] font-bold leading-tight mt-0.5 ${ret1m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // 3. 3 MESES (últimos 90 dias - cerca de 26/28 de Junho)
+      // 3. 3 MESES (Últimos 90 dias com encadeamento TWR)
       const d3m = new Date(now);
       d3m.setDate(now.getDate() - 90);
-      const diff3m = getReturnDiff(d3m.toISOString().split("T")[0]);
+      const ret3m = computeTWRBetween(d3m.toISOString().split("T")[0]);
       const el3m = document.getElementById("range-val-3m");
       if (el3m) {
-        el3m.textContent = fmtPCT(diff3m);
+        el3m.textContent = fmtPCT(ret3m);
         const btn3m = el3m.closest(".chart-range-btn");
         if (!btn3m.classList.contains("active")) {
-          el3m.className = `text-[10px] font-bold leading-tight mt-0.5 ${diff3m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          el3m.className = `text-[10px] font-bold leading-tight mt-0.5 ${ret3m >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
 
-      // 4. YTD
+      // 4. YTD (Desde 1 de Janeiro deste ano com encadeamento TWR)
       const dYtd = new Date(now.getFullYear(), 0, 1);
-      const diffYtd = getReturnDiff(dYtd.toISOString().split("T")[0]);
+      const retYtd = computeTWRBetween(dYtd.toISOString().split("T")[0]);
       const elYtd = document.getElementById("range-val-ytd");
       if (elYtd) {
-        elYtd.textContent = fmtPCT(diffYtd);
+        elYtd.textContent = fmtPCT(retYtd);
         const btnYtd = elYtd.closest(".chart-range-btn");
         if (!btnYtd.classList.contains("active")) {
-          elYtd.className = `text-[10px] font-bold leading-tight mt-0.5 ${diffYtd >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
+          elYtd.className = `text-[10px] font-bold leading-tight mt-0.5 ${retYtd >= 0 ? 'text-brand-gain' : 'text-brand-loss'}`;
         }
       }
     }
