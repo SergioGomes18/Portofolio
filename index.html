@@ -30,11 +30,11 @@
           },
           colors: {
             brand: {
-              base: '#06080F',
-              card: '#0D111D',
-              cardHover: '#13192B',
-              border: 'rgba(255, 255, 255, 0.06)',
-              borderActive: 'rgba(56, 189, 248, 0.35)',
+              base: '#0b1120',
+              card: '#151f32',
+              cardHover: '#1c2a42',
+              border: '#24344d',
+              borderActive: 'rgba(56, 189, 248, 0.45)',
               accent: '#38BDF8',
               gain: '#10B981',
               loss: '#F43F5E'
@@ -46,12 +46,18 @@
   </script>
 
   <style>
+    /* Transições Suaves Globais */
+    body, .surface-card, tr, .chart-range-btn, header {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+
     body {
-      background-color: #06080F;
+      background-color: #0b1120;
       color: #E2E8F0;
       -webkit-font-smoothing: antialiased;
       -webkit-tap-highlight-color: transparent;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       height: 4px;
       width: 4px;
@@ -60,23 +66,90 @@
       background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(148, 163, 184, 0.2);
       border-radius: 9999px;
     }
-    .surface-card {
-      background: linear-gradient(180deg, rgba(13, 17, 29, 0.9) 0%, rgba(9, 12, 21, 0.95) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(20px);
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.4);
     }
+
+    .surface-card {
+      background: #151f32;
+      border: 1px solid #24344d;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+    }
+
     input[type="date"] {
       color-scheme: dark;
+    }
+
+    /* =========================================================================
+       LIGHT MODE EXECUTIVO (Padrão Institucional / Private Banking)
+       ========================================================================= */
+    body.light-theme {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+
+    body.light-theme header {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    body.light-theme .surface-card {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    body.light-theme .text-slate-400,
+    body.light-theme .text-slate-500 {
+      color: #64748b !important;
+    }
+
+    body.light-theme .text-slate-300,
+    body.light-theme .text-slate-200,
+    body.light-theme .text-white {
+      color: #0f172a !important;
+    }
+
+    body.light-theme .border-brand-border {
+      border-color: #e2e8f0 !important;
+    }
+
+    body.light-theme tr:hover {
+      background-color: #f8fafc !important;
+    }
+
+    body.light-theme input,
+    body.light-theme select {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    body.light-theme input::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    body.light-theme input[type="date"] {
+      color-scheme: light;
+    }
+
+    body.light-theme .chart-range-btn:not(.active) {
+      color: #64748b !important;
+    }
+
+    body.light-theme .chart-range-btn:not(.active):hover {
+      color: #0f172a !important;
+      background-color: #f1f5f9 !important;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-brand-accent/30 selection:text-white pb-16">
 
   <!-- ================= BARRA DE TOPO ELEGANTE ================= -->
-  <header class="sticky top-0 z-30 bg-[#06080F]/85 backdrop-blur-2xl border-b border-brand-border">
+  <header class="sticky top-0 z-30 bg-[#0b1120]/85 backdrop-blur-2xl border-b border-brand-border">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4 py-3">
       
       <!-- Marca & Status -->
@@ -101,6 +174,16 @@
 
       <!-- Ações Principais -->
       <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Alternador Dark / Light Mode -->
+        <button 
+          id="theme-toggle-btn" 
+          onclick="toggleExecutiveTheme()" 
+          class="p-2 sm:px-3 sm:py-2 text-xs font-mono font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-brand-border rounded-xl transition flex items-center gap-2 shadow-sm"
+          title="Alternar Tema Visual">
+          <span id="theme-icon">☀️</span>
+          <span id="theme-text" class="hidden sm:inline">Light Mode</span>
+        </button>
+
         <button id="btn-sync-quotes" onclick="fetchLiveMarketData(true)" class="p-2 sm:px-3 sm:py-2 text-xs font-mono font-medium text-slate-300 hover:text-white bg-brand-card hover:bg-brand-cardHover border border-brand-border rounded-xl transition flex items-center gap-2" title="Sincronizar Cotações">
           <i data-lucide="refresh-cw" id="icon-sync-quotes" class="w-3.5 h-3.5 text-brand-accent"></i>
           <span class="hidden sm:inline">Sync</span>
@@ -130,7 +213,7 @@
 
   <!-- ================= MODAL DE CONFIRMAÇÃO ================= -->
   <div id="modal-confirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
-    <div class="surface-card bg-[#0D111D] w-full max-w-md p-6 rounded-3xl space-y-4 shadow-2xl border border-brand-border">
+    <div class="surface-card bg-[#151f32] w-full max-w-md p-6 rounded-3xl space-y-4 shadow-2xl border border-brand-border">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-brand-loss/10 border border-brand-loss/20 flex items-center justify-center text-brand-loss shrink-0">
           <i data-lucide="alert-triangle" class="w-5 h-5"></i>
@@ -197,7 +280,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-brand-border">
         
         <!-- SELETOR COM DUAS LINHAS (NOME + PERCENTAGEM DINÂMICA) -->
-        <div class="flex items-center gap-1.5 bg-[#06080F] p-1 rounded-xl border border-brand-border text-xs font-mono">
+        <div class="flex items-center gap-1.5 bg-[#0b1120]/80 p-1 rounded-xl border border-brand-border text-xs font-mono">
           <button onclick="setChartRange('1M')" class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center" data-range="1M">
             <span class="text-[10px] text-slate-400 font-semibold leading-tight">1M</span>
             <span class="text-[10px] font-bold text-slate-300 leading-tight mt-0.5" id="range-val-1m">--</span>
@@ -230,7 +313,7 @@
           </div>
 
           <!-- Seletor EUR / % -->
-          <div class="flex items-center bg-[#06080F] p-0.5 rounded-lg border border-brand-border text-xs ml-1">
+          <div class="flex items-center bg-[#0b1120]/80 p-0.5 rounded-lg border border-brand-border text-xs ml-1">
             <button id="btn-chart-mode-eur" onclick="setChartMode('EUR')" class="px-2.5 py-0.5 rounded bg-sky-500 text-slate-950 font-bold transition">€</button>
             <button id="btn-chart-mode-pct" onclick="setChartMode('PCT')" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition">%</button>
           </div>
@@ -270,7 +353,7 @@
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-brand-border bg-[#06080F]/50 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
+            <tr class="border-b border-brand-border bg-[#0b1120]/60 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
               <th class="py-4 px-5 font-semibold">Ativo / Posição</th>
               <th class="py-4 px-4 text-right font-semibold">Cotação & PMP</th>
               <th class="py-4 px-4 text-right font-semibold">1D</th>
@@ -297,7 +380,7 @@
       </div>
 
       <!-- Rodapé -->
-      <div class="px-6 py-3.5 border-t border-brand-border bg-[#06080F]/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 font-mono">
+      <div class="px-6 py-3.5 border-t border-brand-border bg-[#0b1120]/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 font-mono">
         <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-brand-gain inline-block animate-pulse"></span>
           <span>Feed oficial Google Finance & Yahoo Finance ativo.</span>
@@ -310,7 +393,7 @@
 
   <!-- ================= MODAL DE COMPRA / EDIÇÃO DE LOTE ================= -->
   <div id="modal-asset" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-3 hidden">
-    <div class="surface-card bg-[#0D111D] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-border">
+    <div class="surface-card bg-[#151f32] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-border">
       
       <div class="px-6 py-5 border-b border-brand-border flex items-center justify-between shrink-0">
         <div>
@@ -340,13 +423,13 @@
               autocomplete="off"
               placeholder="ex: SXRV, META, MSFT" 
               oninput="onTickerChange(this.value)"
-              class="w-full uppercase px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono tracking-wider"
+              class="w-full uppercase px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono tracking-wider"
             >
           </div>
 
           <div>
             <label class="block text-xs font-mono text-slate-300 mb-1">Categoria</label>
-            <select id="form-category" onchange="onCategoryChange(this.value)" class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white focus:outline-none focus:border-sky-400">
+            <select id="form-category" onchange="onCategoryChange(this.value)" class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white focus:outline-none focus:border-sky-400">
               <option value="Tecnologia">Tecnologia</option>
               <option value="Consumo">Consumo Defensivo</option>
               <option value="Financeiro">Financeiro / Bancos</option>
@@ -363,14 +446,14 @@
             type="text" 
             id="form-name" 
             placeholder="ex: iShares NASDAQ 100, Microsoft, Meta..." 
-            class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400"
+            class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400"
           >
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
             <label class="block text-xs font-mono text-slate-300 mb-1">Corretora *</label>
-            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white focus:outline-none focus:border-sky-400">
+            <select id="form-broker" onchange="recalculateFormFees()" class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white focus:outline-none focus:border-sky-400">
               <option value="XTB">XTB (0% Comissão)</option>
               <option value="IBKR">Interactive Brokers (Tiered)</option>
               <option value="IBKR_FIXED">Interactive Brokers (Fixed)</option>
@@ -396,7 +479,7 @@
               required
               min="2025-01-01"
               onclick="try { this.showPicker(); } catch(e){}"
-              class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white focus:outline-none focus:border-sky-400 font-mono cursor-pointer"
+              class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white focus:outline-none focus:border-sky-400 font-mono cursor-pointer"
             >
           </div>
         </div>
@@ -412,7 +495,7 @@
               required 
               placeholder="ex: 0.6975" 
               oninput="recalculateFormFees()"
-              class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
+              class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
             >
           </div>
 
@@ -425,7 +508,7 @@
               required 
               placeholder="ex: 583.81" 
               oninput="recalculateFormFees()"
-              class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
+              class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
             >
           </div>
 
@@ -439,13 +522,13 @@
               inputmode="decimal"
               id="form-curr" 
               placeholder="Auto" 
-              class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
+              class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-400 font-mono"
             >
           </div>
         </div>
 
         <!-- TOTAL PAGO EM EUROS E CÂMBIO -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-4 rounded-2xl bg-[#06080F] border border-brand-border">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-4 rounded-2xl bg-[#0b1120] border border-brand-border">
           <div>
             <label class="block text-xs font-mono text-sky-400 mb-1">Débito Real (€ EUR) *</label>
             <input 
@@ -472,7 +555,7 @@
           </div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-[#06080F] border border-brand-border space-y-2">
+        <div class="p-4 rounded-2xl bg-[#0b1120] border border-brand-border space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono text-slate-400" id="lbl-form-fees">Comissão da Ordem:</span>
             <div class="w-28">
@@ -515,7 +598,7 @@
 
   <!-- ================= MODAL SUPABASE ================= -->
   <div id="modal-supabase" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 hidden">
-    <div class="surface-card bg-[#0D111D] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-border">
+    <div class="surface-card bg-[#151f32] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-brand-border">
       
       <div class="px-6 py-5 border-b border-brand-border flex items-center justify-between">
         <h3 class="text-sm font-mono font-bold text-white flex items-center gap-2">
@@ -538,7 +621,7 @@
           <input 
             type="text" 
             value="https://script.google.com/macros/s/AKfycbxeEAoGTeOosZKMAPIRbBHefe36-X_OpVadExuQSg7dgj7JsDT4etY9qlNpgkWYi9lozQ/exec" 
-            class="w-full px-3.5 py-2.5 bg-[#06080F] border border-brand-border rounded-xl text-white font-mono text-xs truncate" 
+            class="w-full px-3.5 py-2.5 bg-[#0b1120] border border-brand-border rounded-xl text-white font-mono text-xs truncate" 
             readonly
           >
         </div>
@@ -1074,9 +1157,8 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
     }
 
-// =========================================================================
+    // =========================================================================
     // CÁLCULO DE PERFORMANCE PROFISSIONAL (TRUE TIME-WEIGHTED RETURN - TWR)
-    // Padrão institucional: isola depósitos/compras e encadeia retornos diários
     // =========================================================================
     function updateRangeReturnBadges(history) {
       if (!history || portfolio.length === 0) return;
@@ -1093,7 +1175,6 @@
         }
       }
 
-      // Obter lista cronológica única de todas as datas disponíveis
       const dateSet = new Set();
       Object.values(history).forEach(dict => {
         if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
@@ -1101,14 +1182,12 @@
       const allDates = Array.from(dateSet).sort();
       if (allDates.length === 0) return;
 
-      // Data da primeiríssima compra da carteira (ex: Janeiro de 2025)
       let earliestDate = allDates[0];
       portfolio.forEach(lot => {
         let d = (lot.buyDate || '').trim();
         if (d && d < earliestDate) earliestDate = d;
       });
 
-      // Mapear cotação de cada ativo e FX dia a dia com preenchimento contínuo (Forward-Fill)
       const priceMap = {};
       const fxMap = {};
       let lastFx = EUR_USD;
@@ -1124,7 +1203,6 @@
           if (history[lot.ticker] && history[lot.ticker][d]) {
             priceMap[d][lot.ticker] = history[lot.ticker][d];
           } else {
-            // Se for fim de semana ou feriado, usa o fecho anterior
             const prevDIdx = allDates.indexOf(d) - 1;
             const prevD = prevDIdx >= 0 ? allDates[prevDIdx] : null;
             priceMap[d][lot.ticker] = (prevD && priceMap[prevD][lot.ticker]) || lot.currUSD;
@@ -1132,8 +1210,6 @@
         });
       });
 
-      // Calcula o vetor de Retornos Diários Orgânicos (r_t) da carteira
-      // r_t mede a variação de valor dos ativos que a carteira JÁ DETINHA no dia anterior
       const dailyTWRReturns = {};
 
       for (let i = 1; i < allDates.length; i++) {
@@ -1147,7 +1223,6 @@
 
         portfolio.forEach(lot => {
           const buyD = (lot.buyDate || '').trim();
-          // Avalia apenas os lotes que já existiam antes do fecho do dia anterior
           if (buyD && buyD <= prevDay) {
             const isEur = isEuroAsset(lot.ticker);
             const pPrev = priceMap[prevDay][lot.ticker] || lot.currUSD;
@@ -1172,8 +1247,6 @@
         }
       }
 
-      // Função Institucional: Produto dos retornos diários no intervalo [startDate, endDate]
-      // TWR = (1 + r1) * (1 + r2) * ... * (1 + rn) - 1
       const computeTWRBetween = (startDateStr) => {
         const validDays = allDates.filter(d => d >= startDateStr && dailyTWRReturns[d] !== undefined);
         if (validDays.length === 0) return 0;
@@ -1188,7 +1261,7 @@
 
       const now = new Date();
 
-      // 2. 1 MÊS (Últimos 30 dias com encadeamento TWR)
+      // 2. 1 MÊS
       const d1m = new Date(now);
       d1m.setDate(now.getDate() - 30);
       const ret1m = computeTWRBetween(d1m.toISOString().split("T")[0]);
@@ -1201,7 +1274,7 @@
         }
       }
 
-      // 3. 3 MESES (Últimos 90 dias com encadeamento TWR)
+      // 3. 3 MESES
       const d3m = new Date(now);
       d3m.setDate(now.getDate() - 90);
       const ret3m = computeTWRBetween(d3m.toISOString().split("T")[0]);
@@ -1214,7 +1287,7 @@
         }
       }
 
-      // 4. YTD (Desde 1 de Janeiro deste ano com encadeamento TWR)
+      // 4. YTD (Desde 1 de Janeiro deste ano)
       const dYtd = new Date(now.getFullYear(), 0, 1);
       const retYtd = computeTWRBetween(dYtd.toISOString().split("T")[0]);
       const elYtd = document.getElementById("range-val-ytd");
@@ -1405,6 +1478,10 @@
         ];
       }
 
+      const isLight = document.body.classList.contains('light-theme');
+      const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.04)';
+      const textColor = isLight ? '#64748b' : '#94A3B8';
+
       portfolioChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -1418,12 +1495,12 @@
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: '#0D111D',
+              backgroundColor: isLight ? '#ffffff' : '#0D111D',
               titleColor: '#38BDF8',
               titleFont: { family: '"JetBrains Mono"', size: 12, weight: 'bold' },
-              bodyColor: '#F8FAFC',
+              bodyColor: isLight ? '#0f172a' : '#F8FAFC',
               bodyFont: { family: '"JetBrains Mono"', size: 11 },
-              borderColor: 'rgba(56, 189, 248, 0.25)',
+              borderColor: isLight ? '#e2e8f0' : 'rgba(56, 189, 248, 0.25)',
               borderWidth: 1,
               padding: 12,
               cornerRadius: 10,
@@ -1447,9 +1524,9 @@
           },
           scales: {
             x: {
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              grid: { color: gridColor },
               ticks: { 
-                color: '#94A3B8',
+                color: textColor,
                 font: { family: '"JetBrains Mono"', size: 11, weight: '600' },
                 maxTicksLimit: 7,
                 callback: function(val, index) {
@@ -1460,9 +1537,9 @@
             },
             y: {
               position: 'right',
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              grid: { color: gridColor },
               ticks: {
-                color: '#94A3B8',
+                color: textColor,
                 font: { family: '"JetBrains Mono"', size: 10, weight: '500' },
                 callback: v => currentChartMode === 'EUR' ? `€${v.toLocaleString('pt-PT')}` : `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
               }
@@ -1471,7 +1548,6 @@
         }
       });
 
-      // Atualiza os valores percentuais dos botões de período
       updateRangeReturnBadges(history);
     }
 
@@ -1511,12 +1587,11 @@
       renderAll();
     }
 
-function renderTable(metrics) {
+    function renderTable(metrics) {
       const tbody = document.getElementById("portfolio-table-body");
       const emptyState = document.getElementById("table-empty-state");
       tbody.innerHTML = "";
 
-      // Filtra por categoria
       let filtered = metrics.assets.filter(asset => {
         return currentFilter === 'ALL' || asset.category === currentFilter;
       });
@@ -1540,58 +1615,54 @@ function renderTable(metrics) {
         const isExpanded = expandedTickers.has(asset.ticker);
         const formatNative = asset.isEur ? fmtEUR : fmtUSD;
 
-// Logótipos oficiais via CDN Financeira / Google Oficial
-    const t = (asset.ticker || '').toUpperCase();
+        // Logótipos oficiais via CDN Financeira / Google Oficial
+        const t = (asset.ticker || '').toUpperCase();
 
-    // Mapeamento dos domínios oficiais de cada empresa/fundo
-    const companyDomains = {
-      'MSFT': 'microsoft.com',
-      'META': 'meta.com',
-      'NOW':  'servicenow.com',
-      'SXRV': 'ishares.com',
-      'SXR8': 'ishares.com',
-      'CSPX': 'ishares.com',
-      'AAPL': 'apple.com',
-      'AMZN': 'amazon.com',
-      'GOOGL':'google.com',
-      'GOOG': 'google.com',
-      'NVDA': 'nvidia.com',
-      'TSLA': 'tesla.com'
-    };
+        const companyDomains = {
+          'MSFT': 'microsoft.com',
+          'META': 'meta.com',
+          'NOW':  'servicenow.com',
+          'SXRV': 'ishares.com',
+          'SXR8': 'ishares.com',
+          'CSPX': 'ishares.com',
+          'AAPL': 'apple.com',
+          'AMZN': 'amazon.com',
+          'GOOGL':'google.com',
+          'GOOG': 'google.com',
+          'NVDA': 'nvidia.com',
+          'TSLA': 'tesla.com'
+        };
 
-    const domain = companyDomains[t] || `${t.toLowerCase()}.com`;
+        const domain = companyDomains[t] || `${t.toLowerCase()}.com`;
+        const googleBrandLogoUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`;
 
-    // Serviço oficial de alta resolução da Google (traz o logótipo oficial que a Google indexa para cada empresa)
-    const googleBrandLogoUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`;
+        let logoInnerHtml = '';
 
-    let logoInnerHtml = '';
+        if (t === 'SXRV' || asset.category === 'ETF') {
+          logoInnerHtml = `
+            <img 
+              src="https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128" 
+              alt="iShares" 
+              class="w-full h-full object-contain pointer-events-none"
+            />
+          `;
+        } else {
+          logoInnerHtml = `
+            <img 
+              src="${googleBrandLogoUrl}" 
+              alt="${t}" 
+              class="w-full h-full object-contain pointer-events-none"
+              onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'font-mono font-bold text-xs text-slate-800\\'>${t.slice(0, 3)}</span>';"
+            />
+          `;
+        }
 
-    if (t === 'SXRV' || asset.category === 'ETF') {
-      // Para o ETF SXRV (Nasdaq 100), apresentamos o logótipo oficial da iShares via Google
-      logoInnerHtml = `
-        <img 
-          src="https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://ishares.com&size=128" 
-          alt="iShares" 
-          class="w-full h-full object-contain pointer-events-none"
-        />
-      `;
-    } else {
-      // Para Meta, Microsoft, ServiceNow e qualquer ação futura adicionada à carteira
-      logoInnerHtml = `
-        <img 
-          src="${googleBrandLogoUrl}" 
-          alt="${t}" 
-          class="w-full h-full object-contain pointer-events-none"
-          onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'font-mono font-bold text-xs text-slate-800\\'>${t.slice(0, 3)}</span>';"
-        />
-      `;
-    }
+        const iconBadgeHtml = `
+          <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1.5 shrink-0 overflow-hidden border border-slate-200/40">
+            ${logoInnerHtml}
+          </div>
+        `;
 
-    const iconBadgeHtml = `
-      <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1.5 shrink-0 overflow-hidden border border-slate-200/40">
-        ${logoInnerHtml}
-      </div>
-    `;
         const parentTr = document.createElement("tr");
         parentTr.className = `cursor-pointer transition border-b border-brand-border ${isExpanded ? 'bg-brand-cardHover' : 'hover:bg-brand-cardHover/50'}`;
         parentTr.onclick = (e) => {
@@ -1669,7 +1740,7 @@ function renderTable(metrics) {
         // Lotes Expandidos
         if (isExpanded) {
           const detailTr = document.createElement("tr");
-          detailTr.className = "bg-[#06080F]/60 border-b border-brand-border";
+          detailTr.className = "bg-[#0b1120]/60 border-b border-brand-border";
 
           let lotsRowsHtml = "";
           asset.lots.forEach((lot, idx) => {
@@ -1719,7 +1790,7 @@ function renderTable(metrics) {
           });
 
           detailTr.innerHTML = `
-            <td colspan="6" class="p-4 bg-[#06080F]/50">
+            <td colspan="6" class="p-4 bg-[#0b1120]/50">
               <div class="rounded-2xl border border-brand-border bg-brand-card p-4 space-y-3">
                 <div class="flex items-center justify-between border-b border-brand-border pb-2">
                   <div class="flex items-center gap-2">
@@ -2174,6 +2245,36 @@ function renderTable(metrics) {
       }
     };
 
+    // =========================================================================
+    // GESTÃO DE TEMA (DARK / LIGHT MODE EXECUTIVO)
+    // =========================================================================
+    function toggleExecutiveTheme() {
+      const isLight = document.body.classList.toggle('light-theme');
+      localStorage.setItem('portfolio_theme', isLight ? 'light' : 'dark');
+      updateThemeButtonUI(isLight);
+
+      if (cachedHistoryData) {
+        buildRealHistoryChart(cachedHistoryData);
+      }
+    }
+
+    function updateThemeButtonUI(isLight) {
+      const icon = document.getElementById('theme-icon');
+      const txt = document.getElementById('theme-text');
+      const btn = document.getElementById('theme-toggle-btn');
+      if (!btn) return;
+
+      if (isLight) {
+        if (icon) icon.textContent = '🌙';
+        if (txt) txt.textContent = 'Dark Mode';
+        btn.className = "p-2 sm:px-3 sm:py-2 text-xs font-mono font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition flex items-center gap-2 shadow-sm";
+      } else {
+        if (icon) icon.textContent = '☀️';
+        if (txt) txt.textContent = 'Light Mode';
+        btn.className = "p-2 sm:px-3 sm:py-2 text-xs font-mono font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-brand-border rounded-xl transition flex items-center gap-2 shadow-sm";
+      }
+    }
+
     function renderAll() {
       const metrics = calculatePortfolioMetrics();
       renderKPIs(metrics);
@@ -2181,6 +2282,13 @@ function renderTable(metrics) {
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
+      // 1. Aplicar preferência de tema salva
+      const savedTheme = localStorage.getItem('portfolio_theme');
+      if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        updateThemeButtonUI(true);
+      }
+
       loadLocalPortfolio();
       renderAll();
 
