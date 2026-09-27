@@ -1543,45 +1543,60 @@ function renderTable(metrics) {
 // Logótipos oficiais premium por Ticker
     const t = (asset.ticker || '').toUpperCase();
 
-    // URLs oficiais de logótipos vetorizados/HD
-    const brandLogos = {
-      'MSFT': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
-      'META': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg',
-      'NOW':  'https://upload.wikimedia.org/wikipedia/commons/e/eb/ServiceNow_logo.svg',
-      'SXRV': 'https://upload.wikimedia.org/wikipedia/commons/0/03/IShares_logo.svg',
-      'SXR8': 'https://upload.wikimedia.org/wikipedia/commons/0/03/IShares_logo.svg',
-      'AAPL': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
-      'AMZN': 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
-      'GOOGL':'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
-      'NVDA': 'https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg',
-      'TSLA': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Tesla_logo.png'
+    // Logótipos em SVG inline de alta precisão (sem risco de bloqueio de rede ou CORS)
+    const officialSvgs = {
+      'MSFT': `
+        <svg viewBox="0 0 21 21" class="w-5 h-5">
+          <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+          <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+          <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+          <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+        </svg>`,
+      'META': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 fill-[#0081FB]">
+          <path d="M12 7.027c-3.96 0-6.72 2.656-7.935 5.589-.255.617-.585 1.543-.585 1.543l2.842 1.258s.226-.645.394-1.077c.803-2.072 2.766-4.088 5.284-4.088 2.052 0 3.738 1.157 4.792 2.873.364.593.682 1.343.896 2.055.203.68.784 2.847.784 2.847l2.894-.85s-.486-1.892-.78-2.793c-.314-.963-.761-1.996-1.282-2.883C17.72 9.07 15.15 7.027 12 7.027zm-7.05 6.027C3.732 14.73 3 16.586 3 18.423c0 2.922 2.146 4.577 4.935 4.577 2.378 0 4.143-1.196 5.485-2.738-1.542-.71-2.91-1.83-3.882-3.218-1.396.79-2.96 1.456-4.588.01zm14.1 0c-1.628 1.446-3.192.78-4.588-.01-.972 1.388-2.34 2.508-3.882 3.218 1.342 1.542 3.107 2.738 5.485 2.738 2.789 0 4.935-1.655 4.935-4.577 0-1.837-.732-3.693-1.95-5.369z"/>
+        </svg>`,
+      'NOW': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6">
+          <circle cx="12" cy="12" r="10" fill="#032D42"/>
+          <path d="M12 5.5a6.5 6.5 0 0 0-4.6 11.1l1.6-1.6a4.3 4.3 0 1 1 6 0l1.6 1.6A6.5 6.5 0 0 0 12 5.5zm0 9a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4z" fill="#293E40"/>
+          <path d="M12 6.5a5.5 5.5 0 0 0-3.9 9.4l1.3-1.3a3.6 3.6 0 1 1 5.2 0l1.3 1.3A5.5 5.5 0 0 0 12 6.5zm0 8a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2z" fill="#81B5A1"/>
+        </svg>`,
+      'SXRV': `
+        <div class="flex flex-col items-center justify-center leading-none">
+          <span class="text-[10px] font-black font-sans tracking-tight text-slate-900">iShares</span>
+          <span class="text-[8px] font-bold font-mono tracking-wider text-amber-600 mt-0.5">NDX</span>
+        </div>`,
+      'SXR8': `
+        <div class="flex flex-col items-center justify-center leading-none">
+          <span class="text-[10px] font-black font-sans tracking-tight text-slate-900">iShares</span>
+          <span class="text-[8px] font-bold font-mono tracking-wider text-emerald-600 mt-0.5">S&P500</span>
+        </div>`
     };
 
-    let logoMarkup = '';
+    let innerContent = '';
 
-    if (brandLogos[t]) {
-      // Contentor estilizado premium com fundo branco suave/fosco que realça as cores reais das marcas
-      logoMarkup = `
-        <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1.5 shrink-0 overflow-hidden border border-slate-200/20">
-          <img src="${brandLogos[t]}" alt="${t}" class="w-full h-full object-contain pointer-events-none" />
-        </div>
-      `;
+    if (officialSvgs[t]) {
+      innerContent = officialSvgs[t];
     } else {
-      // Para qualquer novo ticker que adicionares no futuro: favicon oficial do Google em alta resolução (128px)
+      // Para qualquer ticker futuro: tenta favicon do Google, se falhar cai no texto com fallback limpo
       const dynamicUrl = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${t.toLowerCase()}.com&size=128`;
-      logoMarkup = `
-        <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1.5 shrink-0 overflow-hidden border border-slate-200/20">
-          <img 
-            src="${dynamicUrl}" 
-            alt="${t}" 
-            class="w-full h-full object-contain pointer-events-none"
-            onerror="this.parentElement.className='w-9 h-9 rounded-xl bg-slate-800 border border-brand-border flex items-center justify-center shrink-0'; this.parentElement.innerHTML='<span class=\\'font-mono font-bold text-xs text-sky-400\\'>${t.slice(0, 3)}</span>';" 
-          />
-        </div>
+      innerContent = `
+        <img 
+          src="${dynamicUrl}" 
+          alt="${t}" 
+          class="w-full h-full object-contain pointer-events-none"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+        <span class="hidden font-mono font-bold text-xs text-slate-800">${t.slice(0, 3)}</span>
       `;
     }
 
-    const iconBadgeHtml = logoMarkup;
+    const iconBadgeHtml = `
+      <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1 shrink-0 overflow-hidden border border-slate-200/30">
+        ${innerContent}
+      </div>
+    `;
         const parentTr = document.createElement("tr");
         parentTr.className = `cursor-pointer transition border-b border-brand-border ${isExpanded ? 'bg-brand-cardHover' : 'hover:bg-brand-cardHover/50'}`;
         parentTr.onclick = (e) => {
