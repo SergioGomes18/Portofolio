@@ -262,7 +262,7 @@
           </div>
         </div>
 
-        <!-- Métricas Secundárias em Fita Compacta (Com ATH Global Persistente) -->
+        <!-- Métricas Secundárias em Fita Compacta -->
         <div class="flex items-center gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-brand-border">
           <div>
             <span class="text-[10px] font-mono uppercase text-slate-400 block">Total Investido</span>
@@ -295,7 +295,7 @@
       <!-- Controlos de Gráfico (Períodos com Rentabilidade Dinâmica e Moeda) -->
       <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-brand-border">
         
-        <!-- SELETOR COM DUAS LINHAS (NOME + PERCENTAGEM DINÂMICA) -->
+        <!-- SELETOR COM DUAS LINHAS -->
         <div class="flex items-center gap-1.5 bg-[#0b1120]/80 p-1 rounded-xl border border-brand-border text-xs font-mono">
           <button onclick="setChartRange('1M')" class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center" data-range="1M">
             <span class="text-[10px] text-slate-400 font-semibold leading-tight">1M</span>
@@ -1670,7 +1670,7 @@
         return currentFilter === 'ALL' || asset.category === currentFilter;
       });
 
-      // ORDENAÇÃO EXPLÍCITA POR ALOCAÇÃO DECRESCENTE (Maior peso primeiro)
+      // ORDENAÇÃO EXPLÍCITA POR ALOCAÇÃO DECRESCENTE
       filtered.sort((a, b) => b.totalCurrEUR - a.totalCurrEUR);
 
       if (filtered.length === 0) {
@@ -1733,9 +1733,16 @@
         const distFromPeakPct = positionPeakEUR > 0 ? ((asset.totalCurrEUR - positionPeakEUR) / positionPeakEUR) * 100 : 0;
         const isAtPersonalPeak = distFromPeakPct >= -0.25;
 
+        // =====================================================================
+        // APRESENTAÇÃO MINIMALISTA & ELEGANTE DO ATH DA POSIÇÃO
+        // =====================================================================
         const athBadgeHtml = isAtPersonalPeak
-          ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-400/10 text-amber-300 border border-amber-400/30" title="Posição no valor recorde: ${fmtEUR(positionPeakEUR)}">ATH 🏆</span>`
-          : `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono text-slate-400 bg-slate-800/60 border border-brand-border" title="Pico da tua posição: ${fmtEUR(positionPeakEUR)}">${distFromPeakPct.toFixed(1)}%</span>`;
+          ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-300 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20" title="Posição no pico histórico: ${fmtEUR(positionPeakEUR)}">
+               <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>ATH
+             </span>`
+          : `<span class="text-[10px] font-mono text-slate-400" title="Distância ao pico da posição: ${fmtEUR(positionPeakEUR)}">
+               ${distFromPeakPct.toFixed(1)}%
+             </span>`;
 
         // Logótipos oficiais via Google API
         const t = (asset.ticker || '').toUpperCase();
@@ -1815,7 +1822,7 @@
             </div>
           </td>
 
-          <!-- COTAÇÃO & PMP (LIMPO E DESIMPEDIDO) -->
+          <!-- COTAÇÃO & PMP -->
           <td class="py-4 px-4 text-right font-mono">
             <div class="font-bold text-white text-xs">${formatNative(asset.currNative)}</div>
             <div class="text-[10px] text-slate-400 mt-0.5">PMP: ${formatNative(asset.pmpNative)}</div>
@@ -1826,17 +1833,18 @@
             ${fmtPCT(asset.dayChangePct)}
           </td>
 
-          <!-- VALOR ATUAL, ATH DA POSIÇÃO & ALOCAÇÃO -->
+          <!-- VALOR ATUAL & ALOCAÇÃO (DESIGN EXECUTIVO LIMPO) -->
           <td class="py-4 px-4 text-right font-mono">
-            <div class="flex items-center justify-end gap-1.5">
-              <span class="font-bold text-white text-xs">${fmtEUR(asset.totalCurrEUR)}</span>
+            <div class="flex items-center justify-end gap-2">
+              <span class="font-bold text-white text-xs tracking-tight">${fmtEUR(asset.totalCurrEUR)}</span>
               ${athBadgeHtml}
             </div>
-            <div class="flex items-center justify-end gap-2 mt-1">
-              <div class="w-14 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            
+            <div class="flex items-center justify-end gap-2 mt-1.5">
+              <div class="w-16 h-1 bg-slate-800/80 rounded-full overflow-hidden">
                 <div class="h-full bg-sky-400 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
               </div>
-              <span class="text-[10px] text-sky-400 font-bold">${allocPct.toFixed(1)}%</span>
+              <span class="text-[10px] text-slate-400 font-medium">${allocPct.toFixed(1)}%</span>
             </div>
           </td>
 
