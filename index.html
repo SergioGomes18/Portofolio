@@ -262,18 +262,29 @@
           </div>
         </div>
 
-        <!-- Métricas Secundárias em Fita Compacta (Com Indicador Global de Pico ATH) -->
+        <!-- Métricas Secundárias em Fita Compacta (Com ATH Executivo Minimalista) -->
         <div class="flex items-center gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-brand-border">
           <div>
             <span class="text-[10px] font-mono uppercase text-slate-400 block">Total Investido</span>
             <span class="text-sm sm:text-base font-bold font-mono text-slate-200" id="kpi-total-invested">€0,00</span>
           </div>
+
           <div class="w-px h-8 bg-brand-border"></div>
+
+          <!-- MÁXIMO HISTÓRICO GLOBAL (ATH) -->
           <div>
-            <span class="text-[10px] font-mono uppercase text-slate-400 block">Pico (ATH)</span>
-            <span class="text-sm sm:text-base font-bold font-mono text-amber-400" id="kpi-portfolio-ath">--</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-mono uppercase text-slate-400">Máximo</span>
+              <span id="badge-ath-status" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">ATH</span>
+            </div>
+            <div class="flex items-baseline gap-1.5 mt-0.5 font-mono">
+              <span class="text-sm sm:text-base font-bold text-slate-200" id="kpi-portfolio-ath">€0,00</span>
+              <span class="text-[11px] font-medium text-slate-400" id="kpi-portfolio-ath-dd">-0.0%</span>
+            </div>
           </div>
+
           <div class="w-px h-8 bg-brand-border"></div>
+
           <div>
             <span class="text-[10px] font-mono uppercase text-slate-400 block">Posições</span>
             <span class="text-sm sm:text-base font-bold font-mono text-slate-200" id="table-asset-count">0 ativos</span>
@@ -360,7 +371,7 @@
           <thead>
             <tr class="border-b border-brand-border bg-[#0b1120]/60 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
               <th class="py-4 px-5 font-semibold">Ativo / Posição</th>
-              <th class="py-4 px-4 text-right font-semibold">Cotação, PMP & ATH</th>
+              <th class="py-4 px-4 text-right font-semibold">Cotação & PMP</th>
               <th class="py-4 px-4 text-right font-semibold">1D</th>
               <th class="py-4 px-4 text-right font-semibold">Valor & Alocação</th>
               <th class="py-4 px-5 text-right font-semibold">Mais-Valia Total</th>
@@ -1162,7 +1173,7 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
 
       // =======================================================================
-      // CÁLCULO E RENDERIZAÇÃO DO PICO GLOBAL (ATH) DA CARTEIRA
+      // MÁXIMO HISTÓRICO GLOBAL (ATH) - DESIGN EXECUTIVO
       // =======================================================================
       let portfolioATH = metrics.totalCurrEUR;
       if (portfolioChartInstance && portfolioChartInstance.data.datasets[0]) {
@@ -1172,11 +1183,23 @@
         }
       }
 
-      const elAth = document.getElementById("kpi-portfolio-ath");
-      if (elAth) {
-        const drawdownPct = portfolioATH > 0 ? ((metrics.totalCurrEUR - portfolioATH) / portfolioATH) * 100 : 0;
-        const isAtPeak = drawdownPct >= -0.2;
-        elAth.innerHTML = `${fmtEUR(portfolioATH)} <span class="text-[10px] font-mono font-normal ${isAtPeak ? 'text-amber-400 font-bold' : 'text-slate-400'}">(${isAtPeak ? '🏆 Máximo' : drawdownPct.toFixed(1) + '%'})</span>`;
+      const elAthVal = document.getElementById("kpi-portfolio-ath");
+      const elAthDd = document.getElementById("kpi-portfolio-ath-dd");
+      const badgeAth = document.getElementById("badge-ath-status");
+
+      if (elAthVal && elAthDd) {
+        elAthVal.textContent = fmtEUR(portfolioATH);
+        const ddPct = portfolioATH > 0 ? ((metrics.totalCurrEUR - portfolioATH) / portfolioATH) * 100 : 0;
+        
+        if (ddPct >= -0.2) {
+          elAthDd.textContent = "Topo 🏆";
+          elAthDd.className = "text-[11px] font-bold text-amber-400 font-mono";
+          if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-400 text-slate-950";
+        } else {
+          elAthDd.textContent = `${ddPct.toFixed(1)}%`;
+          elAthDd.className = "text-[11px] font-medium text-rose-400 font-mono";
+          if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-brand-border";
+        }
       }
     }
 
@@ -1572,7 +1595,6 @@
       });
 
       updateRangeReturnBadges(history);
-      // Recalcula o ATH global após atualizar os pontos do gráfico
       renderKPIs(metrics);
     }
 
@@ -1641,7 +1663,7 @@
         const formatNative = asset.isEur ? fmtEUR : fmtUSD;
 
         // =====================================================================
-        // CÁLCULO DE ATH DO ATIVO INDIVIDUAL
+        // CÁLCULO ATH ATIVO - MINI BADGE EXECUTIVO
         // =====================================================================
         let athPrice = asset.currNative;
         if (cachedHistoryData && cachedHistoryData[asset.ticker]) {
@@ -1652,13 +1674,13 @@
         }
 
         const distFromAthPct = athPrice > 0 ? ((asset.currNative - athPrice) / athPrice) * 100 : 0;
-        const isAtAth = distFromAthPct >= -0.2;
+        const isAtAth = distFromAthPct >= -0.25;
 
         const athBadgeHtml = isAtAth
-          ? `<span class="inline-flex items-center text-[9px] font-mono font-bold text-amber-400 bg-amber-400/10 px-1 py-0.2 rounded border border-amber-400/20">ATH 🏆</span>`
-          : `<span class="text-[9px] font-mono text-slate-500" title="Máximo Histórico: ${formatNative(athPrice)}">${distFromAthPct.toFixed(1)}% ATH</span>`;
+          ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-400/10 text-amber-300 border border-amber-400/30">ATH</span>`
+          : `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono text-slate-400 bg-slate-800/60 border border-brand-border" title="Pico: ${formatNative(athPrice)}">${distFromAthPct.toFixed(1)}%</span>`;
 
-        // Logótipos oficiais via CDN Financeira / Google Oficial
+        // Logótipos oficiais via Google API
         const t = (asset.ticker || '').toUpperCase();
 
         const companyDomains = {
@@ -1736,13 +1758,14 @@
             </div>
           </td>
 
-          <!-- COTAÇÃO, PMP & ATH -->
+          <!-- COTAÇÃO & PMP COM BADGE ATH DEDICADO -->
           <td class="py-4 px-4 text-right font-mono">
-            <div class="font-bold text-white text-xs">${formatNative(asset.currNative)}</div>
-            <div class="flex items-center justify-end gap-1.5 mt-0.5">
-              <span class="text-[10px] text-slate-400">PMP: ${formatNative(asset.pmpNative)}</span>
-              <span class="text-slate-600 text-[8px]">•</span>
+            <div class="flex items-center justify-end gap-2">
+              <span class="font-bold text-white text-xs">${formatNative(asset.currNative)}</span>
               ${athBadgeHtml}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">
+              PMP: <span class="text-slate-300">${formatNative(asset.pmpNative)}</span>
             </div>
           </td>
 
@@ -2329,7 +2352,6 @@
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
-      // 1. Aplicar preferência de tema salva
       const savedTheme = localStorage.getItem('portfolio_theme');
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
