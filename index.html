@@ -46,7 +46,6 @@
   </script>
 
   <style>
-    /* Transições Suaves Globais */
     body, .surface-card, tr, .chart-range-btn, header {
       transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
     }
@@ -102,7 +101,6 @@
       box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
     }
 
-    /* Cabeçalhos de tabelas no Light Mode */
     body.light-theme thead tr {
       background-color: #f1f5f9 !important;
       border-color: #e2e8f0 !important;
@@ -112,20 +110,17 @@
       font-weight: 700 !important;
     }
 
-    /* Rodapé da tabela no Light Mode */
     body.light-theme .table-footer-bar {
       background-color: #f8fafc !important;
       border-color: #e2e8f0 !important;
       color: #475569 !important;
     }
 
-    /* Barra de controlos de filtros e períodos */
     body.light-theme .controls-wrapper {
       background-color: #f1f5f9 !important;
       border-color: #e2e8f0 !important;
     }
 
-    /* Textos secundários e rótulos */
     body.light-theme .text-slate-400,
     body.light-theme .text-slate-500 {
       color: #64748b !important;
@@ -173,7 +168,6 @@
       background-color: #e2e8f0 !important;
     }
 
-    /* Pílulas de filtro */
     body.light-theme .cat-pill:not(.active) {
       background-color: #ffffff !important;
       border-color: #cbd5e1 !important;
@@ -187,9 +181,9 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-brand-accent/30 selection:text-white pb-16">
 
-  <!-- ================= BARRA DE TOPO ELEGANTE (FULL WIDTH TOTAL) ================= -->
+  <!-- ================= BARRA DE TOPO ELEGANTE (FULL WIDTH) ================= -->
   <header class="sticky top-0 z-30 bg-[#0b1120]/85 backdrop-blur-2xl border-b border-brand-border">
-    <div class="w-full px-4 sm:px-8 lg:px-12 h-18 flex items-center justify-between gap-4 py-3">
+    <div class="w-full px-6 sm:px-10 lg:px-16 h-18 flex items-center justify-between gap-4 py-3">
       
       <!-- Marca & Status -->
       <div class="flex items-center gap-3">
@@ -213,7 +207,6 @@
 
       <!-- Ações Principais -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Alternador Dark / Light Mode -->
         <button 
           id="theme-toggle-btn" 
           onclick="toggleExecutiveTheme()" 
@@ -273,20 +266,20 @@
     </div>
   </div>
 
-  <!-- ================= CONTEÚDO PRINCIPAL (FULL WIDTH TOTAL) ================= -->
-  <main class="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 space-y-6">
+  <!-- ================= CONTEÚDO PRINCIPAL (REBALANCEADO PARA TELAS LARGAS) ================= -->
+  <main class="flex-1 w-full px-6 sm:px-10 lg:px-16 py-6 space-y-6">
 
     <!-- 1. HERO SECTION COM O PATRIMÓNIO E MÉTRICAS PRINCIPAIS -->
     <section class="surface-card rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
       
       <div class="absolute -top-24 -left-24 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Valor Principal & Badges -->
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-5 relative z-10">
+      <!-- Valor Principal & Cartões de Resumo -->
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative z-10">
         <div>
           <span class="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400 block mb-1">Património Global</span>
           <div class="flex flex-wrap items-baseline gap-3">
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-mono text-white tracking-tight" id="kpi-current-value">€0,00</h1>
+            <h1 class="text-3xl sm:text-5xl font-extrabold font-mono text-white tracking-tight" id="kpi-current-value">€0,00</h1>
             
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-xs font-bold bg-brand-gain/10 border border-brand-gain/20 text-brand-gain" id="badge-total-return">
               <span id="kpi-pl-pct">+0.00%</span>
@@ -295,46 +288,40 @@
 
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-xs font-bold bg-slate-800/60 border border-brand-border text-slate-300">
               <span class="text-slate-400">1D:</span>
-              <span id="kpi-1d-pct" class="text-brand-gain">+0.00%</span>
+              <span id="kpi-1d-pct" class="text-brand-gain font-bold">+0.00%</span>
               <span class="text-[11px] text-slate-400 font-normal">(<span id="kpi-1d-eur">+€0,00</span>)</span>
             </div>
           </div>
         </div>
 
-        <!-- Métricas Secundárias em Fita Compacta -->
-        <div class="flex items-center gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-brand-border">
-          <div>
-            <span class="text-[10px] font-mono uppercase text-slate-400 block">Total Investido</span>
-            <span class="text-sm sm:text-base font-bold font-mono text-slate-200" id="kpi-total-invested">€0,00</span>
+        <!-- Cartões de Resumo Agrupados -->
+        <div class="grid grid-cols-3 gap-3.5 font-mono text-left">
+          <div class="p-3.5 rounded-2xl bg-brand-base/80 border border-brand-border min-w-[130px]">
+            <span class="text-[10px] uppercase text-slate-400 block">Total Investido</span>
+            <span class="text-base font-bold text-slate-200 mt-0.5 block" id="kpi-total-invested">€0,00</span>
           </div>
 
-          <div class="w-px h-8 bg-brand-border"></div>
-
-          <!-- MÁXIMO HISTÓRICO GLOBAL (ATH) -->
-          <div>
-            <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-mono uppercase text-slate-400">Máximo</span>
-              <span id="badge-ath-status" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">ATH</span>
+          <div class="p-3.5 rounded-2xl bg-brand-base/80 border border-brand-border min-w-[130px]">
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] uppercase text-slate-400">Pico</span>
+              <span id="badge-ath-status" class="text-[9px] font-bold px-1 py-0.2 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">ATH</span>
             </div>
-            <div class="flex items-baseline gap-1.5 mt-0.5 font-mono">
-              <span class="text-sm sm:text-base font-bold text-slate-200" id="kpi-portfolio-ath">€0,00</span>
+            <div class="flex items-baseline gap-1 mt-0.5">
+              <span class="text-base font-bold text-slate-200" id="kpi-portfolio-ath">€0,00</span>
               <span class="text-[11px] font-medium text-slate-400" id="kpi-portfolio-ath-dd">-0.0%</span>
             </div>
           </div>
 
-          <div class="w-px h-8 bg-brand-border"></div>
-
-          <div>
-            <span class="text-[10px] font-mono uppercase text-slate-400 block">Posições</span>
-            <span class="text-sm sm:text-base font-bold font-mono text-slate-200" id="table-asset-count">0 ativos</span>
+          <div class="p-3.5 rounded-2xl bg-brand-base/80 border border-brand-border min-w-[130px]">
+            <span class="text-[10px] uppercase text-slate-400 block">Posições</span>
+            <span class="text-base font-bold text-slate-200 mt-0.5 block" id="table-asset-count">0 ativos</span>
           </div>
         </div>
       </div>
 
-      <!-- Controlos de Gráfico (Períodos com Rentabilidade Dinâmica e Moeda) -->
+      <!-- Controlos de Gráfico -->
       <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-brand-border">
         
-        <!-- SELETOR COM DUAS LINHAS -->
         <div class="controls-wrapper flex items-center gap-1.5 bg-[#0b1120]/80 p-1 rounded-xl border border-brand-border text-xs font-mono">
           <button onclick="setChartRange('1M')" class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center" data-range="1M">
             <span class="text-[10px] font-semibold leading-tight">1M</span>
@@ -376,17 +363,17 @@
 
       </div>
 
-      <!-- Canvas do Gráfico (Mais Alto e Amplo) -->
-      <div class="relative w-full h-80 sm:h-96">
+      <!-- Altura Proporcional do Gráfico (480px) -->
+      <div class="relative w-full h-[460px] sm:h-[480px]">
         <canvas id="portfolioChart"></canvas>
       </div>
 
     </section>
 
-   <!-- 2. LISTA E COMPOSIÇÃO DOS ATIVOS (LAYOUT TOTALMENTE LEGÍVEL) -->
+   <!-- 2. TABELA DE ATIVOS COM PROPORÇÕES ALINHADAS -->
     <section class="surface-card rounded-3xl overflow-hidden flex flex-col">
       
-      <div class="p-5 sm:p-6 border-b border-brand-border flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+      <div class="p-6 border-b border-brand-border flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
         <div>
           <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono flex items-center gap-2">
             <i data-lucide="layers" class="w-4 h-4 text-sky-400"></i>
@@ -404,17 +391,17 @@
         </div>
       </div>
 
-      <!-- Tabela com Cabeçalho e Cores Corrigidas -->
+      <!-- Tabela com Larguras Percentuais Claras -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="border-b border-brand-border bg-slate-900/60 text-slate-300 font-mono text-[10px] uppercase tracking-wider">
-              <th class="py-4 px-6 font-bold">Ativo / Posição</th>
-              <th class="py-4 px-5 text-right font-bold">Cotação & PMP</th>
-              <th class="py-4 px-5 text-right font-bold">1D</th>
-              <th class="py-4 px-5 text-right font-bold">Valor & Alocação</th>
-              <th class="py-4 px-6 text-right font-bold">Mais-Valia Total</th>
-              <th class="py-4 px-4 text-center font-bold">Ações</th>
+              <th class="py-4 px-6 font-bold w-[30%]">Ativo / Posição</th>
+              <th class="py-4 px-6 text-right font-bold w-[16%]">Cotação & PMP</th>
+              <th class="py-4 px-6 text-right font-bold w-[12%]">1D</th>
+              <th class="py-4 px-6 text-right font-bold w-[18%]">Valor & Alocação</th>
+              <th class="py-4 px-6 text-right font-bold w-[16%]">Mais-Valia Total</th>
+              <th class="py-4 px-4 text-center font-bold w-[8%]">Ações</th>
             </tr>
           </thead>
           <tbody id="portfolio-table-body" class="divide-y divide-brand-border/60 font-sans">
@@ -434,7 +421,7 @@
         </div>
       </div>
 
-      <!-- Rodapé com Fundo e Texto Ajustados -->
+      <!-- Rodapé -->
       <div class="table-footer-bar px-6 py-3.5 border-t border-brand-border bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-300 gap-2 font-mono">
         <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-brand-gain inline-block animate-pulse"></span>
@@ -1261,11 +1248,11 @@
         if (ddPct >= -0.15) {
           elAthDd.textContent = "Topo 🏆";
           elAthDd.className = "text-[11px] font-bold text-amber-500 font-mono";
-          if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-400 text-slate-950";
+          if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1 py-0.2 rounded bg-amber-400 text-slate-950";
         } else {
           elAthDd.textContent = `${ddPct.toFixed(1)}%`;
           elAthDd.className = "text-[11px] font-medium text-rose-500 font-mono";
-          if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-brand-border";
+          if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-brand-border";
         }
       }
     }
@@ -1543,8 +1530,8 @@
         portfolioChartInstance.destroy();
       }
 
-      const gradient = ctx.createLinearGradient(0, 0, 0, 260);
-      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
+      const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.32)');
       gradient.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
 
       let chartDatasets = [];
@@ -1554,7 +1541,7 @@
             label: 'Património Atual (€)',
             data: marketCurveEUR,
             borderColor: '#38BDF8',
-            borderWidth: 2.2,
+            borderWidth: 2.4,
             fill: true,
             backgroundColor: gradient,
             tension: 0.2,
@@ -1581,7 +1568,7 @@
             label: 'Rentabilidade (%)',
             data: performanceCurvePCT,
             borderColor: '#38BDF8',
-            borderWidth: 2.2,
+            borderWidth: 2.4,
             fill: true,
             backgroundColor: gradient,
             tension: 0.2,
@@ -1853,7 +1840,7 @@
                   </span>
                   ${asset.isEur ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-500 font-mono font-bold">EUR</span>' : ''}
                 </div>
-                <div class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[280px] mt-0.5 font-medium">
+                <div class="text-[11px] text-slate-400 truncate max-w-[200px] sm:max-w-[280px] mt-0.5 font-medium">
                   ${asset.name} • ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} shares
                 </div>
               </div>
@@ -1861,18 +1848,18 @@
           </td>
 
           <!-- COTAÇÃO & PMP -->
-          <td class="py-4 px-5 text-right font-mono">
+          <td class="py-4 px-6 text-right font-mono">
             <div class="font-bold text-white text-xs">${formatNative(asset.currNative)}</div>
             <div class="text-[10px] text-slate-400 mt-0.5 font-medium">PMP: ${formatNative(asset.pmpNative)}</div>
           </td>
 
           <!-- 1D -->
-          <td class="py-4 px-5 text-right font-mono font-bold ${day1DIsPos ? 'text-brand-gain' : 'text-brand-loss'} text-xs">
+          <td class="py-4 px-6 text-right font-mono font-bold ${day1DIsPos ? 'text-brand-gain' : 'text-brand-loss'} text-xs">
             ${fmtPCT(asset.dayChangePct)}
           </td>
 
           <!-- VALOR ATUAL & ALOCAÇÃO -->
-          <td class="py-4 px-5 text-right font-mono">
+          <td class="py-4 px-6 text-right font-mono">
             <div class="flex items-center justify-end gap-2">
               <span class="font-bold text-white text-xs tracking-tight">${fmtEUR(asset.totalCurrEUR)}</span>
               ${athBadgeHtml}
@@ -1931,13 +1918,13 @@
                     <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-medium">[${lot.broker}]</span>
                   </div>
                 </td>
-                <td class="py-2.5 px-5 text-right text-slate-200">
+                <td class="py-2.5 px-6 text-right text-slate-200">
                   ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
                 </td>
-                <td class="py-2.5 px-5 text-right text-slate-300">
+                <td class="py-2.5 px-6 text-right text-slate-300">
                   ${formatNative(lot.avgUSD)}
                 </td>
-                <td class="py-2.5 px-5 text-right text-slate-300">
+                <td class="py-2.5 px-6 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
                 </td>
                 <td class="py-2.5 px-6 text-right text-white font-bold">
@@ -1985,9 +1972,9 @@
                     <thead>
                       <tr class="text-[9px] font-mono uppercase text-slate-400 border-b border-brand-border">
                         <th class="py-1.5 px-6 font-semibold">Data / Lote</th>
-                        <th class="py-1.5 px-5 text-right font-semibold">Qtd</th>
-                        <th class="py-1.5 px-5 text-right font-semibold">Preço Pago</th>
-                        <th class="py-1.5 px-5 text-right font-semibold">Custo (€)</th>
+                        <th class="py-1.5 px-6 text-right font-semibold">Qtd</th>
+                        <th class="py-1.5 px-6 text-right font-semibold">Preço Pago</th>
+                        <th class="py-1.5 px-6 text-right font-semibold">Custo (€)</th>
                         <th class="py-1.5 px-6 text-right font-semibold">Atual (€)</th>
                         <th class="py-1.5 px-6 text-right font-semibold">Lucro / Retorno</th>
                         <th class="py-1.5 px-4 text-center font-semibold">Ações</th>
@@ -2228,7 +2215,7 @@
       const isEur = isEuroAsset(ticker);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avg = parseNumericInput(document.getElementById("form-avg")?.value);
-      const fees = parseNumericInput(document.getElementById("form-fees"));
+      const fees = parseNumericInput(document.getElementById("form-fees")?.value);
 
       let be = avg;
       if (qty > 0) {
@@ -2416,9 +2403,6 @@
       }
     };
 
-    // =========================================================================
-    // GESTÃO DE TEMA (DARK / LIGHT MODE EXECUTIVO)
-    // =========================================================================
     function toggleExecutiveTheme() {
       const isLight = document.body.classList.toggle('light-theme');
       localStorage.setItem('portfolio_theme', isLight ? 'light' : 'dark');
