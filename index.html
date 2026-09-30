@@ -84,24 +84,48 @@
     }
 
     /* =========================================================================
-       LIGHT MODE EXECUTIVO (Padrão Institucional / Private Banking)
+       LIGHT MODE EXECUTIVO - CONTRASTE PERFEITO & LEGIBILIDADE MÁXIMA
        ========================================================================= */
     body.light-theme {
-      background-color: #f1f5f9 !important;
+      background-color: #f8fafc !important;
       color: #0f172a !important;
     }
 
     body.light-theme header {
-      background-color: rgba(255, 255, 255, 0.9) !important;
+      background-color: rgba(255, 255, 255, 0.95) !important;
       border-color: #e2e8f0 !important;
     }
 
     body.light-theme .surface-card {
       background: #ffffff !important;
       border-color: #e2e8f0 !important;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+      box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
     }
 
+    /* Cabeçalhos de tabelas no Light Mode (fundo claro com texto escuro e legível) */
+    body.light-theme thead tr {
+      background-color: #f1f5f9 !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.light-theme thead th {
+      color: #475569 !important;
+      font-weight: 700 !important;
+    }
+
+    /* Rodapé da tabela no Light Mode */
+    body.light-theme .table-footer-bar {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      color: #475569 !important;
+    }
+
+    /* Barra de controlos de filtros e períodos */
+    body.light-theme .controls-wrapper {
+      background-color: #f1f5f9 !important;
+      border-color: #e2e8f0 !important;
+    }
+
+    /* Textos secundários e rótulos */
     body.light-theme .text-slate-400,
     body.light-theme .text-slate-500 {
       color: #64748b !important;
@@ -118,6 +142,10 @@
     }
 
     body.light-theme tr:hover {
+      background-color: #f8fafc !important;
+    }
+
+    body.light-theme .expanded-detail-row {
       background-color: #f8fafc !important;
     }
 
@@ -142,15 +170,26 @@
 
     body.light-theme .chart-range-btn:not(.active):hover {
       color: #0f172a !important;
-      background-color: #f1f5f9 !important;
+      background-color: #e2e8f0 !important;
+    }
+
+    /* Pílulas de filtro */
+    body.light-theme .cat-pill:not(.active) {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #475569 !important;
+    }
+    body.light-theme .cat-pill.active {
+      background-color: #0284c7 !important;
+      color: #ffffff !important;
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans selection:bg-brand-accent/30 selection:text-white pb-16">
 
-  <!-- ================= BARRA DE TOPO ELEGANTE ================= -->
+  <!-- ================= BARRA DE TOPO ELEGANTE (LARGURA EXPANDIDA) ================= -->
   <header class="sticky top-0 z-30 bg-[#0b1120]/85 backdrop-blur-2xl border-b border-brand-border">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4 py-3">
+    <div class="max-w-[1650px] mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4 py-3">
       
       <!-- Marca & Status -->
       <div class="flex items-center gap-3">
@@ -234,8 +273,8 @@
     </div>
   </div>
 
-  <!-- ================= CONTEÚDO PRINCIPAL ================= -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <!-- ================= CONTEÚDO PRINCIPAL (LARGURA AMPLA 1650px) ================= -->
+  <main class="flex-1 max-w-[1650px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- 1. HERO SECTION COM O PATRIMÓNIO E MÉTRICAS PRINCIPAIS -->
     <section class="surface-card rounded-3xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
@@ -296,20 +335,20 @@
       <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-brand-border">
         
         <!-- SELETOR COM DUAS LINHAS -->
-        <div class="flex items-center gap-1.5 bg-[#0b1120]/80 p-1 rounded-xl border border-brand-border text-xs font-mono">
+        <div class="controls-wrapper flex items-center gap-1.5 bg-[#0b1120]/80 p-1 rounded-xl border border-brand-border text-xs font-mono">
           <button onclick="setChartRange('1M')" class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center" data-range="1M">
-            <span class="text-[10px] text-slate-400 font-semibold leading-tight">1M</span>
-            <span class="text-[10px] font-bold text-slate-300 leading-tight mt-0.5" id="range-val-1m">--</span>
+            <span class="text-[10px] font-semibold leading-tight">1M</span>
+            <span class="text-[10px] font-bold leading-tight mt-0.5" id="range-val-1m">--</span>
           </button>
 
           <button onclick="setChartRange('3M')" class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center" data-range="3M">
-            <span class="text-[10px] text-slate-400 font-semibold leading-tight">3M</span>
-            <span class="text-[10px] font-bold text-slate-300 leading-tight mt-0.5" id="range-val-3m">--</span>
+            <span class="text-[10px] font-semibold leading-tight">3M</span>
+            <span class="text-[10px] font-bold leading-tight mt-0.5" id="range-val-3m">--</span>
           </button>
 
           <button onclick="setChartRange('YTD')" class="chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center" data-range="YTD">
-            <span class="text-[10px] text-slate-400 font-semibold leading-tight">YTD</span>
-            <span class="text-[10px] font-bold text-slate-300 leading-tight mt-0.5" id="range-val-ytd">--</span>
+            <span class="text-[10px] font-semibold leading-tight">YTD</span>
+            <span class="text-[10px] font-bold leading-tight mt-0.5" id="range-val-ytd">--</span>
           </button>
 
           <button onclick="setChartRange('ALL')" class="chart-range-btn active px-3.5 py-1.5 rounded-lg bg-sky-500 text-slate-950 font-bold transition flex flex-col items-center shadow" data-range="ALL">
@@ -329,7 +368,7 @@
           </div>
 
           <!-- Seletor EUR / % -->
-          <div class="flex items-center bg-[#0b1120]/80 p-0.5 rounded-lg border border-brand-border text-xs ml-1">
+          <div class="controls-wrapper flex items-center bg-[#0b1120]/80 p-0.5 rounded-lg border border-brand-border text-xs ml-1">
             <button id="btn-chart-mode-eur" onclick="setChartMode('EUR')" class="px-2.5 py-0.5 rounded bg-sky-500 text-slate-950 font-bold transition">€</button>
             <button id="btn-chart-mode-pct" onclick="setChartMode('PCT')" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white transition">%</button>
           </div>
@@ -337,14 +376,14 @@
 
       </div>
 
-      <!-- Canvas do Gráfico -->
-      <div class="relative w-full h-72 sm:h-80">
+      <!-- Canvas do Gráfico (Mais Alto e Amplo) -->
+      <div class="relative w-full h-80 sm:h-96">
         <canvas id="portfolioChart"></canvas>
       </div>
 
     </section>
 
-   <!-- 2. LISTA E COMPOSIÇÃO DOS ATIVOS (LAYOUT AREJADO & ORDENADO POR PESO) -->
+   <!-- 2. LISTA E COMPOSIÇÃO DOS ATIVOS (LAYOUT TOTALMENTE LEGÍVEL) -->
     <section class="surface-card rounded-3xl overflow-hidden flex flex-col">
       
       <div class="p-5 sm:p-6 border-b border-brand-border flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
@@ -365,17 +404,17 @@
         </div>
       </div>
 
-      <!-- Tabela Simplificada e Arejada -->
+      <!-- Tabela com Cabeçalho e Cores Corrigidas -->
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-brand-border bg-[#0b1120]/60 text-slate-400 font-mono text-[10px] uppercase tracking-wider">
-              <th class="py-4 px-5 font-semibold">Ativo / Posição</th>
-              <th class="py-4 px-4 text-right font-semibold">Cotação & PMP</th>
-              <th class="py-4 px-4 text-right font-semibold">1D</th>
-              <th class="py-4 px-4 text-right font-semibold">Valor & Alocação</th>
-              <th class="py-4 px-5 text-right font-semibold">Mais-Valia Total</th>
-              <th class="py-4 px-4 text-center font-semibold">Ações</th>
+            <tr class="border-b border-brand-border bg-slate-900/60 text-slate-300 font-mono text-[10px] uppercase tracking-wider">
+              <th class="py-4 px-6 font-bold">Ativo / Posição</th>
+              <th class="py-4 px-5 text-right font-bold">Cotação & PMP</th>
+              <th class="py-4 px-5 text-right font-bold">1D</th>
+              <th class="py-4 px-5 text-right font-bold">Valor & Alocação</th>
+              <th class="py-4 px-6 text-right font-bold">Mais-Valia Total</th>
+              <th class="py-4 px-4 text-center font-bold">Ações</th>
             </tr>
           </thead>
           <tbody id="portfolio-table-body" class="divide-y divide-brand-border/60 font-sans">
@@ -395,13 +434,13 @@
         </div>
       </div>
 
-      <!-- Rodapé -->
-      <div class="px-6 py-3.5 border-t border-brand-border bg-[#0b1120]/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 font-mono">
+      <!-- Rodapé com Fundo e Texto Ajustados -->
+      <div class="table-footer-bar px-6 py-3.5 border-t border-brand-border bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-300 gap-2 font-mono">
         <span class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-brand-gain inline-block animate-pulse"></span>
           <span>Feed oficial Google Finance & Yahoo Finance ativo.</span>
         </span>
-        <span id="sync-footer-time" class="text-slate-500">Sincronizado: --:--:--</span>
+        <span id="sync-footer-time" class="text-slate-400 font-semibold">Sincronizado: --:--:--</span>
       </div>
 
     </section>
@@ -1221,11 +1260,11 @@
         
         if (ddPct >= -0.15) {
           elAthDd.textContent = "Topo 🏆";
-          elAthDd.className = "text-[11px] font-bold text-amber-400 font-mono";
+          elAthDd.className = "text-[11px] font-bold text-amber-500 font-mono";
           if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-400 text-slate-950";
         } else {
           elAthDd.textContent = `${ddPct.toFixed(1)}%`;
-          elAthDd.className = "text-[11px] font-medium text-rose-400 font-mono";
+          elAthDd.className = "text-[11px] font-medium text-rose-500 font-mono";
           if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-brand-border";
         }
       }
@@ -1504,7 +1543,7 @@
         portfolioChartInstance.destroy();
       }
 
-      const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+      const gradient = ctx.createLinearGradient(0, 0, 0, 260);
       gradient.addColorStop(0, 'rgba(56, 189, 248, 0.28)');
       gradient.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
 
@@ -1552,8 +1591,8 @@
       }
 
       const isLight = document.body.classList.contains('light-theme');
-      const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.04)';
-      const textColor = isLight ? '#64748b' : '#94A3B8';
+      const gridColor = isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.04)';
+      const textColor = isLight ? '#475569' : '#94A3B8';
 
       portfolioChartInstance = new Chart(ctx, {
         type: 'line',
@@ -1569,11 +1608,11 @@
             legend: { display: false },
             tooltip: {
               backgroundColor: isLight ? '#ffffff' : '#0D111D',
-              titleColor: '#38BDF8',
+              titleColor: '#0284c7',
               titleFont: { family: '"JetBrains Mono"', size: 12, weight: 'bold' },
               bodyColor: isLight ? '#0f172a' : '#F8FAFC',
               bodyFont: { family: '"JetBrains Mono"', size: 11 },
-              borderColor: isLight ? '#e2e8f0' : 'rgba(56, 189, 248, 0.25)',
+              borderColor: isLight ? '#cbd5e1' : 'rgba(56, 189, 248, 0.25)',
               borderWidth: 1,
               padding: 12,
               cornerRadius: 10,
@@ -1601,7 +1640,7 @@
               ticks: { 
                 color: textColor,
                 font: { family: '"JetBrains Mono"', size: 11, weight: '600' },
-                maxTicksLimit: 7,
+                maxTicksLimit: 9,
                 callback: function(val, index) {
                   const rawLabel = this.getLabelForValue(val);
                   return formatChartDateLabel(rawLabel);
@@ -1637,7 +1676,7 @@
           if (spanVal) spanVal.className = "text-[10px] font-bold leading-tight text-slate-950 mt-0.5";
         } else {
           btn.className = "chart-range-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex flex-col items-center";
-          if (spanLabel) spanLabel.className = "text-[10px] text-slate-400 font-semibold leading-tight";
+          if (spanLabel) spanLabel.className = "text-[10px] font-semibold leading-tight";
           if (spanVal) {
             const isPos = !spanVal.textContent.startsWith("-");
             spanVal.className = `text-[10px] font-bold leading-tight mt-0.5 ${isPos ? 'text-brand-gain' : 'text-brand-loss'}`;
@@ -1670,7 +1709,6 @@
         return currentFilter === 'ALL' || asset.category === currentFilter;
       });
 
-      // ORDENAÇÃO EXPLÍCITA POR ALOCAÇÃO DECRESCENTE
       filtered.sort((a, b) => b.totalCurrEUR - a.totalCurrEUR);
 
       if (filtered.length === 0) {
@@ -1737,10 +1775,10 @@
         // APRESENTAÇÃO MINIMALISTA & ELEGANTE DO ATH DA POSIÇÃO
         // =====================================================================
         const athBadgeHtml = isAtPersonalPeak
-          ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-300 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20" title="Posição no pico histórico: ${fmtEUR(positionPeakEUR)}">
+          ? `<span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-500 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/30" title="Posição no pico histórico: ${fmtEUR(positionPeakEUR)}">
                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>ATH
              </span>`
-          : `<span class="text-[10px] font-mono text-slate-400" title="Distância ao pico da posição: ${fmtEUR(positionPeakEUR)}">
+          : `<span class="text-[10px] font-mono text-slate-400 font-medium" title="Distância ao pico da posição: ${fmtEUR(positionPeakEUR)}">
                ${distFromPeakPct.toFixed(1)}%
              </span>`;
 
@@ -1787,7 +1825,7 @@
         }
 
         const iconBadgeHtml = `
-          <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1.5 shrink-0 overflow-hidden border border-slate-200/40">
+          <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center p-1.5 shrink-0 overflow-hidden border border-slate-200">
             ${logoInnerHtml}
           </div>
         `;
@@ -1801,7 +1839,7 @@
 
         parentTr.innerHTML = `
           <!-- ATIVO & DETALHE -->
-          <td class="py-4 px-5">
+          <td class="py-4 px-6">
             <div class="flex items-center gap-3.5">
               <div class="text-slate-400 hover:text-white transition">
                 <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" class="w-4 h-4"></i>
@@ -1813,9 +1851,9 @@
                   <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-mono">
                     ${asset.lots.length} lotes
                   </span>
-                  ${asset.isEur ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-300 font-mono">EUR</span>' : ''}
+                  ${asset.isEur ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-400/10 text-amber-500 font-mono font-bold">EUR</span>' : ''}
                 </div>
-                <div class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[220px] mt-0.5">
+                <div class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[280px] mt-0.5 font-medium">
                   ${asset.name} • ${Number(asset.totalQty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })} shares
                 </div>
               </div>
@@ -1823,25 +1861,25 @@
           </td>
 
           <!-- COTAÇÃO & PMP -->
-          <td class="py-4 px-4 text-right font-mono">
+          <td class="py-4 px-5 text-right font-mono">
             <div class="font-bold text-white text-xs">${formatNative(asset.currNative)}</div>
-            <div class="text-[10px] text-slate-400 mt-0.5">PMP: ${formatNative(asset.pmpNative)}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5 font-medium">PMP: ${formatNative(asset.pmpNative)}</div>
           </td>
 
           <!-- 1D -->
-          <td class="py-4 px-4 text-right font-mono font-bold ${day1DIsPos ? 'text-brand-gain' : 'text-brand-loss'} text-xs">
+          <td class="py-4 px-5 text-right font-mono font-bold ${day1DIsPos ? 'text-brand-gain' : 'text-brand-loss'} text-xs">
             ${fmtPCT(asset.dayChangePct)}
           </td>
 
-          <!-- VALOR ATUAL & ALOCAÇÃO (DESIGN EXECUTIVO LIMPO) -->
-          <td class="py-4 px-4 text-right font-mono">
+          <!-- VALOR ATUAL & ALOCAÇÃO -->
+          <td class="py-4 px-5 text-right font-mono">
             <div class="flex items-center justify-end gap-2">
               <span class="font-bold text-white text-xs tracking-tight">${fmtEUR(asset.totalCurrEUR)}</span>
               ${athBadgeHtml}
             </div>
             
             <div class="flex items-center justify-end gap-2 mt-1.5">
-              <div class="w-16 h-1 bg-slate-800/80 rounded-full overflow-hidden">
+              <div class="w-16 h-1 bg-slate-700/60 rounded-full overflow-hidden">
                 <div class="h-full bg-sky-400 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
               </div>
               <span class="text-[10px] text-slate-400 font-medium">${allocPct.toFixed(1)}%</span>
@@ -1849,7 +1887,7 @@
           </td>
 
           <!-- MAIS-VALIA -->
-          <td class="py-4 px-5 text-right font-mono">
+          <td class="py-4 px-6 text-right font-mono">
             <div class="inline-flex flex-col items-end px-3 py-1.5 rounded-xl border ${badgeBgClass}">
               <div class="text-xs font-bold leading-tight">${isPos ? '+' : ''}${fmtEUR(asset.plEUR)}</div>
               <div class="text-[10px] font-bold opacity-90 leading-tight mt-0.5">${fmtPCT(asset.plPct)}</div>
@@ -1873,7 +1911,7 @@
         // Lotes Expandidos
         if (isExpanded) {
           const detailTr = document.createElement("tr");
-          detailTr.className = "bg-[#0b1120]/60 border-b border-brand-border";
+          detailTr.className = "expanded-detail-row bg-slate-900/50 border-b border-brand-border";
 
           let lotsRowsHtml = "";
           asset.lots.forEach((lot, idx) => {
@@ -1883,7 +1921,7 @@
 
             lotsRowsHtml += `
               <tr class="border-b border-brand-border/40 hover:bg-white/[0.02] transition text-xs font-mono">
-                <td class="py-2.5 px-4 text-slate-300">
+                <td class="py-2.5 px-6 text-slate-300">
                   <div class="flex items-center gap-2.5">
                     <span class="w-5 h-5 rounded-md bg-slate-800 text-sky-400 flex items-center justify-center text-[10px] font-bold">#${idx + 1}</span>
                     <span class="px-2.5 py-1 rounded-md bg-sky-500/10 border border-sky-500/20 text-sky-300 font-bold flex items-center gap-1.5 text-[11px]">
@@ -1893,19 +1931,19 @@
                     <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-medium">[${lot.broker}]</span>
                   </div>
                 </td>
-                <td class="py-2.5 px-4 text-right text-slate-200">
+                <td class="py-2.5 px-5 text-right text-slate-200">
                   ${Number(lot.qty).toLocaleString('pt-PT', { maximumFractionDigits: 4 })}
                 </td>
-                <td class="py-2.5 px-4 text-right text-slate-300">
+                <td class="py-2.5 px-5 text-right text-slate-300">
                   ${formatNative(lot.avgUSD)}
                 </td>
-                <td class="py-2.5 px-4 text-right text-slate-300">
+                <td class="py-2.5 px-5 text-right text-slate-300">
                   ${fmtEUR(lot.invEUR)}
                 </td>
-                <td class="py-2.5 px-4 text-right text-white font-bold">
+                <td class="py-2.5 px-6 text-right text-white font-bold">
                   ${fmtEUR(lot.currEUR)}
                 </td>
-                <td class="py-2.5 px-4 text-right">
+                <td class="py-2.5 px-6 text-right">
                   <span class="font-bold ${lotColor}">${lotIsPos ? '+' : ''}${fmtEUR(lot.plEUR)} (${fmtPCT(lot.plPct)})</span>
                 </td>
                 <td class="py-2.5 px-4 text-center">
@@ -1923,7 +1961,7 @@
           });
 
           detailTr.innerHTML = `
-            <td colspan="6" class="p-4 bg-[#0b1120]/50">
+            <td colspan="6" class="p-4 bg-slate-900/30">
               <div class="rounded-2xl border border-brand-border bg-brand-card p-4 space-y-3">
                 <div class="flex items-center justify-between border-b border-brand-border pb-2">
                   <div class="flex items-center gap-2">
@@ -1946,12 +1984,12 @@
                   <table class="w-full text-left border-collapse">
                     <thead>
                       <tr class="text-[9px] font-mono uppercase text-slate-400 border-b border-brand-border">
-                        <th class="py-1.5 px-4 font-semibold">Data / Lote</th>
-                        <th class="py-1.5 px-4 text-right font-semibold">Qtd</th>
-                        <th class="py-1.5 px-4 text-right font-semibold">Preço Pago</th>
-                        <th class="py-1.5 px-4 text-right font-semibold">Custo (€)</th>
-                        <th class="py-1.5 px-4 text-right font-semibold">Atual (€)</th>
-                        <th class="py-1.5 px-4 text-right font-semibold">Lucro / Retorno</th>
+                        <th class="py-1.5 px-6 font-semibold">Data / Lote</th>
+                        <th class="py-1.5 px-5 text-right font-semibold">Qtd</th>
+                        <th class="py-1.5 px-5 text-right font-semibold">Preço Pago</th>
+                        <th class="py-1.5 px-5 text-right font-semibold">Custo (€)</th>
+                        <th class="py-1.5 px-6 text-right font-semibold">Atual (€)</th>
+                        <th class="py-1.5 px-6 text-right font-semibold">Lucro / Retorno</th>
                         <th class="py-1.5 px-4 text-center font-semibold">Ações</th>
                       </tr>
                     </thead>
@@ -2190,7 +2228,7 @@
       const isEur = isEuroAsset(ticker);
       const qty = parseNumericInput(document.getElementById("form-qty")?.value);
       const avg = parseNumericInput(document.getElementById("form-avg")?.value);
-      const fees = parseNumericInput(document.getElementById("form-fees")?.value);
+      const fees = parseNumericInput(document.getElementById("form-fees"));
 
       let be = avg;
       if (qty > 0) {
