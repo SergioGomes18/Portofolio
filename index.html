@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AssetPulse | Gestão de Carteira</title>
+  <title>PORTOFOLIO</title>
 
   <!-- Tailwind CSS, Supabase SDK & Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1173,14 +1173,46 @@
       document.getElementById("table-asset-count").textContent = `${metrics.assets.length} ativos (${portfolio.length} lotes)`;
 
       // =======================================================================
-      // MÁXIMO HISTÓRICO GLOBAL (ATH) - DESIGN EXECUTIVO
+      // MÁXIMO HISTÓRICO GLOBAL (ATH) - PERSISTENTE E PRECISO
       // =======================================================================
       let portfolioATH = metrics.totalCurrEUR;
-      if (portfolioChartInstance && portfolioChartInstance.data.datasets[0]) {
-        const pastValues = portfolioChartInstance.data.datasets[0].data;
-        if (pastValues && pastValues.length > 0) {
-          portfolioATH = Math.max(...pastValues, metrics.totalCurrEUR);
-        }
+
+      // 1. Tenta recuperar o maior valor histórico alguma vez gravado localmente
+      const storedATH = parseFloat(localStorage.getItem('assetpulse_ath_eur') || '0');
+      if (storedATH > portfolioATH) {
+        portfolioATH = storedATH;
+      }
+
+      // 2. Se existirem dados diários completos na cache, avalia todos os fechos de 2025/2026
+      if (cachedHistoryData && portfolio.length > 0) {
+        const dateSet = new Set();
+        Object.values(cachedHistoryData).forEach(dict => {
+          if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
+        });
+
+        dateSet.forEach(d => {
+          let dayVal = 0;
+          let fx = (cachedHistoryData['EURUSD'] && cachedHistoryData['EURUSD'][d]) || EUR_USD;
+
+          portfolio.forEach(lot => {
+            const buyD = (lot.buyDate || '').trim();
+            if (buyD && buyD <= d) {
+              const isEur = isEuroAsset(lot.ticker);
+              const p = (cachedHistoryData[lot.ticker] && cachedHistoryData[lot.ticker][d]) || (isEur ? lot.currEUR : lot.currUSD);
+              dayVal += isEur ? (lot.qty * p) : ((lot.qty * p) / fx);
+            }
+          });
+
+          if (dayVal > portfolioATH) {
+            portfolioATH = dayVal;
+          }
+        });
+      }
+
+      // Garante que se o valor atual superar o ATH, o novo recorde fica guardado
+      if (metrics.totalCurrEUR >= portfolioATH) {
+        portfolioATH = metrics.totalCurrEUR;
+        localStorage.setItem('assetpulse_ath_eur', portfolioATH.toFixed(2));
       }
 
       const elAthVal = document.getElementById("kpi-portfolio-ath");
@@ -1191,7 +1223,7 @@
         elAthVal.textContent = fmtEUR(portfolioATH);
         const ddPct = portfolioATH > 0 ? ((metrics.totalCurrEUR - portfolioATH) / portfolioATH) * 100 : 0;
         
-        if (ddPct >= -0.2) {
+        if (ddPct >= -0.15) {
           elAthDd.textContent = "Topo 🏆";
           elAthDd.className = "text-[11px] font-bold text-amber-400 font-mono";
           if (badgeAth) badgeAth.className = "text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-400 text-slate-950";
