@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PORTOFOLIO</title>
+  <title>AssetPulse | Gestão de Carteira</title>
 
   <!-- Tailwind CSS, Supabase SDK & Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -262,7 +262,7 @@
           </div>
         </div>
 
-        <!-- Métricas Secundárias em Fita Compacta (Com ATH Executivo Minimalista) -->
+        <!-- Métricas Secundárias em Fita Compacta (Com ATH Global Persistente) -->
         <div class="flex items-center gap-6 pt-3 md:pt-0 border-t md:border-t-0 border-brand-border">
           <div>
             <span class="text-[10px] font-mono uppercase text-slate-400 block">Total Investido</span>
@@ -696,7 +696,6 @@
     const fmtUSD = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
     const fmtPCT = (v) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 
-    // Funções utilitárias de formatação legível de datas
     function formatChartDateLabel(dateStr) {
       const parts = String(dateStr).split("-");
       if (parts.length === 3) {
@@ -1177,13 +1176,11 @@
       // =======================================================================
       let portfolioATH = metrics.totalCurrEUR;
 
-      // 1. Tenta recuperar o maior valor histórico alguma vez gravado localmente
       const storedATH = parseFloat(localStorage.getItem('assetpulse_ath_eur') || '0');
       if (storedATH > portfolioATH) {
         portfolioATH = storedATH;
       }
 
-      // 2. Se existirem dados diários completos na cache, avalia todos os fechos de 2025/2026
       if (cachedHistoryData && portfolio.length > 0) {
         const dateSet = new Set();
         Object.values(cachedHistoryData).forEach(dict => {
@@ -1209,7 +1206,6 @@
         });
       }
 
-      // Garante que se o valor atual superar o ATH, o novo recorde fica guardado
       if (metrics.totalCurrEUR >= portfolioATH) {
         portfolioATH = metrics.totalCurrEUR;
         localStorage.setItem('assetpulse_ath_eur', portfolioATH.toFixed(2));
@@ -1243,7 +1239,6 @@
 
       const metrics = calculatePortfolioMetrics();
 
-      // 1. TUDO (Rentabilidade Total Cumulativa da Carteira / ROI global)
       const elAll = document.getElementById("range-val-all");
       if (elAll) {
         elAll.textContent = fmtPCT(metrics.totalPLPct);
@@ -1339,7 +1334,7 @@
 
       const now = new Date();
 
-      // 2. 1 MÊS
+      // 1 MÊS
       const d1m = new Date(now);
       d1m.setDate(now.getDate() - 30);
       const ret1m = computeTWRBetween(d1m.toISOString().split("T")[0]);
@@ -1352,7 +1347,7 @@
         }
       }
 
-      // 3. 3 MESES
+      // 3 MESES
       const d3m = new Date(now);
       d3m.setDate(now.getDate() - 90);
       const ret3m = computeTWRBetween(d3m.toISOString().split("T")[0]);
@@ -1365,7 +1360,7 @@
         }
       }
 
-      // 4. YTD (Desde 1 de Janeiro deste ano)
+      // YTD
       const dYtd = new Date(now.getFullYear(), 0, 1);
       const retYtd = computeTWRBetween(dYtd.toISOString().split("T")[0]);
       const elYtd = document.getElementById("range-val-ytd");
@@ -1695,22 +1690,52 @@
         const formatNative = asset.isEur ? fmtEUR : fmtUSD;
 
         // =====================================================================
-        // CÁLCULO ATH ATIVO - MINI BADGE EXECUTIVO
+        // CÁLCULO ATH DA POSIÇÃO PESSOAL (PICO EM EUROS NA TUA CONTA)
         // =====================================================================
-        let athPrice = asset.currNative;
-        if (cachedHistoryData && cachedHistoryData[asset.ticker]) {
-          const histPrices = Object.values(cachedHistoryData[asset.ticker]);
-          if (histPrices.length > 0) {
-            athPrice = Math.max(...histPrices, asset.currNative);
-          }
+        let positionPeakEUR = asset.totalCurrEUR;
+
+        if (cachedHistoryData && asset.lots.length > 0) {
+          const dateSet = new Set();
+          Object.values(cachedHistoryData).forEach(dict => {
+            if (dict && typeof dict === 'object') Object.keys(dict).forEach(d => dateSet.add(d));
+          });
+
+          dateSet.forEach(d => {
+            let dayValEUR = 0;
+            let fx = (cachedHistoryData['EURUSD'] && cachedHistoryData['EURUSD'][d]) || EUR_USD;
+
+            asset.lots.forEach(lot => {
+              const buyD = (lot.buyDate || '').trim();
+              if (buyD && buyD <= d) {
+                const isEur = isEuroAsset(lot.ticker);
+                const p = (cachedHistoryData[lot.ticker] && cachedHistoryData[lot.ticker][d]) || (isEur ? lot.currEUR : lot.currUSD);
+                dayValEUR += isEur ? (lot.qty * p) : ((lot.qty * p) / fx);
+              }
+            });
+
+            if (dayValEUR > positionPeakEUR) {
+              positionPeakEUR = dayValEUR;
+            }
+          });
         }
 
-        const distFromAthPct = athPrice > 0 ? ((asset.currNative - athPrice) / athPrice) * 100 : 0;
-        const isAtAth = distFromAthPct >= -0.25;
+        const posStorageKey = `assetpulse_pos_peak_${asset.ticker}`;
+        const storedPosPeak = parseFloat(localStorage.getItem(posStorageKey) || '0');
+        if (storedPosPeak > positionPeakEUR) {
+          positionPeakEUR = storedPosPeak;
+        }
 
-        const athBadgeHtml = isAtAth
-          ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-400/10 text-amber-300 border border-amber-400/30">ATH</span>`
-          : `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono text-slate-400 bg-slate-800/60 border border-brand-border" title="Pico: ${formatNative(athPrice)}">${distFromAthPct.toFixed(1)}%</span>`;
+        if (asset.totalCurrEUR >= positionPeakEUR) {
+          positionPeakEUR = asset.totalCurrEUR;
+          localStorage.setItem(posStorageKey, positionPeakEUR.toFixed(2));
+        }
+
+        const distFromPeakPct = positionPeakEUR > 0 ? ((asset.totalCurrEUR - positionPeakEUR) / positionPeakEUR) * 100 : 0;
+        const isAtPersonalPeak = distFromPeakPct >= -0.25;
+
+        const athBadgeHtml = isAtPersonalPeak
+          ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-400/10 text-amber-300 border border-amber-400/30" title="Posição no valor recorde: ${fmtEUR(positionPeakEUR)}">ATH 🏆</span>`
+          : `<span class="px-1.5 py-0.5 rounded text-[9px] font-mono text-slate-400 bg-slate-800/60 border border-brand-border" title="Pico da tua posição: ${fmtEUR(positionPeakEUR)}">${distFromPeakPct.toFixed(1)}%</span>`;
 
         // Logótipos oficiais via Google API
         const t = (asset.ticker || '').toUpperCase();
@@ -1790,15 +1815,10 @@
             </div>
           </td>
 
-          <!-- COTAÇÃO & PMP COM BADGE ATH DEDICADO -->
+          <!-- COTAÇÃO & PMP (LIMPO E DESIMPEDIDO) -->
           <td class="py-4 px-4 text-right font-mono">
-            <div class="flex items-center justify-end gap-2">
-              <span class="font-bold text-white text-xs">${formatNative(asset.currNative)}</span>
-              ${athBadgeHtml}
-            </div>
-            <div class="text-[10px] text-slate-400 mt-1">
-              PMP: <span class="text-slate-300">${formatNative(asset.pmpNative)}</span>
-            </div>
+            <div class="font-bold text-white text-xs">${formatNative(asset.currNative)}</div>
+            <div class="text-[10px] text-slate-400 mt-0.5">PMP: ${formatNative(asset.pmpNative)}</div>
           </td>
 
           <!-- 1D -->
@@ -1806,9 +1826,12 @@
             ${fmtPCT(asset.dayChangePct)}
           </td>
 
-          <!-- VALOR ATUAL & BARRA DE ALOCAÇÃO -->
+          <!-- VALOR ATUAL, ATH DA POSIÇÃO & ALOCAÇÃO -->
           <td class="py-4 px-4 text-right font-mono">
-            <div class="font-bold text-white text-xs">${fmtEUR(asset.totalCurrEUR)}</div>
+            <div class="flex items-center justify-end gap-1.5">
+              <span class="font-bold text-white text-xs">${fmtEUR(asset.totalCurrEUR)}</span>
+              ${athBadgeHtml}
+            </div>
             <div class="flex items-center justify-end gap-2 mt-1">
               <div class="w-14 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                 <div class="h-full bg-sky-400 rounded-full" style="width: ${Math.min(allocPct, 100)}%"></div>
